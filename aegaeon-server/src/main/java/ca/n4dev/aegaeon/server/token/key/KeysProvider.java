@@ -48,7 +48,7 @@ public class KeysProvider {
      * @param pObjectMapper Jackson's ObjectMapper 
      */
     @Autowired
-    public KeysProvider(@Value("${simpleaos.jwks}") String pKeyUri) throws Exception {
+    public KeysProvider(@Value("${aegaeon.jwks}") String pKeyUri) throws Exception {
         this.jwkSet = JWKSet.load(new File(pKeyUri));
     }
 

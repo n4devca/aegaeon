@@ -46,7 +46,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Configuration
 public class WebMvcConfig extends WebMvcConfigurerAdapter {
     
-    @Value("${simpleaos.issuer}")
+    @Value("${aegaeon.issuer}")
     private String issuer;
 
     @Override

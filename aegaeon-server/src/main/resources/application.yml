@@ -1,6 +1,6 @@
 spring:
     datasource:
-        jndi-name: jdbc/simpleaos
+        jndi-name: jdbc/aegaeon
     thymeleaf:
         cache: false
         mode: HTML
@@ -16,5 +16,5 @@ flyway:
     baseline-version: 1
     check-location: false
     enabled: true
-    locations: classpath:db/migrations
+    locations: classpath:db/mysql
     out-of-order: true

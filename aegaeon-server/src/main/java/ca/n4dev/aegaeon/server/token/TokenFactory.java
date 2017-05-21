@@ -48,9 +48,6 @@ import ca.n4dev.aegaeon.api.token.provider.TokenProviderType;
 @Component
 public class TokenFactory {
 
-    private static final long DEFAULT_TIME_VALUE = 1L;
-    private static final TemporalUnit DEFAULT_TIME_UNIT = ChronoUnit.HOURS;
-    
     private Map<TokenProviderType, TokenProvider> tokenProviderHolder;
     
     /**
