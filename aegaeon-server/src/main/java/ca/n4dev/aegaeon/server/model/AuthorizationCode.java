@@ -23,6 +23,7 @@ package ca.n4dev.aegaeon.server.model;
 
 import java.time.LocalDateTime;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -50,6 +51,9 @@ public class AuthorizationCode extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+    
+    @Column(name = "user_id", insertable = false, updatable = false)
+    private Long userId;
     
     private LocalDateTime validUntil;
     
@@ -119,6 +123,13 @@ public class AuthorizationCode extends BaseEntity {
      */
     public void setValidUntil(LocalDateTime pValidUntil) {
         validUntil = pValidUntil;
+    }
+
+    /**
+     * @return the userId
+     */
+    public Long getUserId() {
+        return userId;
     }
     
     

@@ -31,45 +31,42 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import ca.n4dev.aegaeon.server.model.User;
-import ca.n4dev.aegaeon.server.repository.UserRepository;
-import ca.n4dev.aegaeon.server.security.SimpleUserDetails;
+import ca.n4dev.aegaeon.server.model.Client;
+import ca.n4dev.aegaeon.server.repository.ClientRepository;
+import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
 
 /**
- * UserDetailsService.java
+ * SpringAuthClientDetailsService.java
  * 
- * A simple service to load a userdetails.
+ * A service implementing spring's userdetailsservice
+ * and used to authenticate clients.
  *
  * @author by rguillemette
- * @since May 9, 2017
+ * @since May 22, 2017
  */
-@Service("userDetailsService")
-public class SimpleUserDetailsService implements UserDetailsService {
+@Service("clientDetailsService")
+public class SpringAuthClientDetailsService implements UserDetailsService {
 
-    private UserRepository userRepository;
+    private ClientRepository clientRepository;
     
-    /**
-     * Default Constructor.
-     * @param pUserRepository Repo to access users.
-     */
     @Autowired
-    public SimpleUserDetailsService(UserRepository pUserRepository) {
-        this.userRepository = pUserRepository;
+    public SpringAuthClientDetailsService(ClientRepository pClientRepository) {
+        this.clientRepository = pClientRepository;
     }
-    
     /* (non-Javadoc)
      * @see org.springframework.security.core.userdetails.UserDetailsService#loadUserByUsername(java.lang.String)
      */
     @Override
     public UserDetails loadUserByUsername(String pUsername) throws UsernameNotFoundException {
-        User user = this.userRepository.findByUserName(pUsername);
+        Client client = this.clientRepository.findByPublicId(pUsername);
         
-        if (user != null) {
+        if (client != null) {
             List<SimpleGrantedAuthority> auths = new ArrayList<>();
-            user.getAuthorities().forEach(a -> auths.add(new SimpleGrantedAuthority(a.getCode().replace("ROLE_", ""))));
-            return new SimpleUserDetails(user.getId(), user.getUserName(), user.getPasswd(), user.isEnabled(), true, auths);
+            auths.add(new SimpleGrantedAuthority("ROLE_CLIENT"));
+            return new SpringAuthUserDetails(client.getId(), pUsername, client.getSecret(), true, true, auths);
         }
         
         throw new UsernameNotFoundException(pUsername + " not found");
     }
+
 }

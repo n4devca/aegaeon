@@ -19,47 +19,26 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.model;
-
-import javax.persistence.Entity;
-import javax.persistence.Table;
+package ca.n4dev.aegaeon.server.exception;
 
 /**
- * ClientType.java
+ * OauthRestrictedException.java
  * 
- * Represent the type of client :
- *  - Implicit
- *  - Authorization code
- *  - ...
+ * TODO(rguillemette) Add description
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since May 22, 2017
  */
-@Entity
-@Table(name = "client_type")
-public class ClientType extends BaseEntity {
-
-    public static final String CODE_AUTH_CODE = "AUTH_CODE";
-    public static final String CODE_IMPLICIT = "IMPLICIT";
-    public static final String CODE_CLIENT_CREDENTIALS = "CLIENT_CREDENTIALS";
-    
-    private String code;
+public class OauthRestrictedException extends RuntimeException {
 
     /**
-     * @return the code
+     * 
      */
-    public String getCode() {
-        return code;
-    }
+    private static final long serialVersionUID = -8911384423048169435L;
 
-    /**
-     * @param pCode the code to set
-     */
-    public void setCode(String pCode) {
-        code = pCode;
-    }
+    public OauthRestrictedException() {}
     
-    public boolean is(String pCode) {
-        return this.code.equals(pCode);
+    public OauthRestrictedException(String pMessage) {
+        super(pMessage);
     }
 }

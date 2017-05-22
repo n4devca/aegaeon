@@ -36,7 +36,7 @@ import ca.n4dev.aegaeon.server.model.User;
  * @author by rguillemette
  * @since May 13, 2017
  */
-public class SimpleUserDetails implements UserDetails {
+public class SpringAuthUserDetails implements UserDetails {
 
     private static final long serialVersionUID = -5669423040345933280L;
     private Long id;
@@ -53,7 +53,7 @@ public class SimpleUserDetails implements UserDetails {
      * @param pNonLocked If this user is not locked.
      * @param pAuthorities The collection of authorities of this user.
      */
-    public SimpleUserDetails(Long pId,
+    public SpringAuthUserDetails(Long pId,
                              String pUsername, 
                              String pPassword, 
                              boolean pEnable, 

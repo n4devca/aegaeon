@@ -24,7 +24,6 @@ package ca.n4dev.aegaeon.server.controller;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -40,7 +39,7 @@ import ca.n4dev.aegaeon.server.exception.ServerException;
 import ca.n4dev.aegaeon.server.model.AccessToken;
 import ca.n4dev.aegaeon.server.model.Client;
 import ca.n4dev.aegaeon.server.model.UserAuthorization;
-import ca.n4dev.aegaeon.server.security.SimpleUserDetails;
+import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
 import ca.n4dev.aegaeon.server.service.AccessTokenService;
 import ca.n4dev.aegaeon.server.service.AuthorizationCodeService;
 import ca.n4dev.aegaeon.server.service.ClientService;
@@ -113,7 +112,7 @@ public class OAuthAuthorizationController {
         
         // Create a UserAuth and redirect
         Client client = this.clientService.findByPublicId(pClientPublicId);
-        SimpleUserDetails userDetails = (SimpleUserDetails) pAuthentication.getPrincipal();
+        SpringAuthUserDetails userDetails = (SpringAuthUserDetails) pAuthentication.getPrincipal();
         
         UserAuthorization ua = this.userAuthorizationService.save(new UserAuthorization(userDetails.getId(), client.getId()));
         
@@ -127,7 +126,7 @@ public class OAuthAuthorizationController {
     
     private boolean isAuthorize(Authentication pAuthentication, String pClientPublicId) {
         Client client = this.clientService.findByPublicId(pClientPublicId);
-        SimpleUserDetails userDetails = (SimpleUserDetails) pAuthentication.getPrincipal();
+        SpringAuthUserDetails userDetails = (SpringAuthUserDetails) pAuthentication.getPrincipal();
         
         return this.userAuthorizationService.findByUserIdAndClientId(userDetails.getId(), client.getId()) != null;
     }
@@ -153,7 +152,15 @@ public class OAuthAuthorizationController {
                                                String pRedirectionUrl,
                                                String pState) {
 
-        RedirectView view = new RedirectView(pRedirectionUrl, false);
+        SpringAuthUserDetails user = (SpringAuthUserDetails) pAuthentication.getPrincipal();
+        
+        try {
+            
+            RedirectView view = new RedirectView(pRedirectionUrl, false);
+        } catch (Exception e) {
+            throw new ServerException(e.getMessage());
+        }
+        
         
         return null;
     }
@@ -165,7 +172,7 @@ public class OAuthAuthorizationController {
                                           String pRedirectionUrl,
                                           String pState) {
         
-        SimpleUserDetails user = (SimpleUserDetails) pAuthentication.getPrincipal();
+        SpringAuthUserDetails user = (SpringAuthUserDetails) pAuthentication.getPrincipal();
         
         try {
             

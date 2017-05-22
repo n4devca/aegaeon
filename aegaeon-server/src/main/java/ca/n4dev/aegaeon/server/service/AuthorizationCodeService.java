@@ -32,7 +32,7 @@ import org.springframework.util.Assert;
 import ca.n4dev.aegaeon.server.model.AuthorizationCode;
 import ca.n4dev.aegaeon.server.model.Client;
 import ca.n4dev.aegaeon.server.repository.AuthorizationCodeRepository;
-import ca.n4dev.aegaeon.server.security.SimpleUserDetails;
+import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
 
 /**
@@ -76,7 +76,7 @@ public class AuthorizationCodeService extends BaseService<AuthorizationCode, Aut
      * @return A code or null.
      */
     @Transactional
-    public AuthorizationCode createCode(SimpleUserDetails pUser, Client pClient) {
+    public AuthorizationCode createCode(SpringAuthUserDetails pUser, Client pClient) {
         Assert.notNull(pUser, "A code cannot be created without a user");
         Assert.notNull(pClient, "A code cannot be created without a client");
 

@@ -32,6 +32,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import ca.n4dev.aegaeon.api.token.OAuthClient;
+import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**
  * Client.java
@@ -161,6 +162,22 @@ public class Client extends BaseEntity implements OAuthClient {
      */
     public void setRedirections(List<ClientRedirection> pRedirections) {
         redirections = pRedirections;
+    }
+    
+    /**
+     * @return the redirections
+     */
+    public boolean hasRedirection(String pUrl) {
+        
+        if (this.redirections != null && Utils.isNotEmpty(pUrl)) {
+            for (ClientRedirection cr : this.redirections) {
+                if (pUrl.equals(cr.getUrl())) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 
     /**

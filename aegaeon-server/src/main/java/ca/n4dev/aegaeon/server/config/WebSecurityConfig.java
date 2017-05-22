@@ -21,6 +21,12 @@
  */
 package ca.n4dev.aegaeon.server.config;
 
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,9 +35,12 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 
 /**
  * WebSecurityConfig.java
@@ -42,7 +51,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * @since May 11, 2017
  */
 @EnableWebSecurity
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig {
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -52,6 +61,34 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     
     @Configuration
     @Order(1)
+    public static class ClientAuthWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
+        
+        @Autowired
+        private UserDetailsService clientDetailsService;
+        
+        @Autowired
+        private AuthenticationEntryPoint authenticationEntryPoint;
+        
+        @Override
+        protected void configure(HttpSecurity pHttp) throws Exception {
+            pHttp
+                .antMatcher("/token")
+                    .authorizeRequests()
+                    .anyRequest().hasAnyRole("CLIENT")
+                .and()
+                .httpBasic()
+                    .authenticationEntryPoint(authenticationEntryPoint)
+                .and()
+                    .sessionManagement()
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                    .csrf().disable()
+                .userDetailsService(clientDetailsService);
+        }
+        
+    }
+    
+    @Configuration
     public static class FormLoginWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
         
         @Autowired
@@ -65,17 +102,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             pHttp
                 .authorizeRequests()
                     .antMatchers("/resources/**").permitAll()
-                    .and()
-                .authorizeRequests()
                     .antMatchers("/", "/home").permitAll()
-                    .anyRequest().authenticated()
+                    //.anyRequest().authenticated()
                     .and()
                 .formLogin()
                     .loginPage("/login")
                     .permitAll()
-                    .and()
+                .and()
+                    .userDetailsService(userDetailsService)
                 .logout()
-                    .permitAll();
+                    .logoutSuccessUrl("/");
         }
 
         @Autowired
@@ -87,5 +123,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         }
     }
     
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint() {
+        return new AuthenticationEntryPoint() {
+            
+            @Override
+            public void commence(HttpServletRequest pRequest, HttpServletResponse pResponse, AuthenticationException pException)
+                    throws IOException, ServletException {
+                pResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            }
+        };
+    }
     
 }
