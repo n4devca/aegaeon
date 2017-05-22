@@ -4,6 +4,10 @@ html, body, * {
     color: #000;
 }
 
+body {
+	background-color: #444;
+}
+
 a, span, p, input, button {
     font-size: 14px;
 }
@@ -113,4 +117,19 @@ h1, h2, h3, h4, h5 {
 .form-input:focus {
 	border: 1px solid #777;
 	box-shadow: 1px 1px 1px #b5cede;
+}
+
+/* Page Styles */
+.home-content {
+	padding-top: 50px;
+	text-align: center;
+}
+
+.home-content > img {
+	
+}
+
+.home-content > a {
+	display: block;
+	text-decoration: none;
 }
