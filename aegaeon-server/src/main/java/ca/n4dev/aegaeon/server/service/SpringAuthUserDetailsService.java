@@ -72,4 +72,5 @@ public class SpringAuthUserDetailsService implements UserDetailsService {
         
         throw new UsernameNotFoundException(pUsername + " not found");
     }
+    
 }

@@ -74,7 +74,7 @@ public class WebSecurityConfig {
             pHttp
                 .antMatcher("/token")
                     .authorizeRequests()
-                    .anyRequest().hasAnyRole("CLIENT")
+                    .anyRequest().hasAnyAuthority("CLIENT")
                 .and()
                 .httpBasic()
                     .authenticationEntryPoint(authenticationEntryPoint)
@@ -104,6 +104,7 @@ public class WebSecurityConfig {
                     .antMatchers("/resources/**").permitAll()
                     .antMatchers("/", "/home").permitAll()
                     //.anyRequest().authenticated()
+                    .antMatchers("/authorize").hasAnyAuthority("USER")
                     .and()
                 .formLogin()
                     .loginPage("/login")
@@ -135,4 +136,8 @@ public class WebSecurityConfig {
         };
     }
     
+//    public static void main(String[] args) {
+//        PasswordEncoder p = new BCryptPasswordEncoder();
+//        System.out.println(p.encode("admin@localhost"));
+//    }
 }

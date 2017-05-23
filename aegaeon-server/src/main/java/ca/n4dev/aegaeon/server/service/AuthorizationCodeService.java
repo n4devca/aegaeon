@@ -31,8 +31,10 @@ import org.springframework.util.Assert;
 
 import ca.n4dev.aegaeon.server.model.AuthorizationCode;
 import ca.n4dev.aegaeon.server.model.Client;
+import ca.n4dev.aegaeon.server.model.User;
 import ca.n4dev.aegaeon.server.repository.AuthorizationCodeRepository;
-import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
+import ca.n4dev.aegaeon.server.repository.ClientRepository;
+import ca.n4dev.aegaeon.server.repository.UserRepository;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
 
 /**
@@ -47,16 +49,23 @@ import ca.n4dev.aegaeon.server.token.TokenFactory;
 public class AuthorizationCodeService extends BaseService<AuthorizationCode, AuthorizationCodeRepository> {
 
     private TokenFactory tokenFactory;
+    private UserRepository userRepository;
+    private ClientRepository clientRepository;
     
     /**
      * Default Constructor.
      * @param pRepository Service repository.
      */
     @Autowired
-    public AuthorizationCodeService(AuthorizationCodeRepository pRepository, TokenFactory pTokenFactory) {
+    public AuthorizationCodeService(AuthorizationCodeRepository pRepository, 
+                                    TokenFactory pTokenFactory,
+                                    UserRepository pUserRepository,
+                                    ClientRepository pClientRepository) {
         super(pRepository);
         
         this.tokenFactory = pTokenFactory;
+        this.userRepository = pUserRepository;
+        this.clientRepository = pClientRepository;
     }
 
     /**
@@ -69,6 +78,15 @@ public class AuthorizationCodeService extends BaseService<AuthorizationCode, Aut
         return this.getRepository().findByCode(pCode);
     }
     
+    @Transactional
+    public AuthorizationCode createCode(Long pUserId, String pPublicClientId) {
+        User user = this.userRepository.findOne(pUserId);
+        Client client = this.clientRepository.findByPublicId(pPublicClientId);
+        
+        return createCode(user, client);
+    }
+    
+    
     /**
      * Create an {@link AuthorizationCode} for a user and a client.
      * @param pUser The user.
@@ -76,13 +94,13 @@ public class AuthorizationCodeService extends BaseService<AuthorizationCode, Aut
      * @return A code or null.
      */
     @Transactional
-    public AuthorizationCode createCode(SpringAuthUserDetails pUser, Client pClient) {
+    public AuthorizationCode createCode(User pUser, Client pClient) {
         Assert.notNull(pUser, "A code cannot be created without a user");
         Assert.notNull(pClient, "A code cannot be created without a client");
 
         AuthorizationCode c = new AuthorizationCode();
         c.setClient(pClient);
-        c.setUser(pUser.asUser());
+        c.setUser(pUser);
         c.setCode(this.tokenFactory.uniqueCode());
         c.setValidUntil(LocalDateTime.now().plus(3L, ChronoUnit.MINUTES));
 

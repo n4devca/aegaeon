@@ -28,6 +28,8 @@ import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,6 +39,7 @@ import org.springframework.web.servlet.view.RedirectView;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
 import ca.n4dev.aegaeon.server.exception.ServerException;
 import ca.n4dev.aegaeon.server.model.AccessToken;
+import ca.n4dev.aegaeon.server.model.AuthorizationCode;
 import ca.n4dev.aegaeon.server.model.Client;
 import ca.n4dev.aegaeon.server.model.UserAuthorization;
 import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
@@ -49,7 +52,8 @@ import ca.n4dev.aegaeon.server.utils.UriBuilder;
 /**
  * OAuthAuthorizationController.java
  * 
- * TODO(rguillemette) Add description
+ * Controller used to either return an access token (implicit) or 
+ * an authorize code.
  *
  * @author by rguillemette
  * @since May 9, 2017
@@ -138,6 +142,7 @@ public class OAuthAuthorizationController {
                                   String pRedirectionUrl,
                                   String pState) {
         
+        // TODO(RG): use enum here
         if ("code".equalsIgnoreCase(pResponseType)) {
             return authorizeCodeResponse(pAuthentication, pResponseType, pClientId, pScope, pRedirectionUrl, pState);
         } else { // if
@@ -152,19 +157,29 @@ public class OAuthAuthorizationController {
                                                String pRedirectionUrl,
                                                String pState) {
 
-        SpringAuthUserDetails user = (SpringAuthUserDetails) pAuthentication.getPrincipal();
         
         try {
             
-            RedirectView view = new RedirectView(pRedirectionUrl, false);
+            // Create auth code
+            SpringAuthUserDetails user = (SpringAuthUserDetails) pAuthentication.getPrincipal();
+            AuthorizationCode code = this.authorizationCodeService.createCode(user.getId(), pClientId);
+
+            // Returned values
+            MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
+            params.add("state", pState);
+            params.add("code", code.getCode());
+            
+            String url = UriBuilder.build(pRedirectionUrl, params);
+            RedirectView view = new RedirectView(url, false);
+            
+            return view;
+            
         } catch (Exception e) {
             throw new ServerException(e.getMessage());
         }
-        
-        
-        return null;
     }
     
+    //TODO(RG): Add proper scopes / claims
     private RedirectView implicitResponse(Authentication pAuthentication, 
                                           String pResponseType,
                                           String pClientId,
@@ -183,7 +198,8 @@ public class OAuthAuthorizationController {
             
             RedirectView view = new RedirectView(
                     UriBuilder.build(pRedirectionUrl, 
-                            TokenResponse.bearer(accessToken.getToken(), String.valueOf(expiresIn), Arrays.asList("openid"))), 
+                            TokenResponse.bearer(accessToken.getToken(), String.valueOf(expiresIn), Arrays.asList("openid")),
+                            pState), 
                     false);
 
             return view;

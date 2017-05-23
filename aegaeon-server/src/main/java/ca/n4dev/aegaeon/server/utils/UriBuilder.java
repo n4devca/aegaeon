@@ -38,7 +38,7 @@ import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
  */
 public class UriBuilder {
 
-    public static String build(String pUrl, TokenResponse pTokenResponse) {
+    public static String build(String pUrl, TokenResponse pTokenResponse, String pState) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
         
         params.add("access_token", pTokenResponse.getAccessToken());
@@ -46,6 +46,7 @@ public class UriBuilder {
         params.add("expires_in", pTokenResponse.getExpiresIn());
         params.add("refresh_token", pTokenResponse.getRefreshToken());
         params.add("scope", pTokenResponse.getScopeList());
+        params.add("state", pState);
 
         return build(pUrl, params);
     }
