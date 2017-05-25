@@ -23,9 +23,15 @@ package ca.n4dev.aegaeon.server.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
+
+import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
+import ca.n4dev.aegaeon.server.exception.OAuthPublicException;
+import ca.n4dev.aegaeon.server.exception.OauthRestrictedException;
+import ca.n4dev.aegaeon.server.utils.UriBuilder;
 
 /**
  * ControllerErrorInterceptor.java
@@ -37,15 +43,60 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
  */
 @ControllerAdvice
 public class ControllerErrorInterceptor {
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(ControllerErrorInterceptor.class);
 
-    private static Logger logger = LoggerFactory.getLogger(ControllerErrorInterceptor.class);
-
+    private static final String HASHTAG = "#";
+    private static final String QUESTIONMARK = "?";
+    
+    /**
+     * 
+     * @param pOAuthPublicException
+     * @return
+     */
+    @ExceptionHandler(OAuthPublicException.class)
+    public RedirectView oauthPublicException(final OAuthPublicException pOAuthPublicException) {
+        
+        String url = UriBuilder.build(pOAuthPublicException.getRedirectUrl(), pOAuthPublicException);
+        
+        if (pOAuthPublicException.getGrantType() == AuthorizationGrant.AUTHORIZATIONCODE) {
+            return new RedirectView(url, false);            
+        } else if (pOAuthPublicException.getGrantType() == AuthorizationGrant.IMPLICIT) {
+            // TODO(RG): this smell bad
+            url = url.replace(QUESTIONMARK, HASHTAG);
+            return new RedirectView(url, false);
+        } else {
+            // TODO(RG) Client Cred: check what we should do in this case
+            return new RedirectView(url, false);
+        }
+    }
+    
+    /**
+     * 
+     * @param pOAuthPublicException
+     * @return
+     */
+    @ExceptionHandler(OauthRestrictedException.class)
+    public ModelAndView oauthRestrictedException(final OauthRestrictedException pOauthRestrictedException) {
+        ModelAndView mv = new ModelAndView("error");
+        
+        mv.addObject("type", "OauthRestrictedException");
+        mv.addObject("error", pOauthRestrictedException);
+        
+        return mv;
+    }
+    
     @ExceptionHandler(Throwable.class)
-    //@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public String exception(final Throwable throwable, final Model model) {
-        logger.error("Exception during execution of SpringSecurity application", throwable);
-        String errorMessage = (throwable != null ? throwable.getMessage() : "Unknown error");
-        model.addAttribute("errorMessage", errorMessage);
-        return "error";
+    public ModelAndView exception(final Throwable pThrowable) {
+        LOGGER.error("Generic Exception", pThrowable);
+        
+        ModelAndView mv = new ModelAndView("error");
+        String errorMessage = (pThrowable != null ? pThrowable.getMessage() : "Unknown error");
+        
+        mv.addObject("type", "Throwable");
+        mv.addObject("error", pThrowable);
+        mv.addObject("errorMessage", errorMessage);
+        
+        return mv;
     }
 }

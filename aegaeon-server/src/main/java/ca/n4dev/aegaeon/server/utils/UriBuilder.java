@@ -27,11 +27,12 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
+import ca.n4dev.aegaeon.server.exception.OAuthPublicException;
 
 /**
  * UriBuilder.java
  * 
- * TODO(rguillemette) Add description
+ * Useful static functions to deal with url building.
  *
  * @author by rguillemette
  * @since May 17, 2017
@@ -41,18 +42,33 @@ public class UriBuilder {
     public static String build(String pUrl, TokenResponse pTokenResponse, String pState) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
         
-        params.add("access_token", pTokenResponse.getAccessToken());
-        params.add("token_type", pTokenResponse.getTokenType());
-        params.add("expires_in", pTokenResponse.getExpiresIn());
-        params.add("refresh_token", pTokenResponse.getRefreshToken());
-        params.add("scope", pTokenResponse.getScopeList());
-        params.add("state", pState);
+        append(params, "access_token", pTokenResponse.getAccessToken());
+        append(params, "token_type", pTokenResponse.getTokenType());
+        append(params, "expires_in", pTokenResponse.getExpiresIn());
+        append(params, "refresh_token", pTokenResponse.getRefreshToken());
+        append(params, "scope", pTokenResponse.getScopeList());
+        append(params, "state", pState);
 
+        return build(pUrl, params);
+    }
+    
+    public static String build(String pUrl, OAuthPublicException pOAuthPublicException) {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
+        
+        append(params, "state", pOAuthPublicException.getState());
+        append(params, "error", pOAuthPublicException.getError().toString());
+        
         return build(pUrl, params);
     }
     
     public static String build(String pUrl, MultiValueMap<String, String> pParam) {
         UriComponents uriComponents =  UriComponentsBuilder.fromHttpUrl(pUrl).queryParams(pParam).build();
         return uriComponents.toUri().toString();
+    }
+    
+    private static void append(MultiValueMap<String, String> pParams, String pKey, String pValue) {
+        if (Utils.isNotEmpty(pKey) && Utils.isNotEmpty(pValue)) {
+            pParams.add(pKey, pValue);
+        }
     }
 }

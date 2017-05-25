@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
 import ca.n4dev.aegaeon.server.exception.OAuthErrorType;
 import ca.n4dev.aegaeon.server.exception.OAuthPublicException;
@@ -101,34 +102,50 @@ public class OAuthTokensController extends BaseController {
         
         // Required
         if (Utils.areOneEmpty(pGrantType, pCode, pRedirectUri, pClientPublicId)) {
-            throw new OauthRestrictedException("One parameter is empty");
+            throw new OauthRestrictedException(AuthorizationGrant.AUTHORIZATIONCODE, 
+                                               OAuthErrorType.invalid_request, 
+                                               pClientPublicId, 
+                                               pRedirectUri,
+                                               "One parameter is empty");
         }
         
         // Make sure it is a auth_code request
         if (!pGrantType.equals("authorization_code")) {
-            throw new OauthRestrictedException("Invalid grant type. Must be authorization_code.");
+            throw new OauthRestrictedException(AuthorizationGrant.AUTHORIZATIONCODE, 
+                    OAuthErrorType.invalid_request, 
+                    pClientPublicId, 
+                    pRedirectUri,
+                    "Invalid grant type. Must be authorization_code.");
         }
         
         // Load client 
         Client client = this.clientService.findByPublicId(pClientPublicId);
         if (client == null) {
-            throw new OauthRestrictedException("Invalid client or incorrect public id.");
+            throw new OauthRestrictedException(AuthorizationGrant.AUTHORIZATIONCODE, 
+                    OAuthErrorType.invalid_request, 
+                    pClientPublicId, 
+                    pRedirectUri,
+                    "Invalid client or incorrect public id.");
         }
         
         // Check redirection
         if (!client.hasRedirection(pRedirectUri)) {
-            throw new OauthRestrictedException("Invalid redirect_uri.");
+            throw new OauthRestrictedException(AuthorizationGrant.AUTHORIZATIONCODE, 
+                    OAuthErrorType.invalid_request, 
+                    pClientPublicId, 
+                    pRedirectUri,
+                    "Invalid redirect_uri.");
         }
         
         // Did we set this client to use this flow
         if (!client.getClientType().is(ClientType.CODE_AUTH_CODE)) {
-            throw new OAuthPublicException(OAuthErrorType.unauthorized_client);
+            throw new OAuthPublicException(AuthorizationGrant.AUTHORIZATIONCODE, OAuthErrorType.unauthorized_client, pRedirectUri);
         }
         
         // Ok, check the code now
         AuthorizationCode authCode = this.authorizationCodeService.findByCode(pCode);
         if (authCode == null || !Utils.isStillValid(authCode.getValidUntil())) {
-            throw new OAuthPublicException(OAuthErrorType.access_denied);
+            throw new OAuthPublicException(AuthorizationGrant.AUTHORIZATIONCODE, OAuthErrorType.access_denied, pRedirectUri);
         }
         
         

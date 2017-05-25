@@ -19,16 +19,36 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.controller;
+package ca.n4dev.aegaeon.api.token.caching;
 
 /**
- * BaseController.java
+ * CacheProvider.java
  * 
- * TODO(rguillemette) Add description
+ * A simple interface to describe a cache provider.
  *
  * @author by rguillemette
- * @since May 22, 2017
+ * @since May 24, 2017
  */
-public abstract class BaseController {
+public interface CacheProvider {
+
+    /**
+     * Set an object in the cache.
+     * @param pObject The object to cache.
+     * @return The key of the cached object.
+     */
+    <O> String set(O pObject);
+   
+    /**
+     * Get an object from cache.
+     * @param pKey The object cache key.
+     * @return The object or null.
+     */
+    <O> O get(String pKey);
     
+    /**
+     * Remove an object from cache.
+     * @param pKey The object key to remove.
+     * @return The removed object.
+     */
+    <O> O remove(String pKey);
 }

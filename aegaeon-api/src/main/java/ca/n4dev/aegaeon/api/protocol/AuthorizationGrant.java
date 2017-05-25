@@ -19,16 +19,35 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.controller;
+package ca.n4dev.aegaeon.api.protocol;
 
 /**
- * BaseController.java
+ * GrantType.java
  * 
  * TODO(rguillemette) Add description
  *
  * @author by rguillemette
- * @since May 22, 2017
+ * @since May 24, 2017
  */
-public abstract class BaseController {
+public enum AuthorizationGrant {
+    AUTHORIZATIONCODE("code"),
+    IMPLICIT("token"),
+    CLIENTCREDENTIALS("client_credentials")
+    ;
     
+    final String parameter;
+    
+    AuthorizationGrant(String pParam) {
+        this.parameter = pParam;
+    }
+    
+    public static AuthorizationGrant from(String pParam) {
+        for (AuthorizationGrant grant : AuthorizationGrant.values()) {
+            if (grant.parameter.equals(pParam)) {
+                return grant;
+            }
+        }
+        
+        return null;
+    }
 }

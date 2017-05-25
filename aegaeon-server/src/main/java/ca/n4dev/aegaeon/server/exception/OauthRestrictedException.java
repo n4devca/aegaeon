@@ -21,24 +21,63 @@
  */
 package ca.n4dev.aegaeon.server.exception;
 
+import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
+
 /**
  * OauthRestrictedException.java
  * 
- * TODO(rguillemette) Add description
+ * OAuth error throwed by the token or authorize endpoint.
+ * These are restricted and should be hidden from the client.
+ * 
+ * https://tools.ietf.org/html/rfc6749#section-4.2.2.1
  *
  * @author by rguillemette
  * @since May 22, 2017
  */
-public class OauthRestrictedException extends RuntimeException {
+public class OauthRestrictedException extends BaseOAuthException {
+
+    private static final long serialVersionUID = 5891552760445577562L;
+
+    private String clientPublicId;
+    
+    /**
+     * Construct a restricted error.
+     * @param pGrantType The grant type of this oauth request.
+     * @param pError The error code.
+     * @param pClientPublicId The client public id.
+     * @param pRedirectUrl The redirection url.
+     */
+    public OauthRestrictedException(AuthorizationGrant pGrantType, OAuthErrorType pError, String pClientPublicId, String pRedirectUrl) {
+        this(pGrantType, pError, pClientPublicId, pRedirectUrl, null);
+    }
+    
 
     /**
-     * 
+     * Construct a restricted error.
+     * @param pGrantType The grant type of this oauth request.
+     * @param pError The error code.
+     * @param pClientPublicId The client public id.
+     * @param pRedirectUrl The redirection url.
+     * @param pMessage A message or error description.
      */
-    private static final long serialVersionUID = -8911384423048169435L;
+    public OauthRestrictedException(AuthorizationGrant pGrantType, OAuthErrorType pError, String pClientPublicId, String pRedirectUrl, String pMessage) {
+        super(pGrantType, pError);
+        setRedirectUrl(pRedirectUrl);
+        this.clientPublicId = pClientPublicId;
+        setErrorDescription(pMessage);
+    }
 
-    public OauthRestrictedException() {}
-    
-    public OauthRestrictedException(String pMessage) {
-        super(pMessage);
+    /**
+     * @return the clientPublicId
+     */
+    public String getClientPublicId() {
+        return clientPublicId;
+    }
+
+    /**
+     * @param pClientPublicId the clientPublicId to set
+     */
+    public void setClientPublicId(String pClientPublicId) {
+        clientPublicId = pClientPublicId;
     }
 }

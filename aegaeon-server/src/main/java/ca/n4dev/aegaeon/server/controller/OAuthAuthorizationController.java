@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
+import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
 import ca.n4dev.aegaeon.server.exception.ServerException;
 import ca.n4dev.aegaeon.server.model.AccessToken;
@@ -81,13 +82,16 @@ public class OAuthAuthorizationController {
         this.clientService = pClientService;
     }
     
-    @RequestMapping(value = "", method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value = "")
     public ModelAndView authorize(@RequestParam("response_type") String pResponseType,
                                   @RequestParam("client_id") String pClientPublicId,
                                   @RequestParam(value = "scope", required = false) String[] pScope,
                                   @RequestParam(value = "redirection_url", required = false) String pRedirectionUrl,
                                   @RequestParam(value = "state", required = false) String pState,
-                                  Authentication pAuthentication) {
+                                  Authentication pAuthentication,
+                                  RequestMethod pRequestMethod) {
+        
+        // TODO(RG): Validate param
         
         if (!isAuthorize(pAuthentication, pClientPublicId)) {
             ModelAndView authPage = new ModelAndView("authorize");
@@ -101,9 +105,17 @@ public class OAuthAuthorizationController {
             
             return authPage;
         }
+        AuthorizationGrant granType = AuthorizationGrant.from(pResponseType);
+        RedirectView redirect = new RedirectView("/");
         
-        // We are authorize, so redirect
-        return new ModelAndView(response(pAuthentication, pResponseType, pClientPublicId, pScope, pRedirectionUrl, pState));
+        // TODO(RG): Client Credential
+        if (granType == AuthorizationGrant.AUTHORIZATIONCODE) {
+            redirect = authorizeCodeResponse(pAuthentication, pResponseType, pClientPublicId, pScope, pRedirectionUrl, pState);
+        } else if (granType == AuthorizationGrant.IMPLICIT) {
+            redirect = implicitResponse(pAuthentication, pResponseType, pClientPublicId, pScope, pRedirectionUrl, pState);
+        } 
+        
+        return new ModelAndView(redirect);
     }
     
     @RequestMapping(value = "/accept")
@@ -115,17 +127,24 @@ public class OAuthAuthorizationController {
                                              Authentication pAuthentication) {
         
         // Create a UserAuth and redirect
-        Client client = this.clientService.findByPublicId(pClientPublicId);
-        SpringAuthUserDetails userDetails = (SpringAuthUserDetails) pAuthentication.getPrincipal();
-        
-        UserAuthorization ua = this.userAuthorizationService.save(new UserAuthorization(userDetails.getId(), client.getId()));
-        
-        if (ua == null) {
-            throw new RuntimeException("Unable to create ua.");
+        try {
+            Client client = this.clientService.findByPublicId(pClientPublicId);
+            SpringAuthUserDetails userDetails = (SpringAuthUserDetails) pAuthentication.getPrincipal();
+            
+            UserAuthorization ua = this.userAuthorizationService.save(new UserAuthorization(userDetails.getId(), client.getId()));
+            
+            if (ua == null) {
+                throw new RuntimeException("Unable to create ua.");
+            }
+            
+            return authorize(pResponseType, pClientPublicId, pScope, pRedirectionUrl, pState, pAuthentication, RequestMethod.POST);
+            
+        } catch (ServerException se) {
+            // Rethrow, will be catch
+            throw se;
+        } catch (Exception e) {
+            throw new ServerException(e);
         }
-        
-        return authorize(pResponseType, pClientPublicId, pScope, pRedirectionUrl, pState, pAuthentication);
-        
     }
     
     private boolean isAuthorize(Authentication pAuthentication, String pClientPublicId) {
@@ -135,20 +154,6 @@ public class OAuthAuthorizationController {
         return this.userAuthorizationService.findByUserIdAndClientId(userDetails.getId(), client.getId()) != null;
     }
     
-    private RedirectView response(Authentication pAuthentication,
-                                  String pResponseType,
-                                  String pClientId,
-                                  String[] pScope,
-                                  String pRedirectionUrl,
-                                  String pState) {
-        
-        // TODO(RG): use enum here
-        if ("code".equalsIgnoreCase(pResponseType)) {
-            return authorizeCodeResponse(pAuthentication, pResponseType, pClientId, pScope, pRedirectionUrl, pState);
-        } else { // if
-            return implicitResponse(pAuthentication, pResponseType, pClientId, pScope, pRedirectionUrl, pState);
-        }
-    }
     
     private RedirectView authorizeCodeResponse(Authentication pAuthentication,
                                                String pResponseType,
@@ -175,7 +180,7 @@ public class OAuthAuthorizationController {
             return view;
             
         } catch (Exception e) {
-            throw new ServerException(e.getMessage());
+            throw new ServerException(e);
         }
     }
     
@@ -206,7 +211,7 @@ public class OAuthAuthorizationController {
 
         } catch (Exception e) {
             // TODO(RG): Deal with RFC error
-            throw new ServerException(e.getMessage());
+            throw new ServerException(e);
         }
         
     }

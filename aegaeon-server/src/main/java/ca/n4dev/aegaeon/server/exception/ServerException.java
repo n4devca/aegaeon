@@ -24,7 +24,7 @@ package ca.n4dev.aegaeon.server.exception;
 /**
  * ServerException.java
  * 
- * TODO(rguillemette) Add description
+ * Generic Aegaeon server exception.
  *
  * @author by rguillemette
  * @since May 17, 2017
@@ -33,6 +33,12 @@ public class ServerException extends RuntimeException {
 
     private static final long serialVersionUID = 5417290794084341835L;
 
+    public ServerException() {}
+    
+    public ServerException(Throwable pThrowable) {
+        super(pThrowable);
+    }
+    
     public ServerException(String pMessage) {
         super(pMessage);
     }
