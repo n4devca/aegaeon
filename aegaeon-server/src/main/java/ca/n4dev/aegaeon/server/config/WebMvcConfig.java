@@ -42,7 +42,7 @@ import ca.n4dev.aegaeon.server.controller.interceptor.RequestMethodInterceptor;
 /**
  * WebMvcConfig.java
  * 
- * TODO(rguillemette) Add description
+ * Spring mvc configuration.
  *
  * @author by rguillemette
  * @since May 11, 2017

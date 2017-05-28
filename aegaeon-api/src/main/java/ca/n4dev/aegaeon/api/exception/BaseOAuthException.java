@@ -19,7 +19,7 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.exception;
+package ca.n4dev.aegaeon.api.exception;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

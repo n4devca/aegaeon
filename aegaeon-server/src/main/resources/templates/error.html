@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{basepage}">
+<head>
+
+</head>
+<body>
+    <section layout:fragment="content">
+        <div class="normal-content">
+            <div class="panel">
+                <div class="panel-heading">
+                    <h1 th:text="#{page.error.panel.title}"></h1>
+                </div>
+                <div class="panel-body">
+                    <th:block th:if="${#strings.equalsIgnoreCase(type, 'OauthRestrictedException')}">
+                        <p th:text="#{${'page.error.list.oauth.errortype.' + error.error}}"></p>
+                    </th:block>
+                    
+                    <th:block th:if="${#strings.equalsIgnoreCase(type, 'Throwable')}">
+                        <p th:text="#{page.error.list.throwable}"></p>
+                    </th:block>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

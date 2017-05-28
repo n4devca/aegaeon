@@ -26,8 +26,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import ca.n4dev.aegaeon.api.exception.OAuthPublicException;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
-import ca.n4dev.aegaeon.server.exception.OAuthPublicException;
 
 /**
  * UriBuilder.java
@@ -46,7 +46,7 @@ public class UriBuilder {
         append(params, "token_type", pTokenResponse.getTokenType());
         append(params, "expires_in", pTokenResponse.getExpiresIn());
         append(params, "refresh_token", pTokenResponse.getRefreshToken());
-        append(params, "scope", pTokenResponse.getScopeList());
+        append(params, "scope", pTokenResponse.getScope());
         append(params, "state", pState);
 
         return build(pUrl, params);

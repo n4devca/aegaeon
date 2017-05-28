@@ -22,6 +22,9 @@
 package ca.n4dev.aegaeon.server.model;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -51,6 +54,8 @@ public class AccessToken extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "client_id")
     private Client client;
+    
+    private String scopes;
 
     /**
      * @return the token
@@ -106,5 +111,30 @@ public class AccessToken extends BaseEntity {
      */
     public void setClient(Client pClient) {
         client = pClient;
+    }
+
+    /**
+     * @return the scopes
+     */
+    public String getScopes() {
+        return scopes;
+    }
+
+    /**
+     * @param pScopes the scopes to set
+     */
+    public void setScopes(String pScopes) {
+        scopes = pScopes;
+    }
+    
+    /**
+     * @return the scopes
+     */
+    public List<String> getScopeList() {
+        if (this.scopes == null || this.scopes.isEmpty()) {
+            return Collections.emptyList();
+        }
+        
+        return Arrays.asList(scopes.split(" "));
     }
 }

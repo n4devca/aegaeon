@@ -22,6 +22,10 @@
 package ca.n4dev.aegaeon.server.utils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
 
 /**
  * ObjectUtils.java
@@ -64,5 +68,41 @@ public class Utils {
         }
         
         return true;
+    }
+    
+    public static <E> String join(String pSeparator, List<E> pElements, Function<E, String> pFunc) {
+        if (pElements == null || pElements.isEmpty()) {
+            return "";
+        }
+        
+        StringBuilder b = new StringBuilder();
+        boolean first = true;
+        
+        for (E e : pElements) {
+            if (!first) 
+                b.append(pSeparator);
+            
+            b.append(pFunc.apply(e));
+            first = false;
+        }
+        
+        return b.toString();
+    }
+    
+    public static <E> List<E> explode(String pSeparator, String pElementsStr, Function<String, E> pFunc) {
+        if (pElementsStr == null || pElementsStr.isEmpty()) {
+            return Collections.emptyList();
+        }
+        
+        String[] els = pElementsStr.split(pSeparator);
+        List<E> lst = new ArrayList<>();
+        
+        for (String e : els) {
+            if (isNotEmpty(e)) {
+                lst.add(pFunc.apply(e));
+            }
+        }
+        
+        return lst;
     }
 }

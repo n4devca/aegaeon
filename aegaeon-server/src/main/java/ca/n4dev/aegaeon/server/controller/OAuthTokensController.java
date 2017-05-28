@@ -23,6 +23,7 @@ package ca.n4dev.aegaeon.server.controller;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,18 +36,20 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import ca.n4dev.aegaeon.api.exception.OAuthErrorType;
+import ca.n4dev.aegaeon.api.exception.OAuthPublicException;
+import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
-import ca.n4dev.aegaeon.server.exception.OAuthErrorType;
-import ca.n4dev.aegaeon.server.exception.OAuthPublicException;
-import ca.n4dev.aegaeon.server.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.server.model.AccessToken;
 import ca.n4dev.aegaeon.server.model.AuthorizationCode;
 import ca.n4dev.aegaeon.server.model.Client;
 import ca.n4dev.aegaeon.server.model.ClientType;
+import ca.n4dev.aegaeon.server.model.Scope;
 import ca.n4dev.aegaeon.server.service.AccessTokenService;
 import ca.n4dev.aegaeon.server.service.AuthorizationCodeService;
 import ca.n4dev.aegaeon.server.service.ClientService;
+import ca.n4dev.aegaeon.server.service.ScopeService;
 import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**
@@ -68,6 +71,7 @@ public class OAuthTokensController extends BaseController {
     private ClientService clientService;
     private AuthorizationCodeService authorizationCodeService;
     private AccessTokenService accessTokenService;
+    private ScopeService scopeService;
     
     /**
      * Default Constructor.
@@ -77,11 +81,13 @@ public class OAuthTokensController extends BaseController {
     @Autowired
     public OAuthTokensController(ClientService pClientService,
                                  AuthorizationCodeService pAuthorizationCodeService,
-                                 AccessTokenService pAccessTokenService) {
+                                 AccessTokenService pAccessTokenService,
+                                 ScopeService pScopeService) {
         
         this.clientService = pClientService;
         this.authorizationCodeService = pAuthorizationCodeService;
         this.accessTokenService = pAccessTokenService;
+        this.scopeService = pScopeService;
     }
    
     /**
@@ -110,7 +116,7 @@ public class OAuthTokensController extends BaseController {
         }
         
         // Make sure it is a auth_code request
-        if (!pGrantType.equals("authorization_code")) {
+        if (!AuthorizationGrant.is(pGrantType, AuthorizationGrant.AUTHORIZATIONCODE)) {
             throw new OauthRestrictedException(AuthorizationGrant.AUTHORIZATIONCODE, 
                     OAuthErrorType.invalid_request, 
                     pClientPublicId, 
@@ -150,7 +156,8 @@ public class OAuthTokensController extends BaseController {
         
         
         // Ok, good to go here, so create an access token and delete the auth code.
-        AccessToken accessToken = this.accessTokenService.createAccessToken(authCode.getUserId(), pClientPublicId);
+        List<Scope> scopes = this.scopeService.findScopeFromString(authCode.getScopes());
+        AccessToken accessToken = this.accessTokenService.createAccessToken(authCode.getUserId(), pClientPublicId, scopes);
         
         try {
             this.authorizationCodeService.delete(authCode);

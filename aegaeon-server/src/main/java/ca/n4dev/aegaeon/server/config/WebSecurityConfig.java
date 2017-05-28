@@ -45,7 +45,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 /**
  * WebSecurityConfig.java
  * 
- * TODO(rguillemette) Add description
+ * Spring Security configuration.
  *
  * @author by rguillemette
  * @since May 11, 2017

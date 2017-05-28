@@ -21,6 +21,8 @@
  */
 package ca.n4dev.aegaeon.server.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import ca.n4dev.aegaeon.server.model.Scope;
@@ -35,4 +37,10 @@ import ca.n4dev.aegaeon.server.model.Scope;
  */
 public interface ScopeRepository extends JpaRepository<Scope, Long> {
 
+    /**
+     * Find all scope with the following list of name.
+     * @param pNames Name of the scope to load.
+     * @return A list
+     */
+    List<Scope> findByNameIn(List<String> pNames);
 }

@@ -21,16 +21,6 @@
  */
 package ca.n4dev.aegaeon.server.controller.dto;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -50,13 +40,13 @@ public class TokenResponse {
     
     private String expiresIn;
         
-    private List<String> scope;
+    private String scope;
     
     private String refreshToken;
 
     public TokenResponse() {}
     
-    public TokenResponse(String pAccessToken, String pTokenType, String pExpiresIn, List<String> pScope, String pRefreshToken) {
+    public TokenResponse(String pAccessToken, String pTokenType, String pExpiresIn, String pScope, String pRefreshToken) {
         this.accessToken = pAccessToken;
         this.tokenType = pTokenType;
         this.expiresIn = pExpiresIn;
@@ -127,22 +117,18 @@ public class TokenResponse {
     /**
      * @param pScope the scope to set
      */
-    public void setScope(List<String> pScope) {
+    public void setScope(String pScope) {
         scope = pScope;
     }
     
-    /**
-     * @return the scope as string
-     */
-    @JsonProperty("scope")
-    public String getScopeList() {
-        if (this.scope != null) {
-            return this.scope.stream().collect(Collectors.joining(" "));
-        }
-        return null;
-    }
-    
-    public static TokenResponse bearer(String pAccessToken, String pExpiresIn, List<String> pScope) {
+    public static TokenResponse bearer(String pAccessToken, String pExpiresIn, String pScope) {
         return new TokenResponse(pAccessToken, "bearer", pExpiresIn, pScope, null);
+    }
+
+    /**
+     * @return the scope
+     */
+    public String getScope() {
+        return scope;
     }
 }

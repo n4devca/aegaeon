@@ -50,4 +50,12 @@ public enum AuthorizationGrant {
         
         return null;
     }
+    
+    public static boolean is(String pParameter, AuthorizationGrant pGrant) {
+        if (pGrant != null && pParameter != null && !pParameter.isEmpty()) {
+            return pGrant == from(pParameter);            
+        }
+        
+        return false;
+    }
 }

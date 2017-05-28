@@ -22,6 +22,7 @@
 package ca.n4dev.aegaeon.server.service;
 
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,10 +31,12 @@ import org.springframework.transaction.annotation.Transactional;
 import ca.n4dev.aegaeon.api.token.Token;
 import ca.n4dev.aegaeon.server.model.AccessToken;
 import ca.n4dev.aegaeon.server.model.Client;
+import ca.n4dev.aegaeon.server.model.Scope;
 import ca.n4dev.aegaeon.server.model.User;
 import ca.n4dev.aegaeon.server.repository.AccessTokenRepository;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
 import ca.n4dev.aegaeon.server.utils.Assert;
+import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**
  * AccessTokenService.java
@@ -66,7 +69,7 @@ public class AccessTokenService extends BaseService<AccessToken, AccessTokenRepo
     }
 
     @Transactional
-    public AccessToken createAccessToken(Long pUserId, String pClientPublicId) {
+    public AccessToken createAccessToken(Long pUserId, String pClientPublicId, List<Scope> pScopes) {
         Assert.notNull(pUserId, "This function need a user id");
         Assert.notEmpty(pClientPublicId, "This function need a client");
         
@@ -74,7 +77,7 @@ public class AccessTokenService extends BaseService<AccessToken, AccessTokenRepo
         User user = this.userService.findById(pUserId);
         
         
-        return createAccessToken(user, client);
+        return createAccessToken(user, client, pScopes);
     }
     
     /**
@@ -87,7 +90,7 @@ public class AccessTokenService extends BaseService<AccessToken, AccessTokenRepo
      * @return The saved token.
      */
     @Transactional
-    public AccessToken createAccessToken(User pUser, Client pClient) {
+    public AccessToken createAccessToken(User pUser, Client pClient, List<Scope> pScopes) {
         
         Assert.notNull(pUser, "An access token cannot be created without a user");
         Assert.notNull(pClient, "An access token cannot be created without a client");
@@ -102,6 +105,10 @@ public class AccessTokenService extends BaseService<AccessToken, AccessTokenRepo
             
             at.setToken(token.getValue());
             at.setValidUntil(token.getValidUntil());
+            
+            if (pScopes != null) {
+                at.setScopes(Utils.join(" ", pScopes, s -> s.getName()));
+            }
             
             return this.save(at);
         } catch (Exception e) {

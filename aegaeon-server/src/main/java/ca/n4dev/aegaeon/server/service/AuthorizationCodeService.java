@@ -23,6 +23,7 @@ package ca.n4dev.aegaeon.server.service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,11 +32,13 @@ import org.springframework.util.Assert;
 
 import ca.n4dev.aegaeon.server.model.AuthorizationCode;
 import ca.n4dev.aegaeon.server.model.Client;
+import ca.n4dev.aegaeon.server.model.Scope;
 import ca.n4dev.aegaeon.server.model.User;
 import ca.n4dev.aegaeon.server.repository.AuthorizationCodeRepository;
 import ca.n4dev.aegaeon.server.repository.ClientRepository;
 import ca.n4dev.aegaeon.server.repository.UserRepository;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
+import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**
  * AuthorizationCodeService.java
@@ -79,11 +82,14 @@ public class AuthorizationCodeService extends BaseService<AuthorizationCode, Aut
     }
     
     @Transactional
-    public AuthorizationCode createCode(Long pUserId, String pPublicClientId) {
+    public AuthorizationCode createCode(Long pUserId, String pPublicClientId, List<Scope> pScopes) {
+        
+        
+        
         User user = this.userRepository.findOne(pUserId);
         Client client = this.clientRepository.findByPublicId(pPublicClientId);
         
-        return createCode(user, client);
+        return createCode(user, client, pScopes);
     }
     
     
@@ -94,7 +100,7 @@ public class AuthorizationCodeService extends BaseService<AuthorizationCode, Aut
      * @return A code or null.
      */
     @Transactional
-    public AuthorizationCode createCode(User pUser, Client pClient) {
+    public AuthorizationCode createCode(User pUser, Client pClient, List<Scope> pScopes) {
         Assert.notNull(pUser, "A code cannot be created without a user");
         Assert.notNull(pClient, "A code cannot be created without a client");
 
@@ -103,6 +109,10 @@ public class AuthorizationCodeService extends BaseService<AuthorizationCode, Aut
         c.setUser(pUser);
         c.setCode(this.tokenFactory.uniqueCode());
         c.setValidUntil(LocalDateTime.now().plus(3L, ChronoUnit.MINUTES));
+        
+        if (pScopes != null) {
+            c.setScopes(Utils.join(" ", pScopes, s -> s.getName()));
+        }
 
         return this.getRepository().save(c);
     }

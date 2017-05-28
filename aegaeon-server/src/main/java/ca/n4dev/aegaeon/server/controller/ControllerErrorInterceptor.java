@@ -28,9 +28,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
+import ca.n4dev.aegaeon.api.exception.OAuthPublicException;
+import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
-import ca.n4dev.aegaeon.server.exception.OAuthPublicException;
-import ca.n4dev.aegaeon.server.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.server.utils.UriBuilder;
 
 /**

@@ -19,23 +19,27 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.exception;
+package ca.n4dev.aegaeon.api.exception;
 
 /**
- * OAuthErrorType.java
+ * ServerException.java
  * 
- * TODO(rguillemette) Add description
+ * Generic Aegaeon server exception.
  *
  * @author by rguillemette
- * @since May 22, 2017
+ * @since May 17, 2017
  */
-public enum OAuthErrorType {
-    invalid_request,
-    unauthorized_client,
-    access_denied,
-    unsupported_response_type,
-    invalid_scope,
-    server_error,
-    temporarily_unavailable
-    ;
+public class ServerException extends RuntimeException {
+
+    private static final long serialVersionUID = 5417290794084341835L;
+
+    public ServerException() {}
+    
+    public ServerException(Throwable pThrowable) {
+        super(pThrowable);
+    }
+    
+    public ServerException(String pMessage) {
+        super(pMessage);
+    }
 }

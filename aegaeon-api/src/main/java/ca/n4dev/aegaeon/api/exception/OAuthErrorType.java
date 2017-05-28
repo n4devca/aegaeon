@@ -19,29 +19,23 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.utils;
-
-import ca.n4dev.aegaeon.api.exception.ServerException;
+package ca.n4dev.aegaeon.api.exception;
 
 /**
- * Assert.java
+ * OAuthErrorType.java
  * 
  * TODO(rguillemette) Add description
  *
  * @author by rguillemette
- * @since May 17, 2017
+ * @since May 22, 2017
  */
-public class Assert {
-
-    public static void notNull(Object pObj, String pMessage) {
-        if (pObj == null) {
-            throw new ServerException(pMessage);
-        }
-    }
-    
-    public static void notEmpty(String pObj, String pMessage) {
-        if (pObj == null || pObj.isEmpty()) {
-            throw new ServerException(pMessage);
-        }
-    }
+public enum OAuthErrorType {
+    invalid_request,
+    unauthorized_client,
+    access_denied,
+    unsupported_response_type,
+    invalid_scope,
+    server_error,
+    temporarily_unavailable
+    ;
 }

@@ -23,7 +23,7 @@
                         <input type="hidden" name="client_id" th:value="${client_id}" />
                         <input type="hidden" name="redirection_url" th:value="${redirection_url}" />
                         <input type="hidden" name="state" th:value="${state}" />
-                        <input type="hidden" name="scope" th:value="${#strings.arrayJoin(scope,',')}" />
+                        <input type="hidden" name="scope" th:value="${scopes}" />
                         <input type="hidden" name="response_type" th:value="${response_type}" />
                         
                         

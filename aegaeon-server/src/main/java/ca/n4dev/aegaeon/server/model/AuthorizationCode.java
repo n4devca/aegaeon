@@ -57,6 +57,8 @@ public class AuthorizationCode extends BaseEntity {
     
     private LocalDateTime validUntil;
     
+    private String scopes;
+    
     /**
      * Default no-args constructor.
      */
@@ -130,6 +132,20 @@ public class AuthorizationCode extends BaseEntity {
      */
     public Long getUserId() {
         return userId;
+    }
+
+    /**
+     * @return the scopes
+     */
+    public String getScopes() {
+        return scopes;
+    }
+
+    /**
+     * @param pScopes the scopes to set
+     */
+    public void setScopes(String pScopes) {
+        scopes = pScopes;
     }
     
     

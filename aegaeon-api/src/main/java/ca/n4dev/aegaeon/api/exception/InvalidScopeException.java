@@ -19,29 +19,46 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.utils;
+package ca.n4dev.aegaeon.api.exception;
 
-import ca.n4dev.aegaeon.api.exception.ServerException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Assert.java
+ * InvalidScopeException.java
  * 
- * TODO(rguillemette) Add description
+ * Throwed when one or many scope are invalid.
  *
  * @author by rguillemette
- * @since May 17, 2017
+ * @since May 28, 2017
  */
-public class Assert {
+public class InvalidScopeException extends ServerException {
 
-    public static void notNull(Object pObj, String pMessage) {
-        if (pObj == null) {
-            throw new ServerException(pMessage);
-        }
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -3951149025139631227L;
+
+    private List<String> invalidScopes = new ArrayList<>();
+
+    /**
+     * @return the invalidScopes
+     */
+    public List<String> getInvalidScopes() {
+        return invalidScopes;
+    }
+
+    /**
+     * @param pInvalidScopes the invalidScopes to set
+     */
+    public void setInvalidScopes(List<String> pInvalidScopes) {
+        invalidScopes = pInvalidScopes;
     }
     
-    public static void notEmpty(String pObj, String pMessage) {
-        if (pObj == null || pObj.isEmpty()) {
-            throw new ServerException(pMessage);
-        }
+    /**
+     * @param pInvalidScopes the invalidScope to add
+     */
+    public void addInvalidScope(String pInvalidScope) {
+        invalidScopes.add(pInvalidScope);
     }
 }
