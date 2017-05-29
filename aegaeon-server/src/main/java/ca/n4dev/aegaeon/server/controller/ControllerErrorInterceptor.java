@@ -23,12 +23,16 @@ package ca.n4dev.aegaeon.server.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
-import ca.n4dev.aegaeon.api.exception.OAuthPublicException;
+import ca.n4dev.aegaeon.api.exception.OAuthPublicJsonException;
+import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
 import ca.n4dev.aegaeon.server.utils.UriBuilder;
@@ -54,8 +58,8 @@ public class ControllerErrorInterceptor {
      * @param pOAuthPublicException
      * @return
      */
-    @ExceptionHandler(OAuthPublicException.class)
-    public RedirectView oauthPublicException(final OAuthPublicException pOAuthPublicException) {
+    @ExceptionHandler(OAuthPublicRedirectionException.class)
+    public RedirectView oauthPublicException(final OAuthPublicRedirectionException pOAuthPublicException) {
         
         String url = UriBuilder.build(pOAuthPublicException.getRedirectUrl(), pOAuthPublicException);
         
@@ -86,6 +90,15 @@ public class ControllerErrorInterceptor {
         return mv;
     }
     
+    @ExceptionHandler(OAuthPublicJsonException.class)
+    @ResponseBody
+    public ResponseEntity<OAuthPublicJsonException> oauthPublicJsonException(
+                                    final OAuthPublicJsonException pOAuthPublicJsonException) {
+        
+        return new ResponseEntity<OAuthPublicJsonException>(pOAuthPublicJsonException, 
+                                                            HttpStatus.BAD_REQUEST);
+    }
+    
     @ExceptionHandler(Throwable.class)
     public ModelAndView exception(final Throwable pThrowable) {
         LOGGER.error("Generic Exception", pThrowable);
@@ -99,4 +112,5 @@ public class ControllerErrorInterceptor {
         
         return mv;
     }
+    
 }

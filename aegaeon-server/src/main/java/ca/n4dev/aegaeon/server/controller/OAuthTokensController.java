@@ -30,14 +30,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 
 import ca.n4dev.aegaeon.api.exception.OAuthErrorType;
-import ca.n4dev.aegaeon.api.exception.OAuthPublicException;
+import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
@@ -46,6 +48,7 @@ import ca.n4dev.aegaeon.server.model.AuthorizationCode;
 import ca.n4dev.aegaeon.server.model.Client;
 import ca.n4dev.aegaeon.server.model.ClientType;
 import ca.n4dev.aegaeon.server.model.Scope;
+import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
 import ca.n4dev.aegaeon.server.service.AccessTokenService;
 import ca.n4dev.aegaeon.server.service.AuthorizationCodeService;
 import ca.n4dev.aegaeon.server.service.ClientService;
@@ -104,24 +107,71 @@ public class OAuthTokensController extends BaseController {
                     @RequestParam(value = "grant_type", required = false) String pGrantType,
                     @RequestParam(value = "code", required = false) String pCode,
                     @RequestParam(value = "redirect_uri", required = false) String pRedirectUri,
-                    @RequestParam(value = "client_id", required = false) String pClientPublicId) {
+                    @RequestParam(value = "client_id", required = false) String pClientPublicId,
+                    @RequestParam(value = "scope", required = false) String pScope, 
+                    Authentication pAuthentication) {
+        
+
+        if (AuthorizationGrant.is(pGrantType, AuthorizationGrant.AUTHORIZATIONCODE)) {
+            return authorizationCodeResponse(pCode, pRedirectUri, pClientPublicId);
+        } else if (AuthorizationGrant.is(pGrantType, AuthorizationGrant.CLIENTCREDENTIALS)) {
+            return clientCredentialResponse(pScope, pAuthentication);
+        } else {
+            throw new OauthRestrictedException(AuthorizationGrant.AUTHORIZATIONCODE, 
+                    OAuthErrorType.invalid_request, 
+                    pClientPublicId, 
+                    pRedirectUri,
+                    "Wrong grant_type.");
+        }
+    }
+    
+    private ResponseEntity<TokenResponse> clientCredentialResponse(String pScope, Authentication pAuthentication) {
+        
+        SpringAuthUserDetails auth = (SpringAuthUserDetails) pAuthentication.getPrincipal();
+        
+        // Load client 
+        Client client = this.clientService.findById(auth.getId());
+        
+        if (client == null) {
+            throw new OauthRestrictedException(AuthorizationGrant.AUTHORIZATIONCODE, 
+                    OAuthErrorType.invalid_request, 
+                    auth.getUsername(), 
+                    null,
+                    "Invalid client or incorrect public id.");
+        }
+        
+        // Did we set this client to use this flow
+        if (!client.getClientType().is(ClientType.CODE_CLIENT_CREDENTIALS)) {
+            throw new OAuthPublicRedirectionException(AuthorizationGrant.CLIENTCREDENTIALS, 
+                                           OAuthErrorType.unauthorized_client, 
+                                           client.getRedirections().get(0).getUrl());
+        }
+        
+        
+        
+        return null;
+    }
+    
+    /**
+     * Check and build an authorization code response.
+     * @param pGrantType
+     * @param pCode
+     * @param pRedirectUri
+     * @param pClientPublicId
+     * @return
+     */
+    private ResponseEntity<TokenResponse> authorizationCodeResponse(
+                                           String pCode,
+                                           String pRedirectUri,
+                                           String pClientPublicId) {
         
         // Required
-        if (Utils.areOneEmpty(pGrantType, pCode, pRedirectUri, pClientPublicId)) {
+        if (Utils.areOneEmpty(pCode, pRedirectUri, pClientPublicId)) {
             throw new OauthRestrictedException(AuthorizationGrant.AUTHORIZATIONCODE, 
                                                OAuthErrorType.invalid_request, 
                                                pClientPublicId, 
                                                pRedirectUri,
                                                "One parameter is empty");
-        }
-        
-        // Make sure it is a auth_code request
-        if (!AuthorizationGrant.is(pGrantType, AuthorizationGrant.AUTHORIZATIONCODE)) {
-            throw new OauthRestrictedException(AuthorizationGrant.AUTHORIZATIONCODE, 
-                    OAuthErrorType.invalid_request, 
-                    pClientPublicId, 
-                    pRedirectUri,
-                    "Invalid grant type. Must be authorization_code.");
         }
         
         // Load client 
@@ -145,13 +195,13 @@ public class OAuthTokensController extends BaseController {
         
         // Did we set this client to use this flow
         if (!client.getClientType().is(ClientType.CODE_AUTH_CODE)) {
-            throw new OAuthPublicException(AuthorizationGrant.AUTHORIZATIONCODE, OAuthErrorType.unauthorized_client, pRedirectUri);
+            throw new OAuthPublicRedirectionException(AuthorizationGrant.AUTHORIZATIONCODE, OAuthErrorType.unauthorized_client, pRedirectUri);
         }
         
         // Ok, check the code now
         AuthorizationCode authCode = this.authorizationCodeService.findByCode(pCode);
         if (authCode == null || !Utils.isStillValid(authCode.getValidUntil())) {
-            throw new OAuthPublicException(AuthorizationGrant.AUTHORIZATIONCODE, OAuthErrorType.access_denied, pRedirectUri);
+            throw new OAuthPublicRedirectionException(AuthorizationGrant.AUTHORIZATIONCODE, OAuthErrorType.access_denied, pRedirectUri);
         }
         
         
@@ -175,5 +225,4 @@ public class OAuthTokensController extends BaseController {
         
         return new ResponseEntity<TokenResponse>(t, HttpStatus.OK);
     }
-    
 }

@@ -24,7 +24,7 @@ package ca.n4dev.aegaeon.api.exception;
 import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
 
 /**
- * OAuthPublicException.java
+ * OAuthPublicRedirectionException.java
  * 
  * OAuth error throwed by the token or authorize endpoint.
  * Public and mostly shown to client by redirecting to client url.
@@ -34,7 +34,7 @@ import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
  * @author by rguillemette
  * @since May 22, 2017
  */
-public class OAuthPublicException extends BaseOAuthException {
+public class OAuthPublicRedirectionException extends BaseOAuthException {
 
     private static final long serialVersionUID = -8734236117353192521L;
 
@@ -44,7 +44,7 @@ public class OAuthPublicException extends BaseOAuthException {
      * Create an OAuthServerException with an error code.
      * @param pError The error code.
      */
-    public OAuthPublicException(AuthorizationGrant pGrantType, OAuthErrorType pError, String pRedirectUrl) {
+    public OAuthPublicRedirectionException(AuthorizationGrant pGrantType, OAuthErrorType pError, String pRedirectUrl) {
         super(pGrantType, pError);
         setRedirectUrl(pRedirectUrl);
     }

@@ -39,7 +39,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import ca.n4dev.aegaeon.api.exception.InvalidScopeException;
 import ca.n4dev.aegaeon.api.exception.OAuthErrorType;
-import ca.n4dev.aegaeon.api.exception.OAuthPublicException;
+import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
@@ -112,7 +112,7 @@ public class OAuthAuthorizationController {
         
         // Test method and param
         if (pRequestMethod != RequestMethod.GET && pRequestMethod != RequestMethod.POST) {
-            throw new OAuthPublicException(AuthorizationGrant.from(pResponseType), 
+            throw new OAuthPublicRedirectionException(AuthorizationGrant.from(pResponseType), 
                                            OAuthErrorType.invalid_request, 
                                            pRedirectionUrl);
         }
@@ -123,7 +123,7 @@ public class OAuthAuthorizationController {
             scopes = this.scopeService.findScopeFromString(pScope);
         } catch (InvalidScopeException scex) {
             
-            throw new OAuthPublicException(AuthorizationGrant.from(pResponseType), 
+            throw new OAuthPublicRedirectionException(AuthorizationGrant.from(pResponseType), 
                     OAuthErrorType.invalid_scope, 
                     pRedirectionUrl);
         }

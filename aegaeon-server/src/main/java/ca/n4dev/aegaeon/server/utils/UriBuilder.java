@@ -26,7 +26,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import ca.n4dev.aegaeon.api.exception.OAuthPublicException;
+import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
 
 /**
@@ -52,7 +52,7 @@ public class UriBuilder {
         return build(pUrl, params);
     }
     
-    public static String build(String pUrl, OAuthPublicException pOAuthPublicException) {
+    public static String build(String pUrl, OAuthPublicRedirectionException pOAuthPublicException) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
         
         append(params, "state", pOAuthPublicException.getState());

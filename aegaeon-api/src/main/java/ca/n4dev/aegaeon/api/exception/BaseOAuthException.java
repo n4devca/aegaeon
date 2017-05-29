@@ -21,6 +21,7 @@
  */
 package ca.n4dev.aegaeon.api.exception;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
@@ -39,6 +40,7 @@ public abstract class BaseOAuthException extends ServerException {
 
     protected OAuthErrorType error;
     
+    @JsonIgnore
     protected AuthorizationGrant grantType;
     
     @JsonProperty("error_description")
@@ -47,8 +49,10 @@ public abstract class BaseOAuthException extends ServerException {
     @JsonProperty("error_uri")
     protected String errorUri;
     
+    @JsonIgnore
     protected String redirectUrl;
     
+    @JsonIgnore
     protected String clientPublicId;
     
     public BaseOAuthException(AuthorizationGrant pGrantType, OAuthErrorType pError) {

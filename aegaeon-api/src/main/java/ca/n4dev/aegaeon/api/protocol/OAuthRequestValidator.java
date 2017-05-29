@@ -21,7 +21,7 @@
  */
 package ca.n4dev.aegaeon.api.protocol;
 
-import ca.n4dev.aegaeon.api.exception.OAuthPublicException;
+import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
 
 /**
@@ -46,11 +46,11 @@ public interface OAuthRequestValidator {
      * @param pRedirectionUrl The requested redirect url.
      * @param pState The client state.
      * @throws OauthRestrictedException When a condition does not validate and must not be communicated to the client.
-     * @throws OAuthPublicException When a condition does not validate and must be communicated to the client (using redirection).
+     * @throws OAuthPublicRedirectionException When a condition does not validate and must be communicated to the client (using redirection).
      */
     void validate(String pResponseType,
                      String pClientPublicId,
                      String[] pScope,
                      String pRedirectionUrl,
-                     String pState) throws OauthRestrictedException, OAuthPublicException;
+                     String pState) throws OauthRestrictedException, OAuthPublicRedirectionException;
 }
