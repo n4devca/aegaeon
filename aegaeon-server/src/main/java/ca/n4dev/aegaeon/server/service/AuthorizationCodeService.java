@@ -28,7 +28,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 import ca.n4dev.aegaeon.server.model.AuthorizationCode;
 import ca.n4dev.aegaeon.server.model.Client;
@@ -38,6 +37,7 @@ import ca.n4dev.aegaeon.server.repository.AuthorizationCodeRepository;
 import ca.n4dev.aegaeon.server.repository.ClientRepository;
 import ca.n4dev.aegaeon.server.repository.UserRepository;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
+import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**
@@ -82,14 +82,14 @@ public class AuthorizationCodeService extends BaseService<AuthorizationCode, Aut
     }
     
     @Transactional
-    public AuthorizationCode createCode(Long pUserId, String pPublicClientId, List<Scope> pScopes) {
+    public AuthorizationCode createCode(Long pUserId, String pPublicClientId, List<Scope> pScopes, String pRedirectUrl) {
         
         
         
         User user = this.userRepository.findOne(pUserId);
         Client client = this.clientRepository.findByPublicId(pPublicClientId);
         
-        return createCode(user, client, pScopes);
+        return createCode(user, client, pScopes, pRedirectUrl);
     }
     
     
@@ -100,15 +100,17 @@ public class AuthorizationCodeService extends BaseService<AuthorizationCode, Aut
      * @return A code or null.
      */
     @Transactional
-    public AuthorizationCode createCode(User pUser, Client pClient, List<Scope> pScopes) {
+    public AuthorizationCode createCode(User pUser, Client pClient, List<Scope> pScopes, String pRedirectUrl) {
         Assert.notNull(pUser, "A code cannot be created without a user");
         Assert.notNull(pClient, "A code cannot be created without a client");
+        Assert.notEmpty(pRedirectUrl, "A code cannot be created without a redirection url");
 
         AuthorizationCode c = new AuthorizationCode();
         c.setClient(pClient);
         c.setUser(pUser);
         c.setCode(this.tokenFactory.uniqueCode());
         c.setValidUntil(LocalDateTime.now().plus(3L, ChronoUnit.MINUTES));
+        c.setRedirectUrl(pRedirectUrl);
         
         if (pScopes != null) {
             c.setScopes(Utils.join(" ", pScopes, s -> s.getName()));

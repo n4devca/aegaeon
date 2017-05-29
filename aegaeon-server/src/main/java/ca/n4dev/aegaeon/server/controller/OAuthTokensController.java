@@ -36,9 +36,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.ModelAndView;
 
+import ca.n4dev.aegaeon.api.exception.InvalidScopeException;
 import ca.n4dev.aegaeon.api.exception.OAuthErrorType;
+import ca.n4dev.aegaeon.api.exception.OAuthPublicJsonException;
 import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
@@ -58,7 +59,7 @@ import ca.n4dev.aegaeon.server.utils.Utils;
 /**
  * OAuthTokensController.java
  * 
- * TODO(rguillemette) Add description
+ * Controller managing /token endpoint and answering to auth_code and client_cred request.
  *
  * @author by rguillemette
  * @since May 9, 2017
@@ -133,7 +134,7 @@ public class OAuthTokensController extends BaseController {
         Client client = this.clientService.findById(auth.getId());
         
         if (client == null) {
-            throw new OauthRestrictedException(AuthorizationGrant.AUTHORIZATIONCODE, 
+            throw new OauthRestrictedException(AuthorizationGrant.CLIENTCREDENTIALS, 
                     OAuthErrorType.invalid_request, 
                     auth.getUsername(), 
                     null,
@@ -142,14 +143,23 @@ public class OAuthTokensController extends BaseController {
         
         // Did we set this client to use this flow
         if (!client.getClientType().is(ClientType.CODE_CLIENT_CREDENTIALS)) {
-            throw new OAuthPublicRedirectionException(AuthorizationGrant.CLIENTCREDENTIALS, 
-                                           OAuthErrorType.unauthorized_client, 
-                                           client.getRedirections().get(0).getUrl());
+            throw new OAuthPublicJsonException(AuthorizationGrant.CLIENTCREDENTIALS, 
+                                               OAuthErrorType.unsupported_response_type);
         }
         
-        
-        
-        return null;
+        try {
+            List<Scope> scopes = this.scopeService.findScopeFromString(pScope);
+            AccessToken accessToken = this.accessTokenService.createClientAccessToken(client, scopes);
+
+            long expiresIn = ChronoUnit.SECONDS.between(accessToken.getValidUntil(), LocalDateTime.now());
+            
+            TokenResponse response = TokenResponse.bearer(accessToken.getToken(), String.valueOf(expiresIn), accessToken.getScopes());
+            
+            return new ResponseEntity<TokenResponse>(response, HttpStatus.OK);
+            
+        } catch (InvalidScopeException e) {
+            throw new OAuthPublicJsonException(AuthorizationGrant.CLIENTCREDENTIALS, OAuthErrorType.invalid_scope);
+        } 
     }
     
     /**

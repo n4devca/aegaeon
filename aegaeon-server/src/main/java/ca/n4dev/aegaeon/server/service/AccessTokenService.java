@@ -28,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ca.n4dev.aegaeon.api.exception.ServerException;
+import ca.n4dev.aegaeon.api.token.OAuthUser;
 import ca.n4dev.aegaeon.api.token.Token;
 import ca.n4dev.aegaeon.server.model.AccessToken;
 import ca.n4dev.aegaeon.server.model.Client;
@@ -113,7 +115,76 @@ public class AccessTokenService extends BaseService<AccessToken, AccessTokenRepo
             return this.save(at);
         } catch (Exception e) {
             // TODO(RG) : throw something meaningful
-            throw new RuntimeException();
+            throw new ServerException(e);
         }
+    }
+    
+    @Transactional
+    public AccessToken createClientAccessToken(Client pClient, List<Scope> pScopes) {
+        Assert.notNull(pClient, "This function need a client");
+        
+        try {
+            Token token = this.tokenFactory.createToken(new ClientOAuthUser(pClient), pClient, pClient.getAccessTokenSeconds(), ChronoUnit.SECONDS);
+            
+            AccessToken at = new AccessToken();
+            at.setClient(pClient);
+            //at.setUser(pUser);
+            
+            at.setToken(token.getValue());
+            at.setValidUntil(token.getValidUntil());
+            
+            if (pScopes != null) {
+                at.setScopes(Utils.join(" ", pScopes, s -> s.getName()));
+            }
+            
+            return this.save(at);
+        } catch (Exception e) {
+            // TODO(RG) : throw something meaningful
+            throw new ServerException(e);
+        }
+    }
+    
+    private static final class ClientOAuthUser implements OAuthUser {
+
+        private Client client;
+        
+        private ClientOAuthUser(Client pClient) {
+            this.client = pClient;
+        }
+        
+        /* (non-Javadoc)
+         * @see ca.n4dev.aegaeon.api.token.OAuthUser#getId()
+         */
+        @Override
+        public Long getId() {
+            return this.client.getId();
+        }
+
+        /* (non-Javadoc)
+         * @see ca.n4dev.aegaeon.api.token.OAuthUser#getUniqueIdentifier()
+         */
+        @Override
+        public String getUniqueIdentifier() {
+            // TODO Auto-generated method stub
+            return this.client.getPublicId();
+        }
+
+        /* (non-Javadoc)
+         * @see ca.n4dev.aegaeon.api.token.OAuthUser#getEmail()
+         */
+        @Override
+        public String getEmail() {
+            // TODO Auto-generated method stub
+            return this.client.getPublicId();
+        }
+
+        /* (non-Javadoc)
+         * @see ca.n4dev.aegaeon.api.token.OAuthUser#getName()
+         */
+        @Override
+        public String getName() {
+            return this.client.getName();
+        }
+        
     }
 }

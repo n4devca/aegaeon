@@ -59,16 +59,19 @@ public class AuthorizationCode extends BaseEntity {
     
     private String scopes;
     
+    private String redirectUrl;
+    
     /**
      * Default no-args constructor.
      */
     public AuthorizationCode() {}
     
-    public AuthorizationCode(String pCode, User pUser, Client pClient) {
+    public AuthorizationCode(String pCode, User pUser, Client pClient, String pRedirectUrl) {
         this.code = pCode;
         this.user = pUser;
         this.client = pClient;
         this.validUntil = LocalDateTime.now().plusMinutes(3L); // default 3 minutes
+        this.redirectUrl = pRedirectUrl;
     }
 
     /**
@@ -146,6 +149,20 @@ public class AuthorizationCode extends BaseEntity {
      */
     public void setScopes(String pScopes) {
         scopes = pScopes;
+    }
+
+    /**
+     * @return the redirectUrl
+     */
+    public String getRedirectUrl() {
+        return redirectUrl;
+    }
+
+    /**
+     * @param pRedirectUrl the redirectUrl to set
+     */
+    public void setRedirectUrl(String pRedirectUrl) {
+        redirectUrl = pRedirectUrl;
     }
     
     

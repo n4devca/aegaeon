@@ -23,7 +23,6 @@ package ca.n4dev.aegaeon.server.controller;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -203,7 +202,7 @@ public class OAuthAuthorizationController {
             
             // Create auth code
             SpringAuthUserDetails user = (SpringAuthUserDetails) pAuthentication.getPrincipal();
-            AuthorizationCode code = this.authorizationCodeService.createCode(user.getId(), pClientId, pScopes);
+            AuthorizationCode code = this.authorizationCodeService.createCode(user.getId(), pClientId, pScopes, pRedirectionUrl);
 
             // Returned values
             MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
@@ -215,6 +214,9 @@ public class OAuthAuthorizationController {
             
             return view;
             
+        } catch (ServerException se) {
+            // Rethrow, will be catch
+            throw se;    
         } catch (Exception e) {
             throw new ServerException(e);
         }
