@@ -57,4 +57,5 @@ public class UserAuthorizationService extends BaseService<UserAuthorization, Use
     public UserAuthorization findByUserIdAndClientId(Long pUserId, Long pClientId) {
         return this.getRepository().findByUserIdAndClientId(pUserId, pClientId);
     }
+    
 }

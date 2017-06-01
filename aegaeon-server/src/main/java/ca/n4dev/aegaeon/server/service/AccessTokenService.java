@@ -35,6 +35,7 @@ import ca.n4dev.aegaeon.server.model.AccessToken;
 import ca.n4dev.aegaeon.server.model.Client;
 import ca.n4dev.aegaeon.server.model.Scope;
 import ca.n4dev.aegaeon.server.model.User;
+import ca.n4dev.aegaeon.server.model.UserAuthorization;
 import ca.n4dev.aegaeon.server.repository.AccessTokenRepository;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
 import ca.n4dev.aegaeon.server.utils.Assert;
@@ -43,7 +44,7 @@ import ca.n4dev.aegaeon.server.utils.Utils;
 /**
  * AccessTokenService.java
  * 
- * TODO(rguillemette) Add description
+ * Service managing the creation of access token.
  *
  * @author by rguillemette
  * @since May 17, 2017
@@ -54,6 +55,7 @@ public class AccessTokenService extends BaseService<AccessToken, AccessTokenRepo
     private TokenFactory tokenFactory;
     private UserService userService;
     private ClientService clientService;
+    private UserAuthorizationService userAuthorizationService;
     
     /**
      * @param pRepository
@@ -62,12 +64,14 @@ public class AccessTokenService extends BaseService<AccessToken, AccessTokenRepo
     public AccessTokenService(AccessTokenRepository pRepository, 
                               TokenFactory pTokenFactory, 
                               UserService pUserService,
-                              ClientService pClientService) {
+                              ClientService pClientService,
+                              UserAuthorizationService pUserAuthorizationService) {
         
         super(pRepository);
         this.tokenFactory = pTokenFactory;
         this.userService = pUserService;
         this.clientService = pClientService;
+        this.userAuthorizationService = pUserAuthorizationService;
     }
 
     @Transactional
@@ -97,9 +101,17 @@ public class AccessTokenService extends BaseService<AccessToken, AccessTokenRepo
         Assert.notNull(pUser, "An access token cannot be created without a user");
         Assert.notNull(pClient, "An access token cannot be created without a client");
 
+        // Make sure the user has authorize this
+        UserAuthorization authorization = this.userAuthorizationService.findByUserIdAndClientId(pUser.getId(), pClient.getId());
+        Assert.notNull(authorization, "The user has not authorized this client.");
+
+        // Make sure the scopes are authorized
+        Assert.isTrue(isSameScope(Utils.explode(" ", authorization.getScopes(), s -> s), pScopes), 
+                      "The authorized scopes and the requested scopes are different.");
+        
         try {
-            Token token = this.tokenFactory.createToken(pUser, pClient, pClient.getAccessTokenSeconds(), ChronoUnit.SECONDS);
             
+            Token token = this.tokenFactory.createToken(pUser, pClient, pClient.getAccessTokenSeconds(), ChronoUnit.SECONDS);
             
             AccessToken at = new AccessToken();
             at.setClient(pClient);
@@ -123,6 +135,10 @@ public class AccessTokenService extends BaseService<AccessToken, AccessTokenRepo
     public AccessToken createClientAccessToken(Client pClient, List<Scope> pScopes) {
         Assert.notNull(pClient, "This function need a client");
         
+        // Compare authorized and requested scopes
+        Assert.isTrue(isSameScope(pClient.getScopesAsNameList(), pScopes), 
+                "The authorized scopes and the requested scopes are different.");
+        
         try {
             Token token = this.tokenFactory.createToken(new ClientOAuthUser(pClient), pClient, pClient.getAccessTokenSeconds(), ChronoUnit.SECONDS);
             
@@ -142,6 +158,29 @@ public class AccessTokenService extends BaseService<AccessToken, AccessTokenRepo
             // TODO(RG) : throw something meaningful
             throw new ServerException(e);
         }
+    }
+    
+    private boolean isSameScope(List<String> pAuthorizedScopes, List<Scope> pRequestedScopes) {
+        
+        boolean ok = false;
+        
+        for (Scope s : pRequestedScopes) {
+            ok = false;
+            
+            for (String us : pAuthorizedScopes) {
+                if (us.equalsIgnoreCase(s.getName())) {
+                    ok = true;
+                    break;
+                }
+            }
+            
+            // One scope is not authorized, return
+            if (!ok) {
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     private static final class ClientOAuthUser implements OAuthUser {

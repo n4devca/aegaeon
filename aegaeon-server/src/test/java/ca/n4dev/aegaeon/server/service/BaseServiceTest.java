@@ -21,38 +21,32 @@
  */
 package ca.n4dev.aegaeon.server.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
-import ca.n4dev.aegaeon.server.model.User;
-import ca.n4dev.aegaeon.server.repository.UserRepository;
+import ca.n4dev.aegaeon.server.config.JndiDatasourceBuilder;
 
 /**
- * UserService.java
+ * BaseServiceTest.java
  * 
- * User service.
+ * TODO(rguillemette) Add description
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since May 30, 2017
  */
-@Service
-public class UserService extends BaseService<User, UserRepository> {
-
-    /**
-     * Default constructor.
-     * @param pRepository The user repo.
-     */
-    @Autowired
-    public UserService(UserRepository pRepository) {
-        super(pRepository);
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Transactional
+@ActiveProfiles(profiles = "test")
+public abstract class BaseServiceTest {
+    
+    @BeforeClass
+    public static void ds() throws Exception {
+        //JndiDatasourceBuilder.create();
     }
-
-    /**
-     * Find a user by its username.
-     * @param pUserName The username
-     * @return A user or null.
-     */
-    public User findByUserName(String pUserName) {
-        return getRepository().findByUserName(pUserName);
-    }
+    
 }
