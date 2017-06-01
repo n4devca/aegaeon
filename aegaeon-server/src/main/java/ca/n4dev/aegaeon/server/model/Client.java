@@ -21,6 +21,8 @@
  */
 package ca.n4dev.aegaeon.server.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -194,6 +196,20 @@ public class Client extends BaseEntity implements OAuthClient {
         scopes = pScopes;
     }
 
+    /**
+     * @return the scopes
+     */
+    public List<String> getScopesAsNameList() {
+        if (scopes != null) {
+            List<String> strs = new ArrayList<>();
+            scopes.forEach(s -> strs.add(s.getScope().getName()));
+            
+            return strs;
+        }
+        
+        return Collections.emptyList();
+    }
+    
     /**
      * @return the providerName
      */

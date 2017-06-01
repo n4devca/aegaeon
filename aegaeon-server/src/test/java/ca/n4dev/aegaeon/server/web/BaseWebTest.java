@@ -19,40 +19,32 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.service;
+package ca.n4dev.aegaeon.server.web;
 
+import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import ca.n4dev.aegaeon.server.model.User;
-import ca.n4dev.aegaeon.server.repository.UserRepository;
+import ca.n4dev.aegaeon.server.config.JndiDatasourceBuilder;
 
 /**
- * UserService.java
+ * BaseWebTest.java
  * 
- * User service.
+ * TODO(rguillemette) Add description
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since May 29, 2017
  */
-@Service
-public class UserService extends BaseService<User, UserRepository> {
-
-    /**
-     * Default constructor.
-     * @param pRepository The user repo.
-     */
-    @Autowired
-    public UserService(UserRepository pRepository) {
-        super(pRepository);
-    }
-
-    /**
-     * Find a user by its username.
-     * @param pUserName The username
-     * @return A user or null.
-     */
-    public User findByUserName(String pUserName) {
-        return getRepository().findByUserName(pUserName);
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = WebEnvironment.MOCK)
+public abstract class BaseWebTest {
+    
+    @BeforeClass
+    public static void ds() throws Exception {
+        JndiDatasourceBuilder.create();
     }
 }

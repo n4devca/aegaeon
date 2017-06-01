@@ -166,7 +166,7 @@ public class OAuthAuthorizationController {
             Client client = this.clientService.findByPublicId(pClientPublicId);
             SpringAuthUserDetails userDetails = (SpringAuthUserDetails) pAuthentication.getPrincipal();
             
-            UserAuthorization ua = this.userAuthorizationService.save(new UserAuthorization(userDetails.getId(), client.getId()));
+            UserAuthorization ua = this.userAuthorizationService.save(new UserAuthorization(userDetails.getId(), client.getId(), pScope));
             
             if (ua == null) {
                 throw new RuntimeException("Unable to create ua.");

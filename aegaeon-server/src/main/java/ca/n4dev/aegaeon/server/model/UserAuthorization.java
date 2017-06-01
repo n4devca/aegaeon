@@ -46,6 +46,8 @@ public class UserAuthorization extends BaseEntity {
     @JoinColumn(name = "client_id")
     private Client client;
     
+    private String scopes;
+    
     /**
      * Default Constructor.
      */
@@ -53,22 +55,23 @@ public class UserAuthorization extends BaseEntity {
     
     /**
      * Build a user authorization.
-     * @param pUser
-     * @param pClient
+     * @param pUser The user
+     * @param pClient The client being authorized.
+     * @param pScopes Scope list as string split by space.
      */
-    public UserAuthorization(User pUser, Client pClient) {
+    public UserAuthorization(User pUser, Client pClient, String pScopes) {
         this.user = pUser;
         this.client = pClient;
     }
     
     /**
      * Build a user authorization.
-     * @param pUser
-     * @param pClient
+     * @param pUserId The user's id
+     * @param pClient The client's id being authorized.
+     * @param pScopes Scope list as string split by space.
      */
-    public UserAuthorization(Long pUserId, Long pClientId) {
-        this.user = new User(pUserId);
-        this.client = new Client(pClientId);
+    public UserAuthorization(Long pUserId, Long pClientId, String pScopes) {
+        this(new User(pUserId), new Client(pClientId), pScopes);
     }
 
     /**
@@ -97,6 +100,20 @@ public class UserAuthorization extends BaseEntity {
      */
     public void setClient(Client pClient) {
         client = pClient;
+    }
+
+    /**
+     * @return the scopes
+     */
+    public String getScopes() {
+        return scopes;
+    }
+
+    /**
+     * @param pScopes the scopes to set
+     */
+    public void setScopes(String pScopes) {
+        scopes = pScopes;
     }
     
     

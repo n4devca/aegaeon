@@ -44,4 +44,16 @@ public class Assert {
             throw new ServerException(pMessage);
         }
     }
+    
+    public static void isTrue(Boolean pValue, String pMessage) {
+        if (pValue == null || !pValue) {
+            throw new ServerException(pMessage);
+        }
+    }
+    
+    public static void isFalse(Boolean pValue, String pMessage) {
+        if (pValue == null || pValue) {
+            throw new ServerException(pMessage);
+        }
+    }
 }

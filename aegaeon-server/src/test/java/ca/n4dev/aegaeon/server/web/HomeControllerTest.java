@@ -19,40 +19,34 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.service;
+package ca.n4dev.aegaeon.server.web;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.junit.Before;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import ca.n4dev.aegaeon.server.model.User;
-import ca.n4dev.aegaeon.server.repository.UserRepository;
+import ca.n4dev.aegaeon.server.controller.OAuthAuthorizationController;
 
 /**
- * UserService.java
+ * HomeControllerTest.java
  * 
- * User service.
+ * TODO(rguillemette) Add description
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since May 30, 2017
  */
-@Service
-public class UserService extends BaseService<User, UserRepository> {
+@AutoConfigureMockMvc
+public class HomeControllerTest extends BaseWebTest {
 
-    /**
-     * Default constructor.
-     * @param pRepository The user repo.
-     */
-    @Autowired
-    public UserService(UserRepository pRepository) {
-        super(pRepository);
+private MockMvc mockMvc;
+    
+    @Before
+    public void init() {
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(OAuthAuthorizationController.class)
+                .build();
     }
-
-    /**
-     * Find a user by its username.
-     * @param pUserName The username
-     * @return A user or null.
-     */
-    public User findByUserName(String pUserName) {
-        return getRepository().findByUserName(pUserName);
-    }
+    
+    
 }
