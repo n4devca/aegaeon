@@ -31,11 +31,11 @@ import org.springframework.transaction.annotation.Transactional;
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.token.OAuthUser;
 import ca.n4dev.aegaeon.api.token.Token;
+import ca.n4dev.aegaeon.api.token.TokenType;
 import ca.n4dev.aegaeon.server.model.AccessToken;
 import ca.n4dev.aegaeon.server.model.Client;
 import ca.n4dev.aegaeon.server.model.Scope;
 import ca.n4dev.aegaeon.server.model.User;
-import ca.n4dev.aegaeon.server.model.UserAuthorization;
 import ca.n4dev.aegaeon.server.repository.AccessTokenRepository;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
 import ca.n4dev.aegaeon.server.utils.Assert;
@@ -50,13 +50,8 @@ import ca.n4dev.aegaeon.server.utils.Utils;
  * @since May 17, 2017
  */
 @Service
-public class AccessTokenService extends BaseService<AccessToken, AccessTokenRepository> {
+public class AccessTokenService extends BaseTokenService<AccessToken, AccessTokenRepository> {
 
-    private TokenFactory tokenFactory;
-    private UserService userService;
-    private ClientService clientService;
-    private UserAuthorizationService userAuthorizationService;
-    
     /**
      * @param pRepository
      */
@@ -67,11 +62,7 @@ public class AccessTokenService extends BaseService<AccessToken, AccessTokenRepo
                               ClientService pClientService,
                               UserAuthorizationService pUserAuthorizationService) {
         
-        super(pRepository);
-        this.tokenFactory = pTokenFactory;
-        this.userService = pUserService;
-        this.clientService = pClientService;
-        this.userAuthorizationService = pUserAuthorizationService;
+        super(pRepository, pTokenFactory, pUserService, pClientService, pUserAuthorizationService);
     }
 
     @Transactional
@@ -98,16 +89,8 @@ public class AccessTokenService extends BaseService<AccessToken, AccessTokenRepo
     @Transactional
     public AccessToken createAccessToken(User pUser, Client pClient, List<Scope> pScopes) {
         
-        Assert.notNull(pUser, "An access token cannot be created without a user");
-        Assert.notNull(pClient, "An access token cannot be created without a client");
-
-        // Make sure the user has authorize this
-        UserAuthorization authorization = this.userAuthorizationService.findByUserIdAndClientId(pUser.getId(), pClient.getId());
-        Assert.notNull(authorization, "The user has not authorized this client.");
-
-        // Make sure the scopes are authorized
-        Assert.isTrue(isSameScope(Utils.explode(" ", authorization.getScopes(), s -> s), pScopes), 
-                      "The authorized scopes and the requested scopes are different.");
+        // Validate the client, user and authorizations
+        validate(pUser, pClient, pScopes, TokenType.ACCESS_TOKEN);
         
         try {
             
@@ -160,28 +143,6 @@ public class AccessTokenService extends BaseService<AccessToken, AccessTokenRepo
         }
     }
     
-    private boolean isSameScope(List<String> pAuthorizedScopes, List<Scope> pRequestedScopes) {
-        
-        boolean ok = false;
-        
-        for (Scope s : pRequestedScopes) {
-            ok = false;
-            
-            for (String us : pAuthorizedScopes) {
-                if (us.equalsIgnoreCase(s.getName())) {
-                    ok = true;
-                    break;
-                }
-            }
-            
-            // One scope is not authorized, return
-            if (!ok) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
     
     private static final class ClientOAuthUser implements OAuthUser {
 

@@ -21,7 +21,6 @@
  */
 package ca.n4dev.aegaeon.server.token;
 
-import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.HashMap;
 import java.util.List;
@@ -98,7 +97,7 @@ public class TokenFactory {
     public Token createToken(OAuthUser pOAuthUser, OAuthClient pOAuthClient, String pTokenProviderName, 
                              Long pTimeValue, TemporalUnit pTemporalUnit) throws Exception {
         
-        TokenProvider tp = this.tokenProviderHolder.get(pTokenProviderName);
+        TokenProvider tp = this.tokenProviderHolder.get(TokenProviderType.from(pTokenProviderName));
         
         return tp.createToken(pOAuthUser, 
                               pOAuthClient,
@@ -123,4 +122,5 @@ public class TokenFactory {
                 pTimeValue,
                 pTemporalUnit);
     }
+    
 }

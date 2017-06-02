@@ -51,6 +51,8 @@ public class RefreshToken extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "client_id")
     private Client client;
+    
+    private String scopes;
 
     /**
      * @return the token
@@ -106,6 +108,20 @@ public class RefreshToken extends BaseEntity {
      */
     public void setClient(Client pClient) {
         client = pClient;
+    }
+
+    /**
+     * @return the scopes
+     */
+    public String getScopes() {
+        return scopes;
+    }
+
+    /**
+     * @param pScopes the scopes to set
+     */
+    public void setScopes(String pScopes) {
+        scopes = pScopes;
     }
 
 }
