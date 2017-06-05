@@ -22,38 +22,40 @@
 package ca.n4dev.aegaeon.server.utils;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
+import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 
 /**
  * Assert.java
  * 
- * TODO(rguillemette) Add description
+ * Object used to check various condition and throw a ServerException 
+ * if the condition is not met.
  *
  * @author by rguillemette
  * @since May 17, 2017
  */
 public class Assert {
 
-    public static void notNull(Object pObj, String pMessage) {
+    public static void notNull(Object pObj, ServerExceptionCode pCode) {
         if (pObj == null) {
-            throw new ServerException(pMessage);
+            throw new ServerException(pCode);
         }
     }
     
-    public static void notEmpty(String pObj, String pMessage) {
+    public static void notEmpty(String pObj, ServerExceptionCode pCode) {
         if (pObj == null || pObj.isEmpty()) {
-            throw new ServerException(pMessage);
+            throw new ServerException(pCode);
         }
     }
     
-    public static void isTrue(Boolean pValue, String pMessage) {
+    public static void isTrue(Boolean pValue, ServerExceptionCode pCode) {
         if (pValue == null || !pValue) {
-            throw new ServerException(pMessage);
+            throw new ServerException(pCode);
         }
     }
     
-    public static void isFalse(Boolean pValue, String pMessage) {
+    public static void isFalse(Boolean pValue, ServerExceptionCode pCode) {
         if (pValue == null || pValue) {
-            throw new ServerException(pMessage);
+            throw new ServerException(pCode);
         }
     }
 }

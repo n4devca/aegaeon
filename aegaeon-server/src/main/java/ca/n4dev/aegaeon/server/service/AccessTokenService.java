@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
+import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.token.OAuthUser;
 import ca.n4dev.aegaeon.api.token.Token;
 import ca.n4dev.aegaeon.api.token.TokenType;
@@ -67,8 +68,8 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
 
     @Transactional
     public AccessToken createAccessToken(Long pUserId, String pClientPublicId, List<Scope> pScopes) {
-        Assert.notNull(pUserId, "This function need a user id");
-        Assert.notEmpty(pClientPublicId, "This function need a client");
+        Assert.notNull(pUserId, ServerExceptionCode.USER_EMPTY);
+        Assert.notEmpty(pClientPublicId, ServerExceptionCode.CLIENT_EMPTY);
         
         Client client = this.clientService.findByPublicId(pClientPublicId);
         User user = this.userService.findById(pUserId);
@@ -86,8 +87,7 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
      * @param pClient A client.
      * @return The saved token.
      */
-    @Transactional
-    public AccessToken createAccessToken(User pUser, Client pClient, List<Scope> pScopes) {
+    AccessToken createAccessToken(User pUser, Client pClient, List<Scope> pScopes) {
         
         // Validate the client, user and authorizations
         validate(pUser, pClient, pScopes, TokenType.ACCESS_TOKEN);
@@ -116,11 +116,11 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
     
     @Transactional
     public AccessToken createClientAccessToken(Client pClient, List<Scope> pScopes) {
-        Assert.notNull(pClient, "This function need a client");
+        Assert.notNull(pClient, ServerExceptionCode.CLIENT_EMPTY);
         
         // Compare authorized and requested scopes
-        Assert.isTrue(isSameScope(pClient.getScopesAsNameList(), pScopes), 
-                "The authorized scopes and the requested scopes are different.");
+        Assert.isTrue(isAuthorized(pClient.getScopesAsNameList(), pScopes), 
+                ServerExceptionCode.SCOPE_UNAUTHORIZED);
         
         try {
             Token token = this.tokenFactory.createToken(new ClientOAuthUser(pClient), pClient, pClient.getAccessTokenSeconds(), ChronoUnit.SECONDS);

@@ -116,5 +116,16 @@ public class UserAuthorization extends BaseEntity {
         scopes = pScopes;
     }
     
-    
+    /**
+     * Simple lookup to check if a scope is authorized.
+     * @param pScopeStr The scope name as string.
+     * @return true or false.
+     */
+    public boolean hasScope(String pScopeStr) {
+        if (this.scopes != null && this.scopes.contains(pScopeStr)) {
+            return true;
+        }
+        
+        return false;
+    }
 }

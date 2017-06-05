@@ -54,6 +54,7 @@ import ca.n4dev.aegaeon.server.service.AccessTokenService;
 import ca.n4dev.aegaeon.server.service.AuthorizationCodeService;
 import ca.n4dev.aegaeon.server.service.ClientService;
 import ca.n4dev.aegaeon.server.service.ScopeService;
+import ca.n4dev.aegaeon.server.service.TokenServicesFacade;
 import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**
@@ -74,8 +75,8 @@ public class OAuthTokensController extends BaseController {
     
     private ClientService clientService;
     private AuthorizationCodeService authorizationCodeService;
-    private AccessTokenService accessTokenService;
     private ScopeService scopeService;
+    private TokenServicesFacade tokenServicesFacade;
     
     /**
      * Default Constructor.
@@ -85,13 +86,13 @@ public class OAuthTokensController extends BaseController {
     @Autowired
     public OAuthTokensController(ClientService pClientService,
                                  AuthorizationCodeService pAuthorizationCodeService,
-                                 AccessTokenService pAccessTokenService,
+                                 TokenServicesFacade pTokenServicesFacade,
                                  ScopeService pScopeService) {
         
         this.clientService = pClientService;
         this.authorizationCodeService = pAuthorizationCodeService;
-        this.accessTokenService = pAccessTokenService;
         this.scopeService = pScopeService;
+        this.tokenServicesFacade = pTokenServicesFacade;
     }
    
     /**
@@ -116,7 +117,7 @@ public class OAuthTokensController extends BaseController {
         if (AuthorizationGrant.is(pGrantType, AuthorizationGrant.AUTHORIZATIONCODE)) {
             return authorizationCodeResponse(pCode, pRedirectUri, pClientPublicId);
         } else if (AuthorizationGrant.is(pGrantType, AuthorizationGrant.CLIENTCREDENTIALS)) {
-            return clientCredentialResponse(pScope, pAuthentication);
+            return clientCredentialResponse(pAuthentication, pScope, pRedirectUri);
         } else {
             throw new OauthRestrictedException(AuthorizationGrant.AUTHORIZATIONCODE, 
                     OAuthErrorType.invalid_request, 
@@ -126,7 +127,9 @@ public class OAuthTokensController extends BaseController {
         }
     }
     
-    private ResponseEntity<TokenResponse> clientCredentialResponse(String pScope, Authentication pAuthentication) {
+    private ResponseEntity<TokenResponse> clientCredentialResponse(Authentication pAuthentication,
+                                                                   String pScope,
+                                                                   String pRedirectUri) {
         
         SpringAuthUserDetails auth = (SpringAuthUserDetails) pAuthentication.getPrincipal();
         
@@ -149,14 +152,16 @@ public class OAuthTokensController extends BaseController {
         
         try {
             List<Scope> scopes = this.scopeService.findScopeFromString(pScope);
-            AccessToken accessToken = this.accessTokenService.createClientAccessToken(client, scopes);
+            
+            TokenResponse token = this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.AUTHORIZATIONCODE, 
+                    client.getPublicId(), 
+                    auth.getId(),
+                    scopes, 
+                    pRedirectUri);
 
-            long expiresIn = ChronoUnit.SECONDS.between(accessToken.getValidUntil(), LocalDateTime.now());
+            return new ResponseEntity<TokenResponse>(token, HttpStatus.OK);
             
-            TokenResponse response = TokenResponse.bearer(accessToken.getToken(), String.valueOf(expiresIn), accessToken.getScopes());
-            
-            return new ResponseEntity<TokenResponse>(response, HttpStatus.OK);
-            
+            // TODO(RG): catch serverexception and rethrow
         } catch (InvalidScopeException e) {
             throw new OAuthPublicJsonException(AuthorizationGrant.CLIENTCREDENTIALS, OAuthErrorType.invalid_scope);
         } 
@@ -214,25 +219,35 @@ public class OAuthTokensController extends BaseController {
             throw new OAuthPublicRedirectionException(AuthorizationGrant.AUTHORIZATIONCODE, OAuthErrorType.access_denied, pRedirectUri);
         }
         
-        
-        // Ok, good to go here, so create an access token and delete the auth code.
-        List<Scope> scopes = this.scopeService.findScopeFromString(authCode.getScopes());
-        AccessToken accessToken = this.accessTokenService.createAccessToken(authCode.getUserId(), pClientPublicId, scopes);
-        
-        try {
-            this.authorizationCodeService.delete(authCode);
-        } catch (Exception e) {
-            LOGGER.error("Unable to delete auth code", e);
+        // Make sure the redirection is the same than previously
+        if (!authCode.getRedirectUrl().equals(pRedirectUri)) {
+            throw new OauthRestrictedException(AuthorizationGrant.AUTHORIZATIONCODE, 
+                    OAuthErrorType.invalid_request, 
+                    pClientPublicId, 
+                    pRedirectUri,
+                    "Invalid redirect_uri.");
         }
         
-        long expiresIn = ChronoUnit.SECONDS.between(accessToken.getValidUntil(), LocalDateTime.now());
+        try {
+            // Ok, good to go here, so create an access token and delete the auth code.
+            List<Scope> scopes = this.scopeService.findScopeFromString(authCode.getScopes());
+            
+            TokenResponse token = this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.AUTHORIZATIONCODE, 
+                                                                               pClientPublicId, 
+                                                                               authCode.getUserId(), 
+                                                                               scopes, 
+                                                                               pRedirectUri);
+            
+            return new ResponseEntity<TokenResponse>(token, HttpStatus.OK);
+            
+        } finally {
+            // Delete the auth code in all situation
+            try {
+                this.authorizationCodeService.delete(authCode);
+            } catch (Exception e) {
+                LOGGER.error("Unable to delete auth code", e);
+            }
+        }
         
-        TokenResponse t = new TokenResponse();
-        t.setAccessToken(accessToken.getToken());
-        t.setTokenType("bearer");
-        t.setExpiresIn(String.valueOf(expiresIn));
-        
-        
-        return new ResponseEntity<TokenResponse>(t, HttpStatus.OK);
     }
 }

@@ -24,7 +24,7 @@ package ca.n4dev.aegaeon.api.exception;
 /**
  * ServerException.java
  * 
- * Generic Aegaeon server exception.
+ * Aegaeon server exception throwed by service during oauth operations.
  *
  * @author by rguillemette
  * @since May 17, 2017
@@ -33,13 +33,52 @@ public class ServerException extends RuntimeException {
 
     private static final long serialVersionUID = 5417290794084341835L;
 
-    public ServerException() {}
+    private ServerExceptionCode code;
+    
+    protected ServerException() {}
     
     public ServerException(Throwable pThrowable) {
         super(pThrowable);
+        this.code = ServerExceptionCode.UNEXPECTED_ERROR;
     }
     
-    public ServerException(String pMessage) {
+    public ServerException(ServerExceptionCode pCode) {
+        this.code = pCode;
+    }
+    
+    public ServerException(ServerExceptionCode pCode, String pMessage) {
         super(pMessage);
+        this.code = pCode;
+    }
+
+    /**
+     * @return the code
+     */
+    public ServerExceptionCode getCode() {
+        return code;
+    }
+
+    /**
+     * @param pCode the code to set
+     */
+    public void setCode(ServerExceptionCode pCode) {
+        code = pCode;
+    }
+    
+    /**
+     * Check if this ServerException is one of the code.
+     * @param pCode The ServerExceptionCode to check.
+     * @return true or false.
+     */
+    public boolean is(ServerExceptionCode... pCode) {
+        if (pCode != null) {
+            for (ServerExceptionCode c : pCode) {
+                if (c == this.code) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 }

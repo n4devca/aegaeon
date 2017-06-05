@@ -41,6 +41,7 @@ import ca.n4dev.aegaeon.api.exception.OAuthErrorType;
 import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.api.exception.ServerException;
+import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
 import ca.n4dev.aegaeon.server.model.AccessToken;
@@ -53,6 +54,7 @@ import ca.n4dev.aegaeon.server.service.AccessTokenService;
 import ca.n4dev.aegaeon.server.service.AuthorizationCodeService;
 import ca.n4dev.aegaeon.server.service.ClientService;
 import ca.n4dev.aegaeon.server.service.ScopeService;
+import ca.n4dev.aegaeon.server.service.TokenServicesFacade;
 import ca.n4dev.aegaeon.server.service.UserAuthorizationService;
 import ca.n4dev.aegaeon.server.utils.UriBuilder;
 import ca.n4dev.aegaeon.server.utils.Utils;
@@ -74,21 +76,23 @@ public class OAuthAuthorizationController {
     
     private UserAuthorizationService userAuthorizationService;
     private AuthorizationCodeService authorizationCodeService;
-    private AccessTokenService accessTokenService;
     private ClientService clientService;
     private ScopeService scopeService;
+    
+    private TokenServicesFacade tokenServicesFacade;
     
     @Autowired
     public OAuthAuthorizationController(UserAuthorizationService pUserAuthorizationService, 
                                         AuthorizationCodeService pAuthorizationCodeService,
-                                        AccessTokenService pAccessTokenService,
                                         ClientService pClientService,
-                                        ScopeService pScopeService) {
+                                        ScopeService pScopeService,
+                                        TokenServicesFacade pTokenServicesFacade) {
         this.userAuthorizationService = pUserAuthorizationService;
         this.authorizationCodeService = pAuthorizationCodeService;
-        this.accessTokenService = pAccessTokenService;
         this.clientService = pClientService;
         this.scopeService = pScopeService;
+        
+        this.tokenServicesFacade = pTokenServicesFacade;
     }
     
     @RequestMapping(value = "")
@@ -100,9 +104,11 @@ public class OAuthAuthorizationController {
                                   Authentication pAuthentication,
                                   RequestMethod pRequestMethod) {
         
+        AuthorizationGrant grantType = AuthorizationGrant.from(pResponseType);
+
         // Required
         if (Utils.areOneEmpty(pClientPublicId, pRedirectionUrl, pResponseType, pScope)) {
-            throw new OauthRestrictedException(AuthorizationGrant.from(pResponseType), 
+            throw new OauthRestrictedException(grantType, 
                                                OAuthErrorType.invalid_request, 
                                                pClientPublicId, 
                                                pRedirectionUrl,
@@ -111,9 +117,19 @@ public class OAuthAuthorizationController {
         
         // Test method and param
         if (pRequestMethod != RequestMethod.GET && pRequestMethod != RequestMethod.POST) {
-            throw new OAuthPublicRedirectionException(AuthorizationGrant.from(pResponseType), 
+            throw new OAuthPublicRedirectionException(grantType, 
                                            OAuthErrorType.invalid_request, 
                                            pRedirectionUrl);
+        }
+        
+        // Check redirection
+        Client client  = this.clientService.findByPublicId(pClientPublicId);
+        if (!client.hasRedirection(pRedirectionUrl)) {
+            throw new OauthRestrictedException(grantType, 
+                    OAuthErrorType.invalid_request, 
+                    pClientPublicId, 
+                    pRedirectionUrl,
+                    "Invalid redirect_uri.");
         }
         
         // Test Scopes
@@ -122,12 +138,12 @@ public class OAuthAuthorizationController {
             scopes = this.scopeService.findScopeFromString(pScope);
         } catch (InvalidScopeException scex) {
             
-            throw new OAuthPublicRedirectionException(AuthorizationGrant.from(pResponseType), 
+            throw new OAuthPublicRedirectionException(grantType, 
                     OAuthErrorType.invalid_scope, 
                     pRedirectionUrl);
         }
         
-        if (!isAuthorize(pAuthentication, pClientPublicId)) {
+        if (!isAuthorized(pAuthentication, pClientPublicId)) {
             ModelAndView authPage = new ModelAndView("authorize");
             
             authPage.addObject("client_id", pClientPublicId);
@@ -140,16 +156,16 @@ public class OAuthAuthorizationController {
             return authPage;
         }
         
-        AuthorizationGrant granType = AuthorizationGrant.from(pResponseType);
         RedirectView redirect = null;
         
         // TODO(RG): Client Credential
-        if (granType == AuthorizationGrant.AUTHORIZATIONCODE) {
-            redirect = authorizeCodeResponse(pAuthentication, pResponseType, pClientPublicId, scopes, pRedirectionUrl, pState);
-        } else if (granType == AuthorizationGrant.IMPLICIT) {
-            redirect = implicitResponse(pAuthentication, pResponseType, pClientPublicId, scopes, pRedirectionUrl, pState);
+        if (grantType == AuthorizationGrant.AUTHORIZATIONCODE) {
+            redirect = authorizeCodeResponse(pAuthentication, pClientPublicId, scopes, pRedirectionUrl, pState);
+        } else if (grantType == AuthorizationGrant.IMPLICIT) {
+            redirect = implicitResponse(pAuthentication, pClientPublicId, scopes, pRedirectionUrl, pState);
         } 
         
+        // TODO(RG) Should throw an exception instead.
         return new ModelAndView(redirect);
     }
     
@@ -163,13 +179,13 @@ public class OAuthAuthorizationController {
         
         // Create a UserAuth and redirect
         try {
-            Client client = this.clientService.findByPublicId(pClientPublicId);
+            
             SpringAuthUserDetails userDetails = (SpringAuthUserDetails) pAuthentication.getPrincipal();
             
-            UserAuthorization ua = this.userAuthorizationService.save(new UserAuthorization(userDetails.getId(), client.getId(), pScope));
+            UserAuthorization ua = this.userAuthorizationService.createUserAuthorization(userDetails.getId(), pClientPublicId, pScope);
             
             if (ua == null) {
-                throw new RuntimeException("Unable to create ua.");
+                throw new ServerException(ServerExceptionCode.UNEXPECTED_ERROR, "Unable to create UserAuthorization.");
             }
             
             return authorize(pResponseType, pClientPublicId, pScope, pRedirectionUrl, pState, pAuthentication, RequestMethod.POST);
@@ -182,16 +198,15 @@ public class OAuthAuthorizationController {
         }
     }
     
-    private boolean isAuthorize(Authentication pAuthentication, String pClientPublicId) {
+    private boolean isAuthorized(Authentication pAuthentication, String pClientPublicId) {
         Client client = this.clientService.findByPublicId(pClientPublicId);
         SpringAuthUserDetails userDetails = (SpringAuthUserDetails) pAuthentication.getPrincipal();
         
-        return this.userAuthorizationService.findByUserIdAndClientId(userDetails.getId(), client.getId()) != null;
+        return this.userAuthorizationService.isAuthorized(userDetails.getId(), client.getId());
     }
     
     
     private RedirectView authorizeCodeResponse(Authentication pAuthentication,
-                                               String pResponseType,
                                                String pClientId,
                                                List<Scope> pScopes,
                                                String pRedirectionUrl,
@@ -223,7 +238,6 @@ public class OAuthAuthorizationController {
     }
     
     private RedirectView implicitResponse(Authentication pAuthentication, 
-                                          String pResponseType,
                                           String pClientId,
                                           List<Scope> pScopes,
                                           String pRedirectionUrl,
@@ -232,15 +246,12 @@ public class OAuthAuthorizationController {
         SpringAuthUserDetails user = (SpringAuthUserDetails) pAuthentication.getPrincipal();
         
         try {
-            
-            // Create a token
-            AccessToken accessToken = this.accessTokenService.createAccessToken(user.getId(), pClientId, pScopes);
-            
-            long expiresIn = ChronoUnit.SECONDS.between(LocalDateTime.now(), accessToken.getValidUntil());
+           
+            TokenResponse token = this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.IMPLICIT, pClientId, user.getId(), pScopes, pRedirectionUrl);
             
             RedirectView view = new RedirectView(
                     UriBuilder.build(pRedirectionUrl, 
-                            TokenResponse.bearer(accessToken.getToken(), String.valueOf(expiresIn), accessToken.getScopes()),
+                            token,
                             pState), 
                     false);
 

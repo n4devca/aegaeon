@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.server.model.AuthorizationCode;
 import ca.n4dev.aegaeon.server.model.Client;
 import ca.n4dev.aegaeon.server.model.Scope;
@@ -82,12 +83,13 @@ public class AuthorizationCodeService extends BaseService<AuthorizationCode, Aut
     }
     
     @Transactional
-    public AuthorizationCode createCode(Long pUserId, String pPublicClientId, List<Scope> pScopes, String pRedirectUrl) {
+    public AuthorizationCode createCode(Long pUserId, String pClientPublicId, List<Scope> pScopes, String pRedirectUrl) {
         
-        
+        Assert.notNull(pUserId, ServerExceptionCode.USER_EMPTY);
+        Assert.notEmpty(pClientPublicId, ServerExceptionCode.CLIENT_EMPTY);
         
         User user = this.userRepository.findOne(pUserId);
-        Client client = this.clientRepository.findByPublicId(pPublicClientId);
+        Client client = this.clientRepository.findByPublicId(pClientPublicId);
         
         return createCode(user, client, pScopes, pRedirectUrl);
     }
@@ -100,10 +102,10 @@ public class AuthorizationCodeService extends BaseService<AuthorizationCode, Aut
      * @return A code or null.
      */
     @Transactional
-    public AuthorizationCode createCode(User pUser, Client pClient, List<Scope> pScopes, String pRedirectUrl) {
-        Assert.notNull(pUser, "A code cannot be created without a user");
-        Assert.notNull(pClient, "A code cannot be created without a client");
-        Assert.notEmpty(pRedirectUrl, "A code cannot be created without a redirection url");
+    AuthorizationCode createCode(User pUser, Client pClient, List<Scope> pScopes, String pRedirectUrl) {
+        Assert.notNull(pUser, ServerExceptionCode.USER_EMPTY);
+        Assert.notNull(pClient, ServerExceptionCode.CLIENT_EMPTY);
+        Assert.notEmpty(pRedirectUrl, ServerExceptionCode.CLIENT_REDIRECTURL_EMPTY);
 
         AuthorizationCode c = new AuthorizationCode();
         c.setClient(pClient);
