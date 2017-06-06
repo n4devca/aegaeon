@@ -21,8 +21,6 @@
  */
 package ca.n4dev.aegaeon.server.config;
 
-import ca.n4dev.aegaeon.server.utils.Assert;
-
 /**
  * ServerInfo.java
  * 
@@ -49,7 +47,10 @@ public class ServerInfo {
     }
     
     public ServerInfo(String pIssuer, String pLegalEntity, String pLogoUrl, String pPrivacyPolicy) {
-        Assert.notEmpty(pIssuer, "Issuer is mandatory");
+        
+        if (pIssuer == null || pIssuer.isEmpty()) {
+            throw new RuntimeException("Issuer is mandatory");
+        }
         
         this.issuer = pIssuer;
         this.logoUrl = pLogoUrl;

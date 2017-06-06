@@ -23,6 +23,9 @@ package ca.n4dev.aegaeon.server.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ca.n4dev.aegaeon.server.model.AccessToken;
+import ca.n4dev.aegaeon.server.model.RefreshToken;
+
 /**
  * TokenResponse.java
  * 
@@ -32,6 +35,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @since May 9, 2017
  */
 public class TokenResponse {
+    
+    public static final String BEARER = "bearer";
     
    
     private String accessToken;
@@ -120,15 +125,35 @@ public class TokenResponse {
     public void setScope(String pScope) {
         scope = pScope;
     }
-    
-    public static TokenResponse bearer(String pAccessToken, String pExpiresIn, String pScope) {
-        return new TokenResponse(pAccessToken, "bearer", pExpiresIn, pScope, null);
-    }
 
     /**
      * @return the scope
      */
     public String getScope() {
         return scope;
+    }
+
+    /**
+     * Set the access token from en entity with null check.
+     * @param pAccessToken The Access Token.
+     */
+    public void setAccessToken(AccessToken pAccessToken) {
+        if (pAccessToken != null) {
+            this.accessToken = pAccessToken.getToken();
+        }
+    }
+    
+    /**
+     * Set the refresh token from en entity with null check.
+     * @param pRefreshToken The Refresh Token.
+     */
+    public void setRefreshToken(RefreshToken pRefreshToken) {
+        if (pRefreshToken != null) {
+            this.refreshToken = pRefreshToken.getToken();
+        }
+    }
+    
+    public static TokenResponse bearer(String pAccessToken, String pExpiresIn, String pScope) {
+        return new TokenResponse(pAccessToken, BEARER, pExpiresIn, pScope, null);
     }
 }

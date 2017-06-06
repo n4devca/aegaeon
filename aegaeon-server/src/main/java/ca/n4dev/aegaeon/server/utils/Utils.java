@@ -36,6 +36,8 @@ import java.util.function.Function;
  * @since May 22, 2017
  */
 public class Utils {
+    
+    private static final String SPACE = " ";
 
     public static boolean isEmpty(String pValue) {
         return pValue == null || pValue.isEmpty();
@@ -70,6 +72,10 @@ public class Utils {
         return true;
     }
     
+    public static <E> String join(List<E> pElements, Function<E, String> pFunc) {
+        return join(SPACE, pElements, pFunc);
+    }
+    
     public static <E> String join(String pSeparator, List<E> pElements, Function<E, String> pFunc) {
         if (pElements == null || pElements.isEmpty()) {
             return "";
@@ -87,6 +93,10 @@ public class Utils {
         }
         
         return b.toString();
+    }
+    
+    public static <E> List<E> explode(String pElementsStr, Function<String, E> pFunc) {
+        return explode(SPACE, pElementsStr, pFunc);
     }
     
     public static <E> List<E> explode(String pSeparator, String pElementsStr, Function<String, E> pFunc) {

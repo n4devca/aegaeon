@@ -21,12 +21,20 @@
  */
 package ca.n4dev.aegaeon.server.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.server.model.Client;
+import ca.n4dev.aegaeon.server.model.Scope;
+import ca.n4dev.aegaeon.server.model.User;
 import ca.n4dev.aegaeon.server.model.UserAuthorization;
 import ca.n4dev.aegaeon.server.repository.UserAuthorizationRepository;
+import ca.n4dev.aegaeon.server.utils.Assert;
+import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**
  * UserAuthorizationService.java
@@ -39,14 +47,45 @@ import ca.n4dev.aegaeon.server.repository.UserAuthorizationRepository;
 @Service
 public class UserAuthorizationService extends BaseService<UserAuthorization, UserAuthorizationRepository> {
 
+    private UserService userService;
+    private ClientService clientService;
+    private ScopeService scopeService;
+    
     /**
      * @param pRepository
      */
     @Autowired
-    public UserAuthorizationService(UserAuthorizationRepository pRepository) {
+    public UserAuthorizationService(UserAuthorizationRepository pRepository, UserService pUserService, ClientService pClientService, ScopeService pScopeService) {
         super(pRepository);
+        this.userService = pUserService;
+        this.clientService = pClientService;
+        this.scopeService = pScopeService;
     }
 
+    @Transactional
+    public UserAuthorization createUserAuthorization(Long pUserId, String pClientPublicId, String pScopes) {
+        
+        Assert.notNull(pUserId, ServerExceptionCode.USER_EMPTY);
+        Assert.notEmpty(pClientPublicId, ServerExceptionCode.CLIENT_EMPTY);
+        
+        Client client = this.clientService.findByPublicId(pClientPublicId);
+        User user = this.userService.findById(pUserId);
+        
+        return createUserAuthorization(user, client, pScopes);
+    }
+    
+    UserAuthorization createUserAuthorization(User pUser, Client pClient, String pScopes) {
+        Assert.notNull(pUser, ServerExceptionCode.USER_EMPTY);
+        Assert.notNull(pClient, ServerExceptionCode.CLIENT_EMPTY);
+        
+        // Validate Scopes
+        List<Scope> scopes = this.scopeService.findScopeFromString(pScopes);
+        
+        UserAuthorization ua = new UserAuthorization(pUser, pClient, Utils.join(scopes, s -> s.getName()));
+        
+        return this.save(ua);
+    }
+    
     /**
      * Find a UserAuthorization by user and client.
      * @param pUserId The user's id.
@@ -56,6 +95,11 @@ public class UserAuthorizationService extends BaseService<UserAuthorization, Use
     @Transactional(readOnly = true)
     public UserAuthorization findByUserIdAndClientId(Long pUserId, Long pClientId) {
         return this.getRepository().findByUserIdAndClientId(pUserId, pClientId);
+    }
+    
+    @Transactional(readOnly = true)
+    public boolean isAuthorized(Long pUserId, Long pClientId) {
+        return this.getRepository().findByUserIdAndClientId(pUserId, pClientId) != null;
     }
     
 }

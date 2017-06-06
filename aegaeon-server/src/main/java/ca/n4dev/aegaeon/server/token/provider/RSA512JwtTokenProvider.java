@@ -78,8 +78,6 @@ public class RSA512JwtTokenProvider implements TokenProvider {
         this.serverInfo = pServerInfo;
         JWKSet keySet = pKeysProvider.getJwkSet();
         
-        
-        
         for (JWK jwk : keySet.getKeys()) {
             keyId = jwk.getKeyID();
             
@@ -104,7 +102,9 @@ public class RSA512JwtTokenProvider implements TokenProvider {
             }
         }
         
-        Assert.notNull(rsaSigner, "Did not find RSA key in your JWK key set.");
+        if (rsaSigner == null) {
+            throw new RuntimeException("Did not find RSA key in your JWK key set.");
+        }
     }
     
     /* (non-Javadoc)

@@ -36,13 +36,43 @@ values(@ct_code, 'ca.n4dev.auth.client', 'https://n4dev.ca/aegaeon/logo1.jpg', '
 select last_insert_id() into @client_auth;
 
 insert into client(client_type_id, name, logourl, public_id, secret, provider_name)
+values(@ct_code, 'ca.n4dev.auth.client2', 'https://n4dev.ca/aegaeon/logo1.jpg', 'ca.n4dev.auth.client2', 'kjaskas8993jnskajksj', 'RSA_RS512');
+select last_insert_id() into @client_auth2;
+
+insert into client(client_type_id, name, logourl, public_id, secret, provider_name)
 values(@ct_impl, 'ca.n4dev.auth.client.impl', 'https://n4dev.ca/aegaeon/logo2.jpg', 'ca.n4dev.auth.client.impl', 'kjaskas8993jnskajksj', 'RSA_RS512');
 select last_insert_id() into @client_impl;
 
+insert into client_scope(client_id, scope_id)
+select @client_impl, id
+from scope where name in ('openid', 'profile');
+
+insert into client_scope(client_id, scope_id)
+select @client_auth, id
+from scope where name in ('openid', 'profile', 'offline_access');
+
+-- Code but no offline
+insert into client_scope(client_id, scope_id)
+select @client_auth2, id
+from scope where name in ('openid', 'profile');
+
+-- Redirection
+insert into client_redirection(client_id, url) values(@client_auth, 'http://localhost/login.html');
+insert into client_redirection(client_id, url) values(@client_auth, 'http://app2.localhost/login.html');
+insert into client_redirection(client_id, url) values(@client_auth2, 'http://localhost/login.html');
+insert into client_redirection(client_id, url) values(@client_impl, 'http://localhost/login.html');
+
 insert into client(client_type_id, name, logourl, public_id, secret, provider_name)
 values(@ct_impl, 'ca.n4dev.auth.client.impl.notallowed', 'https://n4dev.ca/aegaeon/logo2.jpg', 'ca.n4dev.auth.client.impl.notallowed', 'kjaskas8993jnskajksjsasas2323', 'RSA_RS512');
+select last_insert_id() into @client_impl_unath;
+
+insert into client_redirection(client_id, url) values(@client_impl_unath, 'http://bad.localhost/login.html');
+
 
 -- Allow 2 clients
-insert into users_authorization(user_id, client_id, scopes) values(@uid, @client_auth, 'openid profile');
-insert into users_authorization(user_id, client_id, scopes) values(@uid, @client_impl, 'openid profile');
+insert into users_authorization(user_id, client_id, scopes) values(@uid, @client_auth, 'openid profile offline_access');
+-- This is wrong: client auth 2 did not request offline_access, the tokenservice should shield for it
+insert into users_authorization(user_id, client_id, scopes) values(@uid, @client_auth2, 'openid profile offline_access');
+-- This is wrong: implicit client should not have offline_access, the tokenservice should shield for it
+insert into users_authorization(user_id, client_id, scopes) values(@uid, @client_impl, 'openid profile offline_access');
 -- but not the third one
