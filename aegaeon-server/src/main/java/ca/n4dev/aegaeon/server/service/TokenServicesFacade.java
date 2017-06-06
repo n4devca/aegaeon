@@ -81,7 +81,7 @@ public class TokenServicesFacade {
             t.setRefreshToken(refreshToken);
             
             // Time
-            long expiresIn = ChronoUnit.SECONDS.between(accessToken.getValidUntil(), LocalDateTime.now());
+            long expiresIn = ChronoUnit.SECONDS.between(LocalDateTime.now(), accessToken.getValidUntil());
             t.setExpiresIn(String.valueOf(expiresIn));
             
             return t;

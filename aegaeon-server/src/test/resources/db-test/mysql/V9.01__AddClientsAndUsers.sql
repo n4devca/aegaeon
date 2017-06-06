@@ -56,8 +56,18 @@ insert into client_scope(client_id, scope_id)
 select @client_auth2, id
 from scope where name in ('openid', 'profile');
 
+-- Redirection
+insert into client_redirection(client_id, url) values(@client_auth, 'http://localhost/login.html');
+insert into client_redirection(client_id, url) values(@client_auth, 'http://app2.localhost/login.html');
+insert into client_redirection(client_id, url) values(@client_auth2, 'http://localhost/login.html');
+insert into client_redirection(client_id, url) values(@client_impl, 'http://localhost/login.html');
+
 insert into client(client_type_id, name, logourl, public_id, secret, provider_name)
 values(@ct_impl, 'ca.n4dev.auth.client.impl.notallowed', 'https://n4dev.ca/aegaeon/logo2.jpg', 'ca.n4dev.auth.client.impl.notallowed', 'kjaskas8993jnskajksjsasas2323', 'RSA_RS512');
+select last_insert_id() into @client_impl_unath;
+
+insert into client_redirection(client_id, url) values(@client_impl_unath, 'http://bad.localhost/login.html');
+
 
 -- Allow 2 clients
 insert into users_authorization(user_id, client_id, scopes) values(@uid, @client_auth, 'openid profile offline_access');
