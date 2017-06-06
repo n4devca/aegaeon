@@ -48,6 +48,12 @@ public interface TokenProvider {
     TokenProviderType getType();
     
     /**
+     * If this provider is enabled and has been correctly instanciate.
+     * @return true or false.
+     */
+    boolean isEnabled();
+    
+    /**
      * Create a token.
      * @param pOAuthUser The authenticated user.
      * @param pOAuthClient The client used during authentication.

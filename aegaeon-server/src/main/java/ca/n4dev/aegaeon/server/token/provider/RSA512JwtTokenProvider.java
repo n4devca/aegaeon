@@ -48,7 +48,6 @@ import ca.n4dev.aegaeon.api.token.provider.TokenProvider;
 import ca.n4dev.aegaeon.api.token.provider.TokenProviderType;
 import ca.n4dev.aegaeon.server.config.ServerInfo;
 import ca.n4dev.aegaeon.server.token.key.KeysProvider;
-import ca.n4dev.aegaeon.server.utils.Assert;
 
 /**
  * JwtTokenProvider.java
@@ -67,6 +66,8 @@ public class RSA512JwtTokenProvider implements TokenProvider {
     
     private ServerInfo serverInfo;
     
+    private boolean enable = false;;
+    
     
     /**
      * Default Constructor.
@@ -79,31 +80,20 @@ public class RSA512JwtTokenProvider implements TokenProvider {
         JWKSet keySet = pKeysProvider.getJwkSet();
         
         for (JWK jwk : keySet.getKeys()) {
-            keyId = jwk.getKeyID();
             
             if (jwk.isPrivate()) {
                 
                 if (jwk instanceof RSAKey) {
+                    keyId = jwk.getKeyID();
                     // Create Signers
                     this.rsaSigner = new RSASSASigner((RSAKey) jwk);
+                    break;
                 } 
-                /*
-                else if (jwk instanceof ECKey) {
-                    
-                    ECDSASigner signer = new ECDSASigner((ECKey) jwk);
-                    this.signers.put(id, signer);
-                    
-                } else if (jwk instanceof OctetSequenceKey) {
-                    
-                    MACSigner signer = new MACSigner((OctetSequenceKey) jwk);
-                    this.signers.put(id, signer);
-                }
-                */
             }
         }
         
-        if (rsaSigner == null) {
-            throw new RuntimeException("Did not find RSA key in your JWK key set.");
+        if (rsaSigner != null) {
+            enable = true;
         }
     }
     
@@ -155,5 +145,13 @@ public class RSA512JwtTokenProvider implements TokenProvider {
      */
     public String getKeyId() {
         return keyId;
+    }
+
+    /* (non-Javadoc)
+     * @see ca.n4dev.aegaeon.api.token.provider.TokenProvider#isEnable()
+     */
+    @Override
+    public boolean isEnabled() {
+        return this.enable;
     }
 }

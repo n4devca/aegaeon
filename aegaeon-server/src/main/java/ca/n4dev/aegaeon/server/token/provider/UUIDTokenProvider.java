@@ -71,4 +71,12 @@ public class UUIDTokenProvider implements TokenProvider {
         return TokenProviderType.UUID;
     }
 
+    /* (non-Javadoc)
+     * @see ca.n4dev.aegaeon.api.token.provider.TokenProvider#isEnabled()
+     */
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
 }
