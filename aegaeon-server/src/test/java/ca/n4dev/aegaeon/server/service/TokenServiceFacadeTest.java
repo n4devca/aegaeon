@@ -48,7 +48,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
     private TokenServicesFacade tokenServicesFacade;
     
     @Test
-    public void accessToken() {
+    public void accessTokenRSA() {
         
         Client client = clientService.findByPublicId(CLIENT_IMPL);
         Assert.assertNotNull(client);
@@ -78,7 +78,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
     }
     
     @Test
-    public void withRefresh() {
+    public void accessTokenWithRefreshRSA() {
         Client client = clientService.findByPublicId(CLIENT_AUTH);
         User user = this.userService.findByUserName(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES + " offline_access");
@@ -93,6 +93,35 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
         Assert.assertTrue(token.getTokenType().equals(TokenResponse.BEARER));
         Assert.assertNotNull(token.getAccessToken());
         Assert.assertNotNull(token.getRefreshToken());
+        Assert.assertNotNull(token.getExpiresIn());
+        Assert.assertTrue(Long.valueOf(token.getExpiresIn()) > 0);
+    }
+    
+    @Test
+    public void accessTokenHMAC() {
+        Client client = clientService.findByPublicId(CLIENT_AUTH_3);
+        Assert.assertNotNull(client);
+        Assert.assertNotNull(client.getRedirections());
+        Assert.assertTrue(client.getRedirections().size() > 0);
+        
+        User user = this.userService.findByUserName(USERNAME);
+        Assert.assertNotNull(user);
+        
+        List<Scope> scopes = scopeService.findScopeFromString(SCOPES);
+        Assert.assertNotNull(scopes);
+        Assert.assertTrue(scopes.size() == 2);
+        
+        
+        TokenResponse token = this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.AUTHORIZATIONCODE, 
+                                                                           client.getPublicId(), 
+                                                                           user.getId(), 
+                                                                           scopes, 
+                                                                           client.getRedirections().get(0).getUrl());
+        
+        Assert.assertNotNull(token);
+        Assert.assertTrue(token.getTokenType().equals(TokenResponse.BEARER));
+        Assert.assertNotNull(token.getAccessToken());
+        Assert.assertNull(token.getRefreshToken());
         Assert.assertNotNull(token.getExpiresIn());
         Assert.assertTrue(Long.valueOf(token.getExpiresIn()) > 0);
     }

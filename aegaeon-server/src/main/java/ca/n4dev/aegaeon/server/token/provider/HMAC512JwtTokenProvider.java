@@ -21,16 +21,26 @@
  */
 package ca.n4dev.aegaeon.server.token.provider;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.TemporalUnit;
+import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+import com.nimbusds.jwt.JWTClaimsSet.Builder;
 
 import ca.n4dev.aegaeon.api.token.OAuthClient;
 import ca.n4dev.aegaeon.api.token.OAuthUser;
@@ -48,6 +58,7 @@ import ca.n4dev.aegaeon.server.token.key.KeysProvider;
  * @author by rguillemette
  * @since Jun 6, 2017
  */
+@Service
 public class HMAC512JwtTokenProvider implements TokenProvider {
 
     private String keyId;
@@ -103,8 +114,26 @@ public class HMAC512JwtTokenProvider implements TokenProvider {
      */
     @Override
     public Token createToken(OAuthUser pOAuthUser, OAuthClient pOAuthClient, Long pTimeValue, TemporalUnit pTemporalUnit) throws Exception {
+        
+        LocalDateTime expiredIn = LocalDateTime.now().plus(pTimeValue, pTemporalUnit);
+        Instant instant = expiredIn.toInstant(ZoneOffset.UTC);
+        Date date = Date.from(instant);
 
-        return null;
+        Builder builder = new JWTClaimsSet.Builder();
+        
+        builder.expirationTime(date);        
+        builder.issuer(this.serverInfo.getIssuer());
+        builder.subject(pOAuthUser.getUniqueIdentifier());
+        builder.audience(pOAuthClient.getClientId());
+        
+        JWTClaimsSet claimsSet = builder.build();
+        
+        SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS512), claimsSet);
+        signedJWT.sign(this.signer);
+
+        Token token = new Token(signedJWT.serialize(), expiredIn);
+        
+        return token;
     }
 
     /* (non-Javadoc)
