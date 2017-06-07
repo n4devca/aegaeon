@@ -44,25 +44,10 @@ import ca.n4dev.aegaeon.server.model.User;
  * @since May 30, 2017
  */
 @Transactional
-public class AccessTokenServiceTest extends BaseServiceTest {
-    
-    private static final String USERNAME = "admin@localhost";
-    private static final String SCOPES = "openid profile";
-    private static final String CLIENT_AUTH = "ca.n4dev.auth.client";
-    private static final String CLIENT_IMPL = "ca.n4dev.auth.client.impl";
-    private static final String CLIENT_IMPL_UNALLOWED = "ca.n4dev.auth.client.impl.notallowed";
+public class AccessTokenServiceTest extends BaseTokenServiceTest {
 
     @Autowired
     AccessTokenService accessTokenService;
-    
-    @Autowired
-    ClientService clientService;
-    
-    @Autowired
-    ScopeService scopeService;
-    
-    @Autowired
-    UserService userService;
     
     @Test
     public void testFindOne() {

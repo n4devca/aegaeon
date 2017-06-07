@@ -37,6 +37,7 @@ public abstract class BaseTokenServiceTest extends BaseServiceTest {
     protected static final String SCOPES = "openid profile";
     protected static final String CLIENT_AUTH = "ca.n4dev.auth.client";
     protected static final String CLIENT_AUTH_2 = "ca.n4dev.auth.client2";
+    protected static final String CLIENT_AUTH_3 = "ca.n4dev.auth.client3";
     protected static final String CLIENT_IMPL = "ca.n4dev.auth.client.impl";
     protected static final String CLIENT_IMPL_UNALLOWED = "ca.n4dev.auth.client.impl.notallowed";
     

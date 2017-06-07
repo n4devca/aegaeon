@@ -48,13 +48,14 @@ public class Token {
     public Token() {}
     
     /**
-     * Create a simple token.
+     * Create a simple token. Default type is ACCESS TOKEN.
      * @param pValue The token value.
      */
     public Token(String pValue, LocalDateTime pValidUntil) {
         Assert.hasLength(pValue, "A token cannot have an empty value.");
         this.value = pValue;
         this.validUntil = pValidUntil != null ? pValidUntil : LocalDateTime.now() ;
+        this.type = TokenType.ACCESS_TOKEN;
     }
     
     /**
@@ -69,7 +70,20 @@ public class Token {
         LocalDateTime time = LocalDateTime.now();
         
         this.value = pValue;
-        this.validUntil = time.plus(pTimeValue, pTemporalUnit);;
+        this.validUntil = time.plus(pTimeValue, pTemporalUnit);
+    }
+    
+    /**
+     * Create a simple token.
+     * @param pValue The token value.
+     * @param pValidUntil Is valid until this date.
+     * @param pTokenType The type of token.
+     */
+    public Token(String pValue, LocalDateTime pValidUntil, TokenType pTokenType) {
+        Assert.hasLength(pValue, "A token cannot have an empty value.");
+        this.value = pValue;
+        this.validUntil = pValidUntil != null ? pValidUntil : LocalDateTime.now() ;
+        this.type = pTokenType;
     }
     
 
