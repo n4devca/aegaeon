@@ -51,17 +51,8 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
     public void accessTokenRSA() {
         
         Client client = clientService.findByPublicId(CLIENT_IMPL);
-        Assert.assertNotNull(client);
-        Assert.assertNotNull(client.getRedirections());
-        Assert.assertTrue(client.getRedirections().size() > 0);
-        
         User user = this.userService.findByUserName(USERNAME);
-        Assert.assertNotNull(user);
-        
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES);
-        Assert.assertNotNull(scopes);
-        Assert.assertTrue(scopes.size() == 2);
-        
         
         TokenResponse token = this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.IMPLICIT, 
                                                                            client.getPublicId(), 
@@ -100,17 +91,8 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
     @Test
     public void accessTokenHMAC() {
         Client client = clientService.findByPublicId(CLIENT_AUTH_3);
-        Assert.assertNotNull(client);
-        Assert.assertNotNull(client.getRedirections());
-        Assert.assertTrue(client.getRedirections().size() > 0);
-        
         User user = this.userService.findByUserName(USERNAME);
-        Assert.assertNotNull(user);
-        
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES);
-        Assert.assertNotNull(scopes);
-        Assert.assertTrue(scopes.size() == 2);
-        
         
         TokenResponse token = this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.AUTHORIZATIONCODE, 
                                                                            client.getPublicId(), 
