@@ -19,30 +19,19 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.web;
-
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import ca.n4dev.aegaeon.server.config.JndiDatasourceBuilder;
+package ca.n4dev.aegaeon.api.utils;
 
 /**
- * BaseWebTest.java
+ * Randomizer.java
  * 
- * TODO(rguillemette) Add description
+ * Inspired by OWASP Enterprise Security API for Java https://github.com/ESAPI/esapi-java.
  *
  * @author by rguillemette
- * @since May 29, 2017
+ * @since Jun 9, 2017
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = WebEnvironment.MOCK)
-public abstract class BaseWebTest {
+public interface Randomizer {
+
+    String getRandomString(int pLength, char[] pCharacterSet);
     
-    @BeforeClass
-    public static void ds() throws Exception {
-        JndiDatasourceBuilder.create();
-    }
+    String getRandomString(int pLength);
 }

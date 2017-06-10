@@ -55,9 +55,19 @@ public class ScopeService extends BaseService<Scope, ScopeRepository> {
     public ScopeService(ScopeRepository pRepository) {
         super(pRepository);
     }
+    
+    @Transactional(readOnly = true)
+    public List<Scope> findAll() {
+        return this.getRepository().findAll();
+    }
 
     @Transactional(readOnly = true)
     public List<Scope> findScopeFromString(String pScopeStr) throws InvalidScopeException {
+        return findScopeFromString(pScopeStr, null);
+    }
+    
+    @Transactional(readOnly = true)
+    public List<Scope> findScopeFromString(String pScopeStr, String pExcluded) throws InvalidScopeException {
         if (Utils.isEmpty(pScopeStr)) {
             return Collections.emptyList();
         }
@@ -65,11 +75,16 @@ public class ScopeService extends BaseService<Scope, ScopeRepository> {
         // Split on space
         List<String> scopes = parseScopeArgumentString(SPACE, pScopeStr);
         
-        return findScopeFromStringList(scopes);
+        return findScopeFromStringList(scopes, pExcluded);
     }
     
     @Transactional(readOnly = true)
-    public List<Scope> findScopeFromStringList(List<String> pScopeStrs) throws InvalidScopeException {
+    public List<Scope> findScopeFromStringList(List<String> pScopeStrs, String pExcluded) throws InvalidScopeException {
+        
+        if (pExcluded != null) {
+            pScopeStrs.remove(pExcluded);
+        }
+        
         List<Scope> lst = this.getRepository().findByNameIn(pScopeStrs);
         
         // Must match or one scope is invalid
@@ -95,6 +110,12 @@ public class ScopeService extends BaseService<Scope, ScopeRepository> {
         }
         
         return lst;
+        
+    }
+    
+    @Transactional(readOnly = true)
+    public List<Scope> findScopeFromStringList(List<String> pScopeStrs) throws InvalidScopeException {
+        return findScopeFromStringList(pScopeStrs, null);
     }
     
     public List<String> parseScopeArgumentString(String pSeparator, String pScopeStr) {

@@ -74,7 +74,7 @@ public class WebSecurityConfig {
             pHttp
                 .antMatcher("/token")
                     .authorizeRequests()
-                    .anyRequest().hasAnyAuthority("CLIENT")
+                    .anyRequest().hasAnyAuthority("ROLE_CLIENT")
                 .and()
                 .httpBasic()
                     .authenticationEntryPoint(authenticationEntryPoint)

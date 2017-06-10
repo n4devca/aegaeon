@@ -21,8 +21,6 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,13 +42,11 @@ import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
-import ca.n4dev.aegaeon.server.model.AccessToken;
 import ca.n4dev.aegaeon.server.model.AuthorizationCode;
 import ca.n4dev.aegaeon.server.model.Client;
 import ca.n4dev.aegaeon.server.model.Scope;
 import ca.n4dev.aegaeon.server.model.UserAuthorization;
 import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
-import ca.n4dev.aegaeon.server.service.AccessTokenService;
 import ca.n4dev.aegaeon.server.service.AuthorizationCodeService;
 import ca.n4dev.aegaeon.server.service.ClientService;
 import ca.n4dev.aegaeon.server.service.ScopeService;

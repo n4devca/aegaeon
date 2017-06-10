@@ -30,15 +30,19 @@ package ca.n4dev.aegaeon.api.protocol;
  * @since May 24, 2017
  */
 public enum AuthorizationGrant {
-    AUTHORIZATIONCODE("code"),
-    IMPLICIT("token"),
-    CLIENTCREDENTIALS("client_credentials")
+    AUTHORIZATIONCODE("code", true),
+    IMPLICIT("token", true),
+    CLIENTCREDENTIALS("client_credentials", true),
+    
+    REFRESH_TOKEN("refresh_token", false)
     ;
     
     final String parameter;
+    final boolean selectable;
     
-    AuthorizationGrant(String pParam) {
+    AuthorizationGrant(String pParam, boolean pSelectable) {
         this.parameter = pParam;
+        this.selectable = pSelectable;
     }
     
     public static AuthorizationGrant from(String pParam) {
@@ -57,5 +61,19 @@ public enum AuthorizationGrant {
         }
         
         return false;
+    }
+
+    /**
+     * @return the selectable
+     */
+    public boolean isSelectable() {
+        return selectable;
+    }
+    
+    /**
+     * @return the parameter
+     */
+    public String getParameter() {
+        return this.parameter;
     }
 }

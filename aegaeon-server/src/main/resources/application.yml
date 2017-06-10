@@ -12,6 +12,8 @@ spring:
         static-path-pattern: /resources/**
     messages:
         encoding: UTF-8 
+    jackson:
+        default-property-inclusion: non_null
 flyway:
     baseline-version: 1
     check-location: false

@@ -35,4 +35,11 @@ import ca.n4dev.aegaeon.server.model.RefreshToken;
  */
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
 
+    /**
+     * Find a refresh token using its value and client to whom it has been granted.
+     * @param pToken The token value.
+     * @param pClientId The client primary key.
+     * @return A RefreshToken or null.
+     */
+    RefreshToken findByTokenAndClientId(String pToken, Long pClientId);
 }

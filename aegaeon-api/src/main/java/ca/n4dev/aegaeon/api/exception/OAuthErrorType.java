@@ -35,6 +35,7 @@ public enum OAuthErrorType {
     access_denied,
     unsupported_response_type,
     invalid_scope,
+    invalid_grant,
     server_error,
     temporarily_unavailable
     ;

@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
@@ -52,6 +53,7 @@ import ca.n4dev.aegaeon.server.utils.Utils;
 public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshTokenRepository> {
 
     private static final String REFRESH_TOKEN_ALG = "UUID";
+    
     
     /**
      * Default Constructor.
@@ -96,22 +98,24 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
             validate(pUser, pClient, pScopes, TokenType.REFRESH_TOKEN);
         
             try {
-                
                 // A token is created only if requested.
-                    // Review the valid date time
-                    Token token = this.tokenFactory.createToken(pUser, pClient, REFRESH_TOKEN_ALG, pClient.getAccessTokenSeconds(), ChronoUnit.SECONDS);
+                Token token = this.tokenFactory.createToken(pUser, pClient, REFRESH_TOKEN_ALG, pClient.getRefreshTokenSeconds(), ChronoUnit.SECONDS);
+                
+                
+                RefreshToken rf = new RefreshToken();
+                rf.setClient(pClient);
+                rf.setUser(pUser);
+                rf.setToken(token.getValue());
+                rf.setValidUntil(token.getValidUntil());
+                
+                if (pScopes != null) {
                     
-                    RefreshToken rf = new RefreshToken();
-                    rf.setClient(pClient);
-                    rf.setUser(pUser);
-                    rf.setToken(token.getValue());
-                    rf.setValidUntil(token.getValidUntil());
                     
-                    if (pScopes != null) {
-                        rf.setScopes(Utils.join(" ", pScopes, s -> s.getName()));
-                    }
                     
-                    return this.save(rf);
+                    rf.setScopes(Utils.join(" ", pScopes, s -> s.getName()));
+                }
+                
+                return this.save(rf);
                     
                 
             } catch (Exception e) {
@@ -121,5 +125,16 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
         }
         
         return null;
+    }
+    
+    /**
+     * Find a refresh token using its value and client to whom it has been granted.
+     * @param pTokenValue The token value.
+     * @param pClientId The client primary key.
+     * @return A RefreshToken or null.
+     */
+    @Transactional(readOnly = true)
+    public RefreshToken findByTokenValueAndClientId(String pTokenValue, Long pClientId) {
+        return this.getRepository().findByTokenAndClientId(pTokenValue, pClientId);
     }
 }

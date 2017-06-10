@@ -27,12 +27,17 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import ca.n4dev.aegaeon.api.exception.ServerException;
+import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
 import ca.n4dev.aegaeon.api.token.OAuthClient;
 import ca.n4dev.aegaeon.server.utils.Utils;
 
@@ -65,9 +70,12 @@ public class Client extends BaseEntity implements OAuthClient {
     @Column(name = "access_token_seconds")
     private Long accessTokenSeconds;
     
-    @ManyToOne
-    @JoinColumn(name = "client_type_id")
-    private ClientType clientType;
+    @Column(name = "refresh_token_seconds")
+    private Long refreshTokenSeconds;
+    
+    @Column(name = "grant_type")
+    @Enumerated(EnumType.STRING)
+    private AuthorizationGrant grantType;
     
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     private List<ClientRedirection> redirections;
@@ -136,20 +144,6 @@ public class Client extends BaseEntity implements OAuthClient {
      */
     public void setLogoUrl(String pLogoUrl) {
         logoUrl = pLogoUrl;
-    }
-
-    /**
-     * @return the clientType
-     */
-    public ClientType getClientType() {
-        return clientType;
-    }
-
-    /**
-     * @param pClientType the clientType to set
-     */
-    public void setClientType(ClientType pClientType) {
-        clientType = pClientType;
     }
 
     /**
@@ -258,6 +252,38 @@ public class Client extends BaseEntity implements OAuthClient {
      */
     public void setAccessTokenSeconds(Long pAccessTokenSeconds) {
         accessTokenSeconds = pAccessTokenSeconds;
+    }
+
+    /**
+     * @return the grantType
+     */
+    public AuthorizationGrant getGrantType() {
+        return grantType;
+    }
+
+    /**
+     * @param pGrantType the grantType to set
+     */
+    public void setGrantType(AuthorizationGrant pGrantType) {
+        if (pGrantType == null || !pGrantType.isSelectable()) {
+            throw new ServerException(ServerExceptionCode.UNEXPECTED_ERROR, "Invalid AuthorizationGrant");
+        }
+        
+        this.grantType = pGrantType;
+    }
+
+    /**
+     * @return the refreshTokenSeconds
+     */
+    public Long getRefreshTokenSeconds() {
+        return refreshTokenSeconds;
+    }
+
+    /**
+     * @param pRefreshTokenSeconds the refreshTokenSeconds to set
+     */
+    public void setRefreshTokenSeconds(Long pRefreshTokenSeconds) {
+        refreshTokenSeconds = pRefreshTokenSeconds;
     }
     
 }

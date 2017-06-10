@@ -27,6 +27,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
 import ca.n4dev.aegaeon.api.token.TokenType;
 import ca.n4dev.aegaeon.server.model.BaseEntity;
 import ca.n4dev.aegaeon.server.model.Client;
@@ -50,7 +51,7 @@ import ca.n4dev.aegaeon.server.utils.Utils;
 public abstract class BaseTokenService<T extends BaseEntity, J extends JpaRepository<T, Long>> extends BaseService<T, J> {
 
 
-    protected static final String OFFLINE_SCOPE = "offline_access";
+    public static final String OFFLINE_SCOPE = "offline_access";
     
     protected UserService userService;
     protected ClientService clientService;
@@ -88,7 +89,7 @@ public abstract class BaseTokenService<T extends BaseEntity, J extends JpaReposi
         if (pTokenType == TokenType.REFRESH_TOKEN) {
             
             if (!hasClientScope(pClient, OFFLINE_SCOPE) 
-                    || !pClient.getClientType().getCode().equals(ClientType.CODE_AUTH_CODE)) {
+                    || pClient.getGrantType() != AuthorizationGrant.AUTHORIZATIONCODE) {
                 throw new ServerException(ServerExceptionCode.SCOPE_UNAUTHORIZED_OFFLINE);
             }
         }

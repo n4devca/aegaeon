@@ -66,7 +66,7 @@ public class Utils {
     public static boolean isStillValid(LocalDateTime pValidUntil) {
         if (pValidUntil != null) {
             LocalDateTime now = LocalDateTime.now();
-            return pValidUntil.isBefore(now);
+            return pValidUntil.isAfter(now);
         }
         
         return true;

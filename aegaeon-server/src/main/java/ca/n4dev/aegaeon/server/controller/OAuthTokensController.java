@@ -21,8 +21,6 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -44,15 +42,16 @@ import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
-import ca.n4dev.aegaeon.server.model.AccessToken;
 import ca.n4dev.aegaeon.server.model.AuthorizationCode;
 import ca.n4dev.aegaeon.server.model.Client;
 import ca.n4dev.aegaeon.server.model.ClientType;
+import ca.n4dev.aegaeon.server.model.RefreshToken;
 import ca.n4dev.aegaeon.server.model.Scope;
 import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
-import ca.n4dev.aegaeon.server.service.AccessTokenService;
 import ca.n4dev.aegaeon.server.service.AuthorizationCodeService;
+import ca.n4dev.aegaeon.server.service.BaseTokenService;
 import ca.n4dev.aegaeon.server.service.ClientService;
+import ca.n4dev.aegaeon.server.service.RefreshTokenService;
 import ca.n4dev.aegaeon.server.service.ScopeService;
 import ca.n4dev.aegaeon.server.service.TokenServicesFacade;
 import ca.n4dev.aegaeon.server.utils.Utils;
@@ -77,6 +76,7 @@ public class OAuthTokensController extends BaseController {
     private AuthorizationCodeService authorizationCodeService;
     private ScopeService scopeService;
     private TokenServicesFacade tokenServicesFacade;
+    private RefreshTokenService refreshTokenService;
     
     /**
      * Default Constructor.
@@ -87,12 +87,14 @@ public class OAuthTokensController extends BaseController {
     public OAuthTokensController(ClientService pClientService,
                                  AuthorizationCodeService pAuthorizationCodeService,
                                  TokenServicesFacade pTokenServicesFacade,
-                                 ScopeService pScopeService) {
+                                 ScopeService pScopeService,
+                                 RefreshTokenService pRefreshTokenService) {
         
         this.clientService = pClientService;
         this.authorizationCodeService = pAuthorizationCodeService;
         this.scopeService = pScopeService;
         this.tokenServicesFacade = pTokenServicesFacade;
+        this.refreshTokenService = pRefreshTokenService;
     }
    
     /**
@@ -111,6 +113,7 @@ public class OAuthTokensController extends BaseController {
                     @RequestParam(value = "redirect_uri", required = false) String pRedirectUri,
                     @RequestParam(value = "client_id", required = false) String pClientPublicId,
                     @RequestParam(value = "scope", required = false) String pScope, 
+                    @RequestParam(value = "refresh_token", required = false) String pRefreshToken,
                     Authentication pAuthentication) {
         
 
@@ -118,6 +121,8 @@ public class OAuthTokensController extends BaseController {
             return authorizationCodeResponse(pCode, pRedirectUri, pClientPublicId);
         } else if (AuthorizationGrant.is(pGrantType, AuthorizationGrant.CLIENTCREDENTIALS)) {
             return clientCredentialResponse(pAuthentication, pScope, pRedirectUri);
+        } else if (AuthorizationGrant.is(pGrantType, AuthorizationGrant.REFRESH_TOKEN)) {
+            return refreshTokenResponse(pAuthentication, pRefreshToken);
         } else {
             throw new OauthRestrictedException(AuthorizationGrant.AUTHORIZATIONCODE, 
                     OAuthErrorType.invalid_request, 
@@ -145,7 +150,7 @@ public class OAuthTokensController extends BaseController {
         }
         
         // Did we set this client to use this flow
-        if (!client.getClientType().is(ClientType.CODE_CLIENT_CREDENTIALS)) {
+        if (client.getGrantType() != AuthorizationGrant.CLIENTCREDENTIALS) {
             throw new OAuthPublicJsonException(AuthorizationGrant.CLIENTCREDENTIALS, 
                                                OAuthErrorType.unsupported_response_type);
         }
@@ -165,6 +170,52 @@ public class OAuthTokensController extends BaseController {
         } catch (InvalidScopeException e) {
             throw new OAuthPublicJsonException(AuthorizationGrant.CLIENTCREDENTIALS, OAuthErrorType.invalid_scope);
         } 
+    }
+    
+    private ResponseEntity<TokenResponse> refreshTokenResponse(Authentication pAuthentication, 
+                                                               String pRefreshToken) {
+        
+        if (Utils.isEmpty(pRefreshToken)) {
+            throw new OAuthPublicJsonException(AuthorizationGrant.REFRESH_TOKEN, OAuthErrorType.invalid_request);
+        }
+        
+        SpringAuthUserDetails auth = (SpringAuthUserDetails) pAuthentication.getPrincipal();
+        Client client = this.clientService.findById(auth.getId());
+
+        if (client == null) {
+            throw new OauthRestrictedException(AuthorizationGrant.REFRESH_TOKEN, 
+                    OAuthErrorType.invalid_request, 
+                    auth.getUsername(), 
+                    null,
+                    "Invalid client or incorrect public id.");
+        }
+        
+        // Check if the client has the proper scope
+        if (!client.getScopesAsNameList().contains(BaseTokenService.OFFLINE_SCOPE)) {
+            throw new OauthRestrictedException(AuthorizationGrant.REFRESH_TOKEN, 
+                    OAuthErrorType.invalid_scope, 
+                    auth.getUsername(), 
+                    null,
+                    "This client don't have the offline access scope.");
+        }
+        
+        // Load the refresh_token
+        RefreshToken rftoken = this.refreshTokenService.findByTokenValueAndClientId(pRefreshToken, client.getId());
+        
+        if (rftoken == null || !Utils.isStillValid(rftoken.getValidUntil())) {
+            throw new OAuthPublicJsonException(AuthorizationGrant.REFRESH_TOKEN, OAuthErrorType.invalid_grant);
+        }
+        
+        // Ok, the token is valid, so create a new access token
+        String scopesStr = rftoken.getScopes();
+        List<Scope> scopes = this.scopeService.findScopeFromString(scopesStr, BaseTokenService.OFFLINE_SCOPE);
+        TokenResponse token = this.tokenServicesFacade.createTokenResponse(client.getGrantType(), 
+                                        client.getPublicId(), 
+                                        rftoken.getUser().getId(), 
+                                        scopes, 
+                                        null);
+
+        return new ResponseEntity<TokenResponse>(token, HttpStatus.OK);
     }
     
     /**
@@ -209,7 +260,7 @@ public class OAuthTokensController extends BaseController {
         }
         
         // Did we set this client to use this flow
-        if (!client.getClientType().is(ClientType.CODE_AUTH_CODE)) {
+        if (client.getGrantType() != AuthorizationGrant.AUTHORIZATIONCODE) {
             throw new OAuthPublicRedirectionException(AuthorizationGrant.AUTHORIZATIONCODE, OAuthErrorType.unauthorized_client, pRedirectUri);
         }
         
