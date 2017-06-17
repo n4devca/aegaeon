@@ -137,4 +137,16 @@ public class SpringAuthUserDetails implements UserDetails {
     public User asUser() {
         return new User(id);
     }
+    
+    public String toString() {
+        return new StringBuilder()
+                        .append(id)
+                        .append(",")
+                        .append(username)
+                        .append(",")
+                        .append(this.enable)
+                        .append(",")
+                        .append(this.nonlocked)
+                        .toString();
+    }
 }

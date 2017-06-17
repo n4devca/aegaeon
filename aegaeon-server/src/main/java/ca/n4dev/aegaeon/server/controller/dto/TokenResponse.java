@@ -38,7 +38,8 @@ public class TokenResponse {
     
     public static final String BEARER = "bearer";
     
-   
+    private String idToken;
+    
     private String accessToken;
     
     private String tokenType;
@@ -155,5 +156,31 @@ public class TokenResponse {
     
     public static TokenResponse bearer(String pAccessToken, String pExpiresIn, String pScope) {
         return new TokenResponse(pAccessToken, BEARER, pExpiresIn, pScope, null);
+    }
+
+    /**
+     * @return the idToken
+     */
+    @JsonProperty("id_token")
+    public String getIdToken() {
+        return idToken;
+    }
+
+    /**
+     * @param pIdToken the idToken to set
+     */
+    public void setIdToken(String pIdToken) {
+        idToken = pIdToken;
+    }
+    
+    public String toString() {
+        return new StringBuilder()
+                        .append("TokenResponse")
+                        .append(",")
+                        .append(this.idToken != null ? "idt," : "")
+                        .append(this.accessToken != null ? "act," : "")
+                        .append(this.refreshToken != null ? "rft," : "")
+                        .append(this.scope != null ? scope : "-")
+                        .toString();
     }
 }

@@ -24,6 +24,7 @@ h1, h2, h3, h4, h5 {
 	
 }
 
+
 @media (min-width: 800px) {
 	
     .main-content {
@@ -36,6 +37,21 @@ h1, h2, h3, h4, h5 {
 	}
 }
 
+/* page */
+.user-profile {
+    
+}
+
+.user-profile .user-profile-info {
+	
+}
+
+.user-profile .user-profile-menu {
+    
+}
+
+
+/* Components */
 .panel {
     margin: 3px;
     border: 1px solid #ccc;	

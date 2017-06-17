@@ -21,6 +21,7 @@
  */
 package ca.n4dev.aegaeon.server.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -45,6 +46,12 @@ public class UserAuthorization extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "client_id")
     private Client client;
+    
+    @Column(name = "user_id", insertable = false, updatable = false)
+    private Long userId;
+    
+    @Column(name = "client_id", insertable = false, updatable = false)
+    private Long clientId;
     
     private String scopes;
     
@@ -127,5 +134,35 @@ public class UserAuthorization extends BaseEntity {
         }
         
         return false;
+    }
+
+    /**
+     * @return as String
+     */
+    public String toString() {
+        
+        return new StringBuilder()
+                    .append("UserAuthorization")
+                    .append(",")
+                    .append(getUserId())
+                    .append(",")
+                    .append(getClientId())
+                    .append(",")
+                    .append(this.scopes != null ? this.scopes : "-")
+                    .toString();
+    }
+
+    /**
+     * @return the userId
+     */
+    public Long getUserId() {
+        return userId;
+    }
+
+    /**
+     * @return the clientId
+     */
+    public Long getClientId() {
+        return clientId;
     }
 }

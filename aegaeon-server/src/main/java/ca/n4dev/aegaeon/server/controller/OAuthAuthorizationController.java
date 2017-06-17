@@ -40,6 +40,8 @@ import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
+import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
 import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
 import ca.n4dev.aegaeon.server.model.AuthorizationCode;
@@ -76,19 +78,22 @@ public class OAuthAuthorizationController {
     private ScopeService scopeService;
     
     private TokenServicesFacade tokenServicesFacade;
+    private OpenIdEventLogger openIdEventLogger;
     
     @Autowired
     public OAuthAuthorizationController(UserAuthorizationService pUserAuthorizationService, 
                                         AuthorizationCodeService pAuthorizationCodeService,
                                         ClientService pClientService,
                                         ScopeService pScopeService,
-                                        TokenServicesFacade pTokenServicesFacade) {
+                                        TokenServicesFacade pTokenServicesFacade,
+                                        OpenIdEventLogger pOpenIdEventLogger) {
         this.userAuthorizationService = pUserAuthorizationService;
         this.authorizationCodeService = pAuthorizationCodeService;
         this.clientService = pClientService;
         this.scopeService = pScopeService;
         
         this.tokenServicesFacade = pTokenServicesFacade;
+        this.openIdEventLogger = pOpenIdEventLogger;
     }
     
     @RequestMapping(value = "")
@@ -104,7 +109,8 @@ public class OAuthAuthorizationController {
 
         // Required
         if (Utils.areOneEmpty(pClientPublicId, pRedirectionUrl, pResponseType, pScope)) {
-            throw new OauthRestrictedException(grantType, 
+            throw new OauthRestrictedException(getClass(),
+                                               grantType, 
                                                OAuthErrorType.invalid_request, 
                                                pClientPublicId, 
                                                pRedirectionUrl,
@@ -113,7 +119,8 @@ public class OAuthAuthorizationController {
         
         // Test method and param
         if (pRequestMethod != RequestMethod.GET && pRequestMethod != RequestMethod.POST) {
-            throw new OAuthPublicRedirectionException(grantType, 
+            throw new OAuthPublicRedirectionException(getClass(),
+                                            grantType, 
                                            OAuthErrorType.invalid_request, 
                                            pRedirectionUrl);
         }
@@ -121,7 +128,8 @@ public class OAuthAuthorizationController {
         // Check redirection
         Client client  = this.clientService.findByPublicId(pClientPublicId);
         if (!client.hasRedirection(pRedirectionUrl)) {
-            throw new OauthRestrictedException(grantType, 
+            throw new OauthRestrictedException(getClass(),
+                                            grantType, 
                     OAuthErrorType.invalid_request, 
                     pClientPublicId, 
                     pRedirectionUrl,
@@ -134,7 +142,8 @@ public class OAuthAuthorizationController {
             scopes = this.scopeService.findScopeFromString(pScope);
         } catch (InvalidScopeException scex) {
             
-            throw new OAuthPublicRedirectionException(grantType, 
+            throw new OAuthPublicRedirectionException(getClass(),
+                    grantType, 
                     OAuthErrorType.invalid_scope, 
                     pRedirectionUrl);
         }
@@ -183,6 +192,8 @@ public class OAuthAuthorizationController {
             if (ua == null) {
                 throw new ServerException(ServerExceptionCode.UNEXPECTED_ERROR, "Unable to create UserAuthorization.");
             }
+            
+            this.openIdEventLogger.log(OpenIdEvent.AUTHORIZATION, getClass(), userDetails.getUsername(), ua);
             
             return authorize(pResponseType, pClientPublicId, pScope, pRedirectionUrl, pState, pAuthentication, RequestMethod.POST);
             

@@ -51,7 +51,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
     public void accessTokenRSA() {
         
         Client client = clientService.findByPublicId(CLIENT_IMPL);
-        User user = this.userService.findByUserName(USERNAME);
+        User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES);
         
         TokenResponse token = this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.IMPLICIT, 
@@ -71,7 +71,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
     @Test
     public void accessTokenWithRefreshRSA() {
         Client client = clientService.findByPublicId(CLIENT_AUTH);
-        User user = this.userService.findByUserName(USERNAME);
+        User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES + " offline_access");
         
         TokenResponse token = this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.AUTHORIZATIONCODE, 
@@ -91,7 +91,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
     @Test
     public void accessTokenHMAC() {
         Client client = clientService.findByPublicId(CLIENT_AUTH_3);
-        User user = this.userService.findByUserName(USERNAME);
+        User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES);
         
         TokenResponse token = this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.AUTHORIZATIONCODE, 
@@ -111,7 +111,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
     @Test(expected = ServerException.class)
     public void failNoRefreshScope() {
         Client client = clientService.findByPublicId(CLIENT_AUTH_2);
-        User user = this.userService.findByUserName(USERNAME);
+        User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES + " offline_access");
         
         this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.AUTHORIZATIONCODE, 
@@ -127,7 +127,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
     @Test(expected = ServerException.class)
     public void failImplicitAndRefreshScope() {
         Client client = clientService.findByPublicId(CLIENT_IMPL);
-        User user = this.userService.findByUserName(USERNAME);
+        User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES + " offline_access");
         
         this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.IMPLICIT, 
@@ -143,7 +143,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
     @Test(expected = ServerException.class)
     public void failUnauthorizedClient() {
         Client client = clientService.findByPublicId(CLIENT_IMPL_UNALLOWED);
-        User user = this.userService.findByUserName(USERNAME);
+        User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES);
         
         this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.IMPLICIT, 

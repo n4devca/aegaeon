@@ -66,7 +66,7 @@ public class SpringAuthUserDetailsService implements UserDetailsService {
         
         if (user != null) {
             List<SimpleGrantedAuthority> auths = new ArrayList<>();
-            user.getAuthorities().forEach(a -> auths.add(new SimpleGrantedAuthority(a.getCode().replace("ROLE_", ""))));
+            user.getAuthorities().forEach(a -> auths.add(new SimpleGrantedAuthority(a.getCode() /*a.getCode().replace("ROLE_", "")*/)));
             return new SpringAuthUserDetails(user.getId(), user.getUserName(), user.getPasswd(), user.isEnabled(), true, auths);
         }
         

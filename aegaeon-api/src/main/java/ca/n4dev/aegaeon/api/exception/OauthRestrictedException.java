@@ -47,8 +47,8 @@ public class OauthRestrictedException extends BaseOAuthException {
      * @param pClientPublicId The client public id.
      * @param pRedirectUrl The redirection url.
      */
-    public OauthRestrictedException(AuthorizationGrant pGrantType, OAuthErrorType pError, String pClientPublicId, String pRedirectUrl) {
-        this(pGrantType, pError, pClientPublicId, pRedirectUrl, null);
+    public OauthRestrictedException(Class<?> pSource, AuthorizationGrant pGrantType, OAuthErrorType pError, String pClientPublicId, String pRedirectUrl) {
+        this(pSource, pGrantType, pError, pClientPublicId, pRedirectUrl, null);
     }
     
 
@@ -60,8 +60,8 @@ public class OauthRestrictedException extends BaseOAuthException {
      * @param pRedirectUrl The redirection url.
      * @param pMessage A message or error description.
      */
-    public OauthRestrictedException(AuthorizationGrant pGrantType, OAuthErrorType pError, String pClientPublicId, String pRedirectUrl, String pMessage) {
-        super(pGrantType, pError);
+    public OauthRestrictedException(Class<?> pSource, AuthorizationGrant pGrantType, OAuthErrorType pError, String pClientPublicId, String pRedirectUrl, String pMessage) {
+        super(pSource, pGrantType, pError);
         setRedirectUrl(pRedirectUrl);
         this.clientPublicId = pClientPublicId;
         setErrorDescription(pMessage);

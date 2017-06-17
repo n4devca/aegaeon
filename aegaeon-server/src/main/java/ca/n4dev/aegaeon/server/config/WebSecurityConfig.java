@@ -32,6 +32,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -51,6 +52,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
  * @since May 11, 2017
  */
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig {
 
     @Bean
@@ -102,13 +104,14 @@ public class WebSecurityConfig {
             pHttp
                 .authorizeRequests()
                     .antMatchers("/resources/**").permitAll()
-                    .antMatchers("/", "/home").permitAll()
-                    //.anyRequest().authenticated()
-                    .antMatchers("/authorize").hasAnyAuthority("USER")
+                    //.antMatchers("/", "/home").permitAll()
+                    .anyRequest().hasAnyAuthority("ROLE_USER")
+                    //.antMatchers("/authorize").hasAnyAuthority("ROLE_USER")
                     .and()
                 .formLogin()
                     .loginPage("/login")
                     .permitAll()
+                    .defaultSuccessUrl("/user-profile")
                 .and()
                     .userDetailsService(userDetailsService)
                 .logout()
