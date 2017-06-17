@@ -40,11 +40,12 @@ import ca.n4dev.aegaeon.api.exception.OAuthErrorType;
 import ca.n4dev.aegaeon.api.exception.OAuthPublicJsonException;
 import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
+import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
+import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
 import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
 import ca.n4dev.aegaeon.server.model.AuthorizationCode;
 import ca.n4dev.aegaeon.server.model.Client;
-import ca.n4dev.aegaeon.server.model.ClientType;
 import ca.n4dev.aegaeon.server.model.RefreshToken;
 import ca.n4dev.aegaeon.server.model.Scope;
 import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
@@ -77,6 +78,7 @@ public class OAuthTokensController extends BaseController {
     private ScopeService scopeService;
     private TokenServicesFacade tokenServicesFacade;
     private RefreshTokenService refreshTokenService;
+    private OpenIdEventLogger openIdEventLogger;
     
     /**
      * Default Constructor.
@@ -88,13 +90,15 @@ public class OAuthTokensController extends BaseController {
                                  AuthorizationCodeService pAuthorizationCodeService,
                                  TokenServicesFacade pTokenServicesFacade,
                                  ScopeService pScopeService,
-                                 RefreshTokenService pRefreshTokenService) {
+                                 RefreshTokenService pRefreshTokenService,
+                                 OpenIdEventLogger pOpenIdEventLogger) {
         
         this.clientService = pClientService;
         this.authorizationCodeService = pAuthorizationCodeService;
         this.scopeService = pScopeService;
         this.tokenServicesFacade = pTokenServicesFacade;
         this.refreshTokenService = pRefreshTokenService;
+        this.openIdEventLogger = pOpenIdEventLogger;
     }
    
     /**
@@ -116,23 +120,29 @@ public class OAuthTokensController extends BaseController {
                     @RequestParam(value = "refresh_token", required = false) String pRefreshToken,
                     Authentication pAuthentication) {
         
+        TokenResponse response = null;
 
         if (AuthorizationGrant.is(pGrantType, AuthorizationGrant.AUTHORIZATIONCODE)) {
-            return authorizationCodeResponse(pCode, pRedirectUri, pClientPublicId);
+            response = authorizationCodeResponse(pCode, pRedirectUri, pClientPublicId);
         } else if (AuthorizationGrant.is(pGrantType, AuthorizationGrant.CLIENTCREDENTIALS)) {
-            return clientCredentialResponse(pAuthentication, pScope, pRedirectUri);
+            response = clientCredentialResponse(pAuthentication, pScope, pRedirectUri);
         } else if (AuthorizationGrant.is(pGrantType, AuthorizationGrant.REFRESH_TOKEN)) {
-            return refreshTokenResponse(pAuthentication, pRefreshToken);
+            response = refreshTokenResponse(pAuthentication, pRefreshToken);
         } else {
-            throw new OauthRestrictedException(AuthorizationGrant.AUTHORIZATIONCODE, 
+            throw new OauthRestrictedException(getClass(),
+                    AuthorizationGrant.AUTHORIZATIONCODE, 
                     OAuthErrorType.invalid_request, 
                     pClientPublicId, 
                     pRedirectUri,
                     "Wrong grant_type.");
         }
+        
+        this.openIdEventLogger.log(OpenIdEvent.TOKEN_GRANTING, getClass(), pAuthentication.getName(), response);
+        
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
     
-    private ResponseEntity<TokenResponse> clientCredentialResponse(Authentication pAuthentication,
+    private TokenResponse clientCredentialResponse(Authentication pAuthentication,
                                                                    String pScope,
                                                                    String pRedirectUri) {
         
@@ -142,7 +152,8 @@ public class OAuthTokensController extends BaseController {
         Client client = this.clientService.findById(auth.getId());
         
         if (client == null) {
-            throw new OauthRestrictedException(AuthorizationGrant.CLIENTCREDENTIALS, 
+            throw new OauthRestrictedException(getClass(),
+                    AuthorizationGrant.CLIENTCREDENTIALS, 
                     OAuthErrorType.invalid_request, 
                     auth.getUsername(), 
                     null,
@@ -151,7 +162,8 @@ public class OAuthTokensController extends BaseController {
         
         // Did we set this client to use this flow
         if (client.getGrantType() != AuthorizationGrant.CLIENTCREDENTIALS) {
-            throw new OAuthPublicJsonException(AuthorizationGrant.CLIENTCREDENTIALS, 
+            throw new OAuthPublicJsonException(getClass(),
+                    AuthorizationGrant.CLIENTCREDENTIALS, 
                                                OAuthErrorType.unsupported_response_type);
         }
         
@@ -164,26 +176,29 @@ public class OAuthTokensController extends BaseController {
                     scopes, 
                     pRedirectUri);
 
-            return new ResponseEntity<TokenResponse>(token, HttpStatus.OK);
+            return token;
             
             // TODO(RG): catch serverexception and rethrow
         } catch (InvalidScopeException e) {
-            throw new OAuthPublicJsonException(AuthorizationGrant.CLIENTCREDENTIALS, OAuthErrorType.invalid_scope);
+            throw new OAuthPublicJsonException(getClass(),
+                    AuthorizationGrant.CLIENTCREDENTIALS, OAuthErrorType.invalid_scope);
         } 
     }
     
-    private ResponseEntity<TokenResponse> refreshTokenResponse(Authentication pAuthentication, 
+    private TokenResponse refreshTokenResponse(Authentication pAuthentication, 
                                                                String pRefreshToken) {
         
         if (Utils.isEmpty(pRefreshToken)) {
-            throw new OAuthPublicJsonException(AuthorizationGrant.REFRESH_TOKEN, OAuthErrorType.invalid_request);
+            throw new OAuthPublicJsonException(getClass(),
+                    AuthorizationGrant.REFRESH_TOKEN, OAuthErrorType.invalid_request);
         }
         
         SpringAuthUserDetails auth = (SpringAuthUserDetails) pAuthentication.getPrincipal();
         Client client = this.clientService.findById(auth.getId());
 
         if (client == null) {
-            throw new OauthRestrictedException(AuthorizationGrant.REFRESH_TOKEN, 
+            throw new OauthRestrictedException(getClass(),
+                    AuthorizationGrant.REFRESH_TOKEN, 
                     OAuthErrorType.invalid_request, 
                     auth.getUsername(), 
                     null,
@@ -192,7 +207,8 @@ public class OAuthTokensController extends BaseController {
         
         // Check if the client has the proper scope
         if (!client.getScopesAsNameList().contains(BaseTokenService.OFFLINE_SCOPE)) {
-            throw new OauthRestrictedException(AuthorizationGrant.REFRESH_TOKEN, 
+            throw new OauthRestrictedException(getClass(),
+                    AuthorizationGrant.REFRESH_TOKEN, 
                     OAuthErrorType.invalid_scope, 
                     auth.getUsername(), 
                     null,
@@ -203,7 +219,8 @@ public class OAuthTokensController extends BaseController {
         RefreshToken rftoken = this.refreshTokenService.findByTokenValueAndClientId(pRefreshToken, client.getId());
         
         if (rftoken == null || !Utils.isStillValid(rftoken.getValidUntil())) {
-            throw new OAuthPublicJsonException(AuthorizationGrant.REFRESH_TOKEN, OAuthErrorType.invalid_grant);
+            throw new OAuthPublicJsonException(getClass(),
+                    AuthorizationGrant.REFRESH_TOKEN, OAuthErrorType.invalid_grant);
         }
         
         // Ok, the token is valid, so create a new access token
@@ -215,7 +232,7 @@ public class OAuthTokensController extends BaseController {
                                         scopes, 
                                         null);
 
-        return new ResponseEntity<TokenResponse>(token, HttpStatus.OK);
+        return token;
     }
     
     /**
@@ -226,14 +243,15 @@ public class OAuthTokensController extends BaseController {
      * @param pClientPublicId
      * @return
      */
-    private ResponseEntity<TokenResponse> authorizationCodeResponse(
+    private TokenResponse authorizationCodeResponse(
                                            String pCode,
                                            String pRedirectUri,
                                            String pClientPublicId) {
         
         // Required
         if (Utils.areOneEmpty(pCode, pRedirectUri, pClientPublicId)) {
-            throw new OauthRestrictedException(AuthorizationGrant.AUTHORIZATIONCODE, 
+            throw new OauthRestrictedException(getClass(),
+                    AuthorizationGrant.AUTHORIZATIONCODE, 
                                                OAuthErrorType.invalid_request, 
                                                pClientPublicId, 
                                                pRedirectUri,
@@ -243,7 +261,8 @@ public class OAuthTokensController extends BaseController {
         // Load client 
         Client client = this.clientService.findByPublicId(pClientPublicId);
         if (client == null) {
-            throw new OauthRestrictedException(AuthorizationGrant.AUTHORIZATIONCODE, 
+            throw new OauthRestrictedException(getClass(),
+                    AuthorizationGrant.AUTHORIZATIONCODE, 
                     OAuthErrorType.invalid_request, 
                     pClientPublicId, 
                     pRedirectUri,
@@ -252,7 +271,8 @@ public class OAuthTokensController extends BaseController {
         
         // Check redirection
         if (!client.hasRedirection(pRedirectUri)) {
-            throw new OauthRestrictedException(AuthorizationGrant.AUTHORIZATIONCODE, 
+            throw new OauthRestrictedException(getClass(),
+                    AuthorizationGrant.AUTHORIZATIONCODE, 
                     OAuthErrorType.invalid_request, 
                     pClientPublicId, 
                     pRedirectUri,
@@ -261,18 +281,21 @@ public class OAuthTokensController extends BaseController {
         
         // Did we set this client to use this flow
         if (client.getGrantType() != AuthorizationGrant.AUTHORIZATIONCODE) {
-            throw new OAuthPublicRedirectionException(AuthorizationGrant.AUTHORIZATIONCODE, OAuthErrorType.unauthorized_client, pRedirectUri);
+            throw new OAuthPublicRedirectionException(getClass(),
+                    AuthorizationGrant.AUTHORIZATIONCODE, OAuthErrorType.unauthorized_client, pRedirectUri);
         }
         
         // Ok, check the code now
         AuthorizationCode authCode = this.authorizationCodeService.findByCode(pCode);
         if (authCode == null || !Utils.isStillValid(authCode.getValidUntil())) {
-            throw new OAuthPublicRedirectionException(AuthorizationGrant.AUTHORIZATIONCODE, OAuthErrorType.access_denied, pRedirectUri);
+            throw new OAuthPublicRedirectionException(getClass(),
+                    AuthorizationGrant.AUTHORIZATIONCODE, OAuthErrorType.access_denied, pRedirectUri);
         }
         
         // Make sure the redirection is the same than previously
         if (!authCode.getRedirectUrl().equals(pRedirectUri)) {
-            throw new OauthRestrictedException(AuthorizationGrant.AUTHORIZATIONCODE, 
+            throw new OauthRestrictedException(getClass(),
+                    AuthorizationGrant.AUTHORIZATIONCODE, 
                     OAuthErrorType.invalid_request, 
                     pClientPublicId, 
                     pRedirectUri,
@@ -289,7 +312,7 @@ public class OAuthTokensController extends BaseController {
                                                                                scopes, 
                                                                                pRedirectUri);
             
-            return new ResponseEntity<TokenResponse>(token, HttpStatus.OK);
+            return token;
             
         } finally {
             // Delete the auth code in all situation

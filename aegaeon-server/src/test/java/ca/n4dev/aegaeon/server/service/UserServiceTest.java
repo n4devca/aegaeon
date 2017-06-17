@@ -21,40 +21,23 @@
  */
 package ca.n4dev.aegaeon.server.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import ca.n4dev.aegaeon.server.model.User;
-import ca.n4dev.aegaeon.server.repository.UserRepository;
+import org.junit.Test;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
- * UserService.java
+ * UserServiceTest.java
  * 
- * User service.
+ * TODO(rguillemette) Add description
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since Jun 13, 2017
  */
-@Service
-public class UserService extends BaseService<User, UserRepository> {
+public class UserServiceTest /* extends BaseServiceTest */ {
 
-    /**
-     * Default constructor.
-     * @param pRepository The user repo.
-     */
-    @Autowired
-    public UserService(UserRepository pRepository) {
-        super(pRepository);
+    @Test
+    public void test() {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        System.out.println(encoder.encode("admin@localhost"));
     }
-
-    /**
-     * Find one user by id.
-     */
-    @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('ADMIN') or principal.id == #pId")
-    public User findById(Long pId) {
-        return this.getRepository().findOne(pId);
-    }
+    
 }

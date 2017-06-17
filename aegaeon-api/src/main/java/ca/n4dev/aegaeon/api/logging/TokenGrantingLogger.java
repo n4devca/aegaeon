@@ -19,31 +19,17 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.exception;
-
-import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
+package ca.n4dev.aegaeon.api.logging;
 
 /**
- * OAuthPublicJsonException.java
+ * TokenGrantingLogger.java
  * 
- * OAuth error throwed by the token or authorize endpoint.
- * Public and mostly shown to client by returning http400 + json.
- * 
- * https://tools.ietf.org/html/rfc6749#section-4.2.2.1
+ * This is a stub interface allowing Aegaeon to log events related to 
+ * token granting.
  *
  * @author by rguillemette
- * @since May 29, 2017
+ * @since Jun 14, 2017
  */
-public class OAuthPublicJsonException extends BaseOAuthException {
-
-    private static final long serialVersionUID = -3097198698305780764L;
-
-    /**
-     * @param pGrantType
-     * @param pError
-     */
-    public OAuthPublicJsonException(Class<?> pSource, AuthorizationGrant pGrantType, OAuthErrorType pError) {
-        super(pSource, pGrantType, pError);
-    }
+public interface TokenGrantingLogger {
 
 }

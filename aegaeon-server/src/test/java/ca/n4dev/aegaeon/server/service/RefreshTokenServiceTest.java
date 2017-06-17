@@ -49,7 +49,7 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
     @Test
     public void testGetRefreshToken() {
         
-        User user = this.userService.findByUserName(USERNAME);
+        User user = getUser(USERNAME);
         Assert.assertNotNull(user);
         
         List<Scope> scopes = scopeService.findScopeFromString("openid profile offline_access");
@@ -62,7 +62,7 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
     
     @Test
     public void testErrorMissingOffline() {
-        User user = this.userService.findByUserName(USERNAME);
+        User user = getUser(USERNAME);
         Assert.assertNotNull(user);
         
         List<Scope> scopes = scopeService.findScopeFromString("openid profile");
@@ -76,7 +76,7 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
     
     @Test(expected = ServerException.class)
     public void testErrorImplicitClient() {
-        User user = this.userService.findByUserName(USERNAME);
+        User user = getUser(USERNAME);
         Assert.assertNotNull(user);
         
         List<Scope> scopes = scopeService.findScopeFromString("openid profile offline_access");
@@ -91,7 +91,7 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
     
     @Test(expected = ServerException.class)
     public void testErrorNotAuthorizedClient() {
-        User user = this.userService.findByUserName(USERNAME);
+        User user = getUser(USERNAME);
         Assert.assertNotNull(user);
         
         List<Scope> scopes = scopeService.findScopeFromString("openid profile offline_access");

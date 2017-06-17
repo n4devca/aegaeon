@@ -89,7 +89,12 @@ public class TokenServicesFacade {
         } catch (ServerException se) {
             throw se;
         } catch (Exception e) {
-            throw new OauthRestrictedException(pGrantType, OAuthErrorType.server_error, pClientPublicId, pRedirectUrl, e.getMessage());
+            throw new OauthRestrictedException(getClass(),
+                                               pGrantType, 
+                                               OAuthErrorType.server_error, 
+                                               pClientPublicId, 
+                                               pRedirectUrl, 
+                                               e.getMessage());
         }
         
     }

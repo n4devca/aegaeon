@@ -19,31 +19,22 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.exception;
-
-import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
+package ca.n4dev.aegaeon.api.logging;
 
 /**
- * OAuthPublicJsonException.java
+ * OpenIdEventLogger.java
  * 
- * OAuth error throwed by the token or authorize endpoint.
- * Public and mostly shown to client by returning http400 + json.
- * 
- * https://tools.ietf.org/html/rfc6749#section-4.2.2.1
+ * A component that may be used by controller or services to log various events happening 
+ * during authentication and authorization.
  *
  * @author by rguillemette
- * @since May 29, 2017
+ * @since Jun 16, 2017
  */
-public class OAuthPublicJsonException extends BaseOAuthException {
+public interface OpenIdEventLogger {
+    
+    static final String SEPARATOR = ";";
 
-    private static final long serialVersionUID = -3097198698305780764L;
-
-    /**
-     * @param pGrantType
-     * @param pError
-     */
-    public OAuthPublicJsonException(Class<?> pSource, AuthorizationGrant pGrantType, OAuthErrorType pError) {
-        super(pSource, pGrantType, pError);
-    }
-
+    void log(OpenIdEvent pOpenIdEvent, Class<?> pSource);
+    
+    void log(OpenIdEvent pOpenIdEvent, Class<?> pSource, String pUser, Object pDetails);
 }

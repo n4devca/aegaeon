@@ -44,8 +44,8 @@ public class OAuthPublicRedirectionException extends BaseOAuthException {
      * Create an OAuthServerException with an error code.
      * @param pError The error code.
      */
-    public OAuthPublicRedirectionException(AuthorizationGrant pGrantType, OAuthErrorType pError, String pRedirectUrl) {
-        super(pGrantType, pError);
+    public OAuthPublicRedirectionException(Class<?> pSource, AuthorizationGrant pGrantType, OAuthErrorType pError, String pRedirectUrl) {
+        super(pSource, pGrantType, pError);
         setRedirectUrl(pRedirectUrl);
     }
     

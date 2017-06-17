@@ -34,6 +34,8 @@ import org.springframework.web.servlet.view.RedirectView;
 import ca.n4dev.aegaeon.api.exception.OAuthPublicJsonException;
 import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
+import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
+import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
 import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
 import ca.n4dev.aegaeon.server.utils.UriBuilder;
 
@@ -53,6 +55,12 @@ public class ControllerErrorInterceptor {
     private static final String HASHTAG = "#";
     private static final String QUESTIONMARK = "?";
     
+    private OpenIdEventLogger openIdEventLogger;
+    
+    public ControllerErrorInterceptor(OpenIdEventLogger pOpenIdEventLogger) {
+        this.openIdEventLogger = pOpenIdEventLogger;
+    }
+    
     /**
      * 
      * @param pOAuthPublicException
@@ -60,6 +68,8 @@ public class ControllerErrorInterceptor {
      */
     @ExceptionHandler(OAuthPublicRedirectionException.class)
     public RedirectView oauthPublicException(final OAuthPublicRedirectionException pOAuthPublicException) {
+        
+        this.openIdEventLogger.log(OpenIdEvent.PUBLIC_ERROR, pOAuthPublicException.getSource(), null, pOAuthPublicException);
         
         String url = UriBuilder.build(pOAuthPublicException.getRedirectUrl(), pOAuthPublicException);
         
@@ -82,6 +92,8 @@ public class ControllerErrorInterceptor {
      */
     @ExceptionHandler(OauthRestrictedException.class)
     public ModelAndView oauthRestrictedException(final OauthRestrictedException pOauthRestrictedException) {
+        this.openIdEventLogger.log(OpenIdEvent.RESTRICTED_ERROR, pOauthRestrictedException.getSource(), null, pOauthRestrictedException);
+        
         ModelAndView mv = new ModelAndView("error");
         
         mv.addObject("type", "OauthRestrictedException");
@@ -94,6 +106,8 @@ public class ControllerErrorInterceptor {
     @ResponseBody
     public ResponseEntity<OAuthPublicJsonException> oauthPublicJsonException(
                                     final OAuthPublicJsonException pOAuthPublicJsonException) {
+        
+        this.openIdEventLogger.log(OpenIdEvent.PUBLIC_ERROR, pOAuthPublicJsonException.getSource(), null, pOAuthPublicJsonException);
         
         return new ResponseEntity<OAuthPublicJsonException>(pOAuthPublicJsonException, 
                                                             HttpStatus.BAD_REQUEST);

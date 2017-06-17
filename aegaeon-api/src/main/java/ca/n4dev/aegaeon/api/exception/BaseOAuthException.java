@@ -38,6 +38,10 @@ public abstract class BaseOAuthException extends ServerException {
 
     private static final long serialVersionUID = 3676269645498864982L;
 
+    protected Class<?> source;
+    
+    protected String userId;
+    
     protected OAuthErrorType error;
     
     @JsonIgnore
@@ -55,9 +59,18 @@ public abstract class BaseOAuthException extends ServerException {
     @JsonIgnore
     protected String clientPublicId;
     
-    public BaseOAuthException(AuthorizationGrant pGrantType, OAuthErrorType pError) {
+    public BaseOAuthException(Class<?> pSource, AuthorizationGrant pGrantType, OAuthErrorType pError) {
         this.error = pError;
         this.grantType = pGrantType;
+    }
+    
+
+    public String toString() {
+        return new StringBuilder()
+                        .append(this.grantType)
+                        .append(",")
+                        .append(this.error)
+                        .toString();
     }
 
     /**
@@ -143,4 +156,35 @@ public abstract class BaseOAuthException extends ServerException {
     public void setGrantType(AuthorizationGrant pGrantType) {
         grantType = pGrantType;
     }
+
+    /**
+     * @return the source
+     */
+    public Class<?> getSource() {
+        return source;
+    }
+
+    /**
+     * @param pSource the source to set
+     */
+    public void setSource(Class<?> pSource) {
+        source = pSource;
+    }
+
+
+    /**
+     * @return the userId
+     */
+    public String getUserId() {
+        return userId;
+    }
+
+
+    /**
+     * @param pUserId the userId to set
+     */
+    public void setUserId(String pUserId) {
+        userId = pUserId;
+    }
+
 }

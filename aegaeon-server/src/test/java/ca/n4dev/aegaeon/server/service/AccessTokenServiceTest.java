@@ -77,7 +77,7 @@ public class AccessTokenServiceTest extends BaseTokenServiceTest {
         Client client = clientService.findByPublicId(CLIENT_IMPL);
         Assert.assertNotNull(client);
         
-        User user = this.userService.findByUserName(USERNAME);
+        User user = getUser(USERNAME);
         Assert.assertNotNull(user);
         
         AccessToken token = this.accessTokenService.createAccessToken(user, client, scopes);
@@ -96,7 +96,7 @@ public class AccessTokenServiceTest extends BaseTokenServiceTest {
         Client client = clientService.findByPublicId(CLIENT_IMPL_UNALLOWED);
         Assert.assertNotNull(client);
         
-        User user = this.userService.findByUserName(USERNAME);
+        User user = getUser(USERNAME);
         Assert.assertNotNull(user);
         
         AccessToken token = this.accessTokenService.createAccessToken(user, client, scopes);
