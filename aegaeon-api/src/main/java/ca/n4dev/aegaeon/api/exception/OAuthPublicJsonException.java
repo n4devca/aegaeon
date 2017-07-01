@@ -21,7 +21,7 @@
  */
 package ca.n4dev.aegaeon.api.exception;
 
-import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
+import ca.n4dev.aegaeon.api.protocol.Flow;
 
 /**
  * OAuthPublicJsonException.java
@@ -42,8 +42,8 @@ public class OAuthPublicJsonException extends BaseOAuthException {
      * @param pGrantType
      * @param pError
      */
-    public OAuthPublicJsonException(Class<?> pSource, AuthorizationGrant pGrantType, OAuthErrorType pError) {
-        super(pSource, pGrantType, pError);
+    public OAuthPublicJsonException(Class<?> pSource, Flow pFlow, OAuthErrorType pError) {
+        super(pSource, pFlow, pError);
     }
 
 }

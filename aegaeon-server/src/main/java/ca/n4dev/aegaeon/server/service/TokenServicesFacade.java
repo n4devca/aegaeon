@@ -32,7 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ca.n4dev.aegaeon.api.exception.OAuthErrorType;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.api.exception.ServerException;
-import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
+import ca.n4dev.aegaeon.api.protocol.Flow;
+import ca.n4dev.aegaeon.api.protocol.RequestedGrant;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
 import ca.n4dev.aegaeon.server.model.AccessToken;
 import ca.n4dev.aegaeon.server.model.RefreshToken;
@@ -61,7 +62,7 @@ public class TokenServicesFacade {
     }
     
     @Transactional
-    public TokenResponse createTokenResponse(AuthorizationGrant pGrantType,
+    public TokenResponse createTokenResponse(Flow pFlow,
                                              String pClientPublicId,
                                              Long pUserId,
                                              List<Scope> pScopes,
@@ -90,7 +91,7 @@ public class TokenServicesFacade {
             throw se;
         } catch (Exception e) {
             throw new OauthRestrictedException(getClass(),
-                                               pGrantType, 
+                                               pFlow, 
                                                OAuthErrorType.server_error, 
                                                pClientPublicId, 
                                                pRedirectUrl, 

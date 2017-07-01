@@ -33,7 +33,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
+import ca.n4dev.aegaeon.api.protocol.Flow;
+import ca.n4dev.aegaeon.api.protocol.RequestedGrant;
 import ca.n4dev.aegaeon.server.controller.OAuthTokensController;
 import ca.n4dev.aegaeon.server.model.RefreshToken;
 import ca.n4dev.aegaeon.server.service.ClientService;
@@ -79,7 +80,7 @@ public class TokenControllerTest extends BaseWebTest {
                         post(OAuthTokensController.URL)
                             .accept(MediaType.APPLICATION_JSON)
                             .param("code", AUTH_CODE_A)
-                            .param("grant_type", AuthorizationGrant.AUTHORIZATIONCODE.getParameter())
+                            .param("grant_type", Flow.CODE, Flow.ID_TOKEN)
                             .param("client_id", "ca.n4dev.auth.client")
                             .param("scope", "openid profile")
                             .param("redirect_uri", "http://localhost/login.html")
@@ -103,7 +104,7 @@ public class TokenControllerTest extends BaseWebTest {
                         post(OAuthTokensController.URL)
                             .accept(MediaType.APPLICATION_JSON)
                             .param("refresh_token", token.getToken())
-                            .param("grant_type", AuthorizationGrant.REFRESH_TOKEN.getParameter())
+                            .param("grant_type", Flow.REFRESH_TOKEN)
                             .param("client_id", "ca.n4dev.auth.client")
                             .param("scope", "openid profile")
                             .param("redirect_uri", "http://localhost/login.html")

@@ -28,7 +28,9 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
-import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
+import ca.n4dev.aegaeon.api.protocol.Flow;
+import ca.n4dev.aegaeon.api.protocol.FlowFactory;
+import ca.n4dev.aegaeon.api.protocol.RequestedGrant;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
 import ca.n4dev.aegaeon.server.model.Client;
 import ca.n4dev.aegaeon.server.model.Scope;
@@ -54,7 +56,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
         User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES);
         
-        TokenResponse token = this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.IMPLICIT, 
+        TokenResponse token = this.tokenServicesFacade.createTokenResponse(FlowFactory.implicit(), 
                                                                            client.getPublicId(), 
                                                                            user.getId(), 
                                                                            scopes, 
@@ -74,7 +76,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
         User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES + " offline_access");
         
-        TokenResponse token = this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.AUTHORIZATIONCODE, 
+        TokenResponse token = this.tokenServicesFacade.createTokenResponse(FlowFactory.authCode(), 
                 client.getPublicId(), 
                 user.getId(), 
                 scopes, 
@@ -94,7 +96,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
         User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES);
         
-        TokenResponse token = this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.AUTHORIZATIONCODE, 
+        TokenResponse token = this.tokenServicesFacade.createTokenResponse(FlowFactory.authCode(), 
                                                                            client.getPublicId(), 
                                                                            user.getId(), 
                                                                            scopes, 
@@ -114,7 +116,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
         User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES + " offline_access");
         
-        this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.AUTHORIZATIONCODE, 
+        this.tokenServicesFacade.createTokenResponse(FlowFactory.authCode(), 
                 client.getPublicId(), 
                 user.getId(), 
                 scopes, 
@@ -130,7 +132,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
         User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES + " offline_access");
         
-        this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.IMPLICIT, 
+        this.tokenServicesFacade.createTokenResponse(FlowFactory.implicit(), 
                 client.getPublicId(), 
                 user.getId(), 
                 scopes, 
@@ -146,7 +148,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
         User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES);
         
-        this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.IMPLICIT, 
+        this.tokenServicesFacade.createTokenResponse(FlowFactory.authCode(), 
                 client.getPublicId(), 
                 user.getId(), 
                 scopes, 

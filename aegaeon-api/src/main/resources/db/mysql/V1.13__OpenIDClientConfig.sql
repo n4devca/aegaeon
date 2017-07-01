@@ -20,6 +20,10 @@
  *
  */
  
+-- Replace by grant_type
+drop table client_type;
+ 
+alter table client drop grant_type;
 alter table client add application_type varchar(45) character set latin1 collate latin1_bin not null default 'web';
 alter table client add client_uri varchar(250);
 alter table client add policy_uri varchar(250);
@@ -28,16 +32,16 @@ alter table client add jwks_uri varchar(250);
 alter table client add jwks varchar(4000) character set latin1 collate latin1_bin;
 alter table client add sector_identifier_uri varchar(250);
 alter table client add subject_type varchar(45);
-alter table client add id_token_signed_response_alg varchar(45) character set latin1 collate latin1_bin not null not null default 'RS256';
+alter table client add id_token_signed_response_alg varchar(45) character set latin1 collate latin1_bin not null default 'RS256';
 alter table client add id_token_encrypted_response_alg varchar(45) character set latin1 collate latin1_bin;
 alter table client add id_token_encrypted_response_enc varchar(45) character set latin1 collate latin1_bin not null default 'A128CBC-HS256';
-alter table client add userinfo_signed_response_alg varchar(45) character set latin1 collate latin1_bin ;
+alter table client add userinfo_signed_response_alg varchar(45) character set latin1 collate latin1_bin;
 alter table client add userinfo_encrypted_response_alg varchar(45) character set latin1 collate latin1_bin;
 alter table client add userinfo_encrypted_response_enc varchar(45) character set latin1 collate latin1_bin not null default 'A128CBC-HS256';
 alter table client add request_object_signing_alg varchar(45) character set latin1 collate latin1_bin;
 alter table client add request_object_encryption_alg varchar(45) character set latin1 collate latin1_bin;
-alter table client add request_object_encryption_enc varchar(45) character set latin1 collate latin1_bin not null default 'A128CBC-HS256'
-alter table client add token_endpoint_auth_method varchar(45) character set latin1 collate latin1_bin not null default 'client_secret_basic'
+alter table client add request_object_encryption_enc varchar(45) character set latin1 collate latin1_bin not null default 'A128CBC-HS256';
+alter table client add token_endpoint_auth_method varchar(45) character set latin1 collate latin1_bin not null default 'client_secret_basic';
 alter table client add token_endpoint_auth_signing_alg varchar(45) character set latin1 collate latin1_bin;
 alter table client add default_max_age int(11);
 alter table client add require_auth_time tinyint(1) not null default 0;
@@ -45,7 +49,8 @@ alter table client add initiate_login_uri varchar(250);
 
 create table grant_type (
     id int(11) not null auto_increment,
-    code varchar(45) character set latin1 collate latin1_bin not null not null,
+    code varchar(45) character set latin1 collate latin1_bin not null,
+    implementation varchar(20) character set latin1 collate latin1_bin not null, 
     version int(11) not null default 0,
     createdat timestamp not null default CURRENT_TIMESTAMP,
     updatedat timestamp null on update CURRENT_TIMESTAMP,
@@ -53,9 +58,11 @@ create table grant_type (
 );
 
 alter table grant_type add constraint gt_code_uq_idx unique (code);
-insert into grant_type(code) values('authorization_code');
-insert into grant_type(code) values('implicit');
-insert into grant_type(code) values('refresh_token');
+insert into grant_type(code, implementation) values('authorization_code', 'openid');
+insert into grant_type(code, implementation) values('implicit', 'openid');
+insert into grant_type(code, implementation) values('refresh_token', 'openid');
+insert into grant_type(code, implementation) values('client_credentials', 'oauth');
+
 
 create table client_grant_type (
     client_id int(11) not null,

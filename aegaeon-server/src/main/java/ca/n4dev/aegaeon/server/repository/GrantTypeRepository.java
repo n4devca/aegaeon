@@ -19,47 +19,20 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.model;
+package ca.n4dev.aegaeon.server.repository;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import ca.n4dev.aegaeon.server.model.GrantType;
 
 /**
- * ClientType.java
+ * GrantTypeRepository.java
  * 
- * Represent the type of client :
- *  - Implicit
- *  - Authorization code
- *  - ...
+ * GrantType repository.
  *
  * @author by rguillemette
  * @since May 8, 2017
  */
-@Entity
-@Table(name = "client_type")
-public class ClientType extends BaseEntity {
+public interface GrantTypeRepository extends JpaRepository<GrantType, Long> {
 
-    public static final String CODE_AUTH_CODE = "AUTH_CODE";
-    public static final String CODE_IMPLICIT = "IMPLICIT";
-    public static final String CODE_CLIENT_CREDENTIALS = "CLIENT_CREDENTIALS";
-    
-    private String code;
-
-    /**
-     * @return the code
-     */
-    public String getCode() {
-        return code;
-    }
-
-    /**
-     * @param pCode the code to set
-     */
-    public void setCode(String pCode) {
-        code = pCode;
-    }
-    
-    public boolean is(String pCode) {
-        return this.code.equals(pCode);
-    }
 }

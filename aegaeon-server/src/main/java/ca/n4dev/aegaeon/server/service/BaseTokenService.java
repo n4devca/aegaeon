@@ -27,17 +27,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
-import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
 import ca.n4dev.aegaeon.api.token.TokenType;
 import ca.n4dev.aegaeon.server.model.BaseEntity;
 import ca.n4dev.aegaeon.server.model.Client;
 import ca.n4dev.aegaeon.server.model.ClientScope;
-import ca.n4dev.aegaeon.server.model.ClientType;
+import ca.n4dev.aegaeon.server.model.GrantType;
 import ca.n4dev.aegaeon.server.model.Scope;
 import ca.n4dev.aegaeon.server.model.User;
 import ca.n4dev.aegaeon.server.model.UserAuthorization;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
 import ca.n4dev.aegaeon.server.utils.Assert;
+import ca.n4dev.aegaeon.server.utils.ClientUtils;
 import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**
@@ -88,23 +88,10 @@ public abstract class BaseTokenService<T extends BaseEntity, J extends JpaReposi
         // TODO(RG): Only auth code or client cred is ok ?
         if (pTokenType == TokenType.REFRESH_TOKEN) {
             
-            if (!hasClientScope(pClient, OFFLINE_SCOPE) 
-                    || pClient.getGrantType() != AuthorizationGrant.AUTHORIZATIONCODE) {
+            if (!ClientUtils.hasClientScope(pClient, OFFLINE_SCOPE) || ClientUtils.hasClientGrant(pClient, GrantType.CODE_AUTH_CODE)) {
                 throw new ServerException(ServerExceptionCode.SCOPE_UNAUTHORIZED_OFFLINE);
             }
         }
-    }
-    
-    protected boolean hasClientScope(Client pClient, String pScopeName) {
-        if (pClient != null && Utils.isNotEmpty(pScopeName)) {
-            for (ClientScope sc : pClient.getScopes()) {
-                if (sc.getScope().getName().equals(pScopeName)) {
-                    return true;
-                }
-            }
-        }
-        
-        return false;
     }
     
     protected boolean isAuthorized(List<String> pAuthorizedScopes, List<Scope> pRequestedScopes) {

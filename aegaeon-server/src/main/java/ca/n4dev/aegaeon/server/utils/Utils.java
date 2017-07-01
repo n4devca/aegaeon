@@ -43,12 +43,14 @@ public class Utils {
         return pValue == null || pValue.isEmpty();
     }
     
-    public static boolean areOneEmpty(String... pValues) {
+    public static boolean areOneEmpty(Object... pValues) {
         
         if (pValues != null) {
             
-            for (String v : pValues) {
-                if (isEmpty(v)) {
+            for (Object v : pValues) {
+                if (v instanceof String && isEmpty((String) v)) {
+                    return true;
+                } else if (v == null) {
                     return true;
                 }
             }
