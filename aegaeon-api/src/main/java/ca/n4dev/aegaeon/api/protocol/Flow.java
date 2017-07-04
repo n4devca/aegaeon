@@ -21,6 +21,7 @@
  */
 package ca.n4dev.aegaeon.api.protocol;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -33,48 +34,16 @@ import java.util.Set;
  */
 public class Flow {
 
-    public static final String CODE = "code";
-    public static final String IMPLICIT = "token";
-    public static final String ID_TOKEN = "id_token";
-    public static final String CLIENTCREDENTIALS = "client_credentials";
-    public static final String REFRESH_TOKEN = "refresh_token";
     
     private Set<RequestedGrant> requestedGrant;
     
     private String[] responseType;
     
-    public Flow() {}
-    
-    /**
-     * Parse a response_type param and determine the Flow to follow.
-     * 
-     * Rules are:  
-     * code: authorization_code
-     * id_token: implicit
-     * token id_token: implicit
-     * code id_token: authorization_code, implicit
-     * code token: authorization_code, implicit
-     * code token id_token: authorization_code, implicit
-     */
-    protected void parse() {
-        if (this.responseType != null && this.responseType.length > 0) {
-            
-            for (String r : this.responseType) {
-                if (r.equals(CODE)) {
-                    this.requestedGrant.add(RequestedGrant.AUTHORIZATIONCODE);
-                } else if (r.equals(IMPLICIT) || r.equals(ID_TOKEN)) {
-                    this.requestedGrant.add(RequestedGrant.IMPLICIT);
-                } else if (r.equals(CLIENTCREDENTIALS)) { // OAuth
-                    this.requestedGrant.clear();
-                    this.requestedGrant.add(RequestedGrant.CLIENTCREDENTIALS);
-                } else if (r.equals(REFRESH_TOKEN)) { // OAuth
-                    this.requestedGrant.clear();
-                    this.requestedGrant.add(RequestedGrant.REFRESH_TOKEN);
-                }
-            }
-        }
+    public Flow() {
+    	this.requestedGrant = new HashSet<>();
     }
-
+    
+    
     public boolean has(RequestedGrant pGrant) {
         for (RequestedGrant rg : this.requestedGrant) {
             if (rg == pGrant) {
@@ -123,30 +92,6 @@ public class Flow {
         }
         
         return b.toString();            
-    }
-    
-    public static final Flow of(String pCode) {
-        return of(pCode.split(" "));
-    }
-    
-    public static final Flow of(String[] pCode) {
-        
-        Flow f = new Flow();
-        f.responseType = pCode;
-        
-        if (pCode.equals(CODE)) {
-            f.requestedGrant.add(RequestedGrant.AUTHORIZATIONCODE);
-        } else if (pCode.equals(IMPLICIT) || pCode.equals(ID_TOKEN)) {
-            f.requestedGrant.add(RequestedGrant.IMPLICIT);
-        } else if (pCode.equals(CLIENTCREDENTIALS)) { // OAuth
-            f.requestedGrant.clear();
-            f.requestedGrant.add(RequestedGrant.CLIENTCREDENTIALS);
-        } else if (pCode.equals(REFRESH_TOKEN)) { // OAuth
-            f.requestedGrant.clear();
-            f.requestedGrant.add(RequestedGrant.REFRESH_TOKEN);
-        }
-        
-        return f;
     }
     
 }

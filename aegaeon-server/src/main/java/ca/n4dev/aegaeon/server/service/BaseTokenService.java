@@ -88,7 +88,7 @@ public abstract class BaseTokenService<T extends BaseEntity, J extends JpaReposi
         // TODO(RG): Only auth code or client cred is ok ?
         if (pTokenType == TokenType.REFRESH_TOKEN) {
             
-            if (!ClientUtils.hasClientScope(pClient, OFFLINE_SCOPE) || ClientUtils.hasClientGrant(pClient, GrantType.CODE_AUTH_CODE)) {
+            if (!ClientUtils.hasClientScope(pClient, OFFLINE_SCOPE) || !ClientUtils.hasClientGrant(pClient, GrantType.CODE_AUTH_CODE)) {
                 throw new ServerException(ServerExceptionCode.SCOPE_UNAUTHORIZED_OFFLINE);
             }
         }

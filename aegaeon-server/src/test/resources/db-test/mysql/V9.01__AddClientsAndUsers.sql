@@ -57,7 +57,7 @@ insert into client( name, logourl, public_id, secret, provider_name)
 values('ca.n4dev.auth.client.impl', 'https://n4dev.ca/aegaeon/logo2.jpg', 'ca.n4dev.auth.client.impl', 'kjaskas8993jnskajksj', 'RSA_RS512');
 select last_insert_id() into @client_impl;
 
-insert into client_grant_type(client_id, grant_type_id) values(@client_impl, @gt_impl);
+insert into client_grant_type(client_id, grant_type_id) values(@client_impl, @gt_implicit);
 
 insert into client_scope(client_id, scope_id)
 select @client_impl, id

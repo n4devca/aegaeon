@@ -21,6 +21,7 @@
  */
 package ca.n4dev.aegaeon.server.web;
 
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import org.junit.Assert;
@@ -34,6 +35,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import ca.n4dev.aegaeon.api.protocol.Flow;
+import ca.n4dev.aegaeon.api.protocol.FlowFactory;
 import ca.n4dev.aegaeon.api.protocol.RequestedGrant;
 import ca.n4dev.aegaeon.server.controller.OAuthTokensController;
 import ca.n4dev.aegaeon.server.model.RefreshToken;
@@ -67,6 +69,7 @@ public class TokenControllerTest extends BaseWebTest {
     public void init() {
         mockMvc = MockMvcBuilders
                 .standaloneSetup(OAuthTokensController.class)
+                .apply(springSecurity())
                 .build();
     }
     
@@ -80,7 +83,7 @@ public class TokenControllerTest extends BaseWebTest {
                         post(OAuthTokensController.URL)
                             .accept(MediaType.APPLICATION_JSON)
                             .param("code", AUTH_CODE_A)
-                            .param("grant_type", Flow.CODE, Flow.ID_TOKEN)
+                            .param("grant_type", FlowFactory.PARAM_CODE + " " + FlowFactory.PARAM_ID_TOKEN)
                             .param("client_id", "ca.n4dev.auth.client")
                             .param("scope", "openid profile")
                             .param("redirect_uri", "http://localhost/login.html")
@@ -104,7 +107,7 @@ public class TokenControllerTest extends BaseWebTest {
                         post(OAuthTokensController.URL)
                             .accept(MediaType.APPLICATION_JSON)
                             .param("refresh_token", token.getToken())
-                            .param("grant_type", Flow.REFRESH_TOKEN)
+                            .param("grant_type", FlowFactory.PARAM_REFRESH_TOKEN)
                             .param("client_id", "ca.n4dev.auth.client")
                             .param("scope", "openid profile")
                             .param("redirect_uri", "http://localhost/login.html")

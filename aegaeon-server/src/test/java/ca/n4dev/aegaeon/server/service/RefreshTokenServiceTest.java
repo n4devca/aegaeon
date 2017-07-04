@@ -26,6 +26,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.server.model.RefreshToken;
@@ -47,6 +48,7 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
     
     
     @Test
+    @WithMockUser(username = CLIENT_AUTH, roles = {"CLIENT"})
     public void testGetRefreshToken() {
         
         User user = getUser(USERNAME);
@@ -61,6 +63,7 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
     }
     
     @Test
+    @WithMockUser(username = CLIENT_AUTH, roles = {"CLIENT"})
     public void testErrorMissingOffline() {
         User user = getUser(USERNAME);
         Assert.assertNotNull(user);
@@ -75,6 +78,7 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
     }
     
     @Test(expected = ServerException.class)
+    @WithMockUser(username = CLIENT_IMPL, roles = {"CLIENT"})
     public void testErrorImplicitClient() {
         User user = getUser(USERNAME);
         Assert.assertNotNull(user);
@@ -90,6 +94,7 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
     }
     
     @Test(expected = ServerException.class)
+    @WithMockUser(username = CLIENT_AUTH_2, roles = {"CLIENT"})
     public void testErrorNotAuthorizedClient() {
         User user = getUser(USERNAME);
         Assert.assertNotNull(user);

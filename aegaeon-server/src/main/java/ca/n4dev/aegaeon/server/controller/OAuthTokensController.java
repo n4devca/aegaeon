@@ -124,10 +124,11 @@ public class OAuthTokensController extends BaseController {
                     @RequestParam(value = "refresh_token", required = false) String pRefreshToken,
                     Authentication pAuthentication) {
         
-        Flow flow = Flow.of(pGrantType);
+        Flow flow = FlowFactory.of(pGrantType);
         TokenResponse response = null;
 
         // Use flow for test
+        
         if (RequestedGrant.is(pGrantType, RequestedGrant.AUTHORIZATIONCODE)) {
             response = authorizationCodeResponse(pCode, pRedirectUri, pClientPublicId);
         } else if (RequestedGrant.is(pGrantType, RequestedGrant.CLIENTCREDENTIALS)) {

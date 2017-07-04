@@ -53,7 +53,7 @@ public class UserService extends BaseService<User, UserRepository> {
      * Find one user by id.
      */
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('ADMIN') or principal.id == #pId")
+    @PreAuthorize("hasRole('CLIENT') or principal.id == #pId")
     public User findById(Long pId) {
         return this.getRepository().findOne(pId);
     }

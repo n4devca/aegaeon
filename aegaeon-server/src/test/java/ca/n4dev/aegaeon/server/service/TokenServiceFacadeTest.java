@@ -26,6 +26,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.protocol.Flow;
@@ -50,6 +51,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
     private TokenServicesFacade tokenServicesFacade;
     
     @Test
+    @WithMockUser(username = CLIENT_IMPL, roles = {"CLIENT"})
     public void accessTokenRSA() {
         
         Client client = clientService.findByPublicId(CLIENT_IMPL);
@@ -71,6 +73,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
     }
     
     @Test
+    @WithMockUser(username = CLIENT_AUTH, roles = {"CLIENT"})
     public void accessTokenWithRefreshRSA() {
         Client client = clientService.findByPublicId(CLIENT_AUTH);
         User user = getUser(USERNAME);
@@ -91,6 +94,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
     }
     
     @Test
+    @WithMockUser(username = CLIENT_AUTH_3, roles = {"CLIENT"})
     public void accessTokenHMAC() {
         Client client = clientService.findByPublicId(CLIENT_AUTH_3);
         User user = getUser(USERNAME);

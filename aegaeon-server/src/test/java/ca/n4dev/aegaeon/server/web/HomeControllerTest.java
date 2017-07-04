@@ -21,9 +21,15 @@
  */
 package ca.n4dev.aegaeon.server.web;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import ca.n4dev.aegaeon.server.controller.OAuthAuthorizationController;
@@ -39,7 +45,7 @@ import ca.n4dev.aegaeon.server.controller.OAuthAuthorizationController;
 @AutoConfigureMockMvc
 public class HomeControllerTest extends BaseWebTest {
 
-private MockMvc mockMvc;
+	private MockMvc mockMvc;
     
     @Before
     public void init() {
@@ -48,5 +54,13 @@ private MockMvc mockMvc;
                 .build();
     }
     
-    
+    @Test
+    public void testHome() throws Exception {
+    	
+    	MvcResult result =
+                this.mockMvc.perform(get("/").accept(MediaType.TEXT_HTML))
+                            .andReturn();
+        
+        Assert.assertNotNull(result);
+    }
 }

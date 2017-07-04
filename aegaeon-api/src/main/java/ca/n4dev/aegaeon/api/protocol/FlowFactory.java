@@ -30,41 +30,69 @@ package ca.n4dev.aegaeon.api.protocol;
  * @since Jun 27, 2017
  */
 public class FlowFactory {
+	
+    public static final String PARAM_CODE = "code";
+    public static final String PARAM_IMPLICIT = "token";
+    public static final String PARAM_ID_TOKEN = "id_token";
+    public static final String PARAM_CLIENTCREDENTIALS = "client_credentials";
+    public static final String PARAM_REFRESH_TOKEN = "refresh_token";
+    
     private FlowFactory() {}
     
 
+    /**
+     * Parse a response_type param and determine the Flow to follow.
+     * 
+     * Rules are:  
+     * code: authorization_code
+     * id_token: implicit
+     * token id_token: implicit
+     * code id_token: authorization_code, implicit
+     * code token: authorization_code, implicit
+     * code token id_token: authorization_code, implicit
+     */
+    public static Flow of(String[] pCode) {
+    	
+    	Flow f = new Flow();
+    	f.setResponseType(pCode);
+    	
+    	if (f.getResponseType() != null && f.getResponseType().length > 0) {
+    		
+    		for (String r : f.getResponseType()) {
+    			if (r.equals(PARAM_CODE)) {
+    				f.getRequestedGrant().add(RequestedGrant.AUTHORIZATIONCODE);
+    			} else if (r.equals(PARAM_IMPLICIT) || r.equals(PARAM_ID_TOKEN)) {
+    				f.getRequestedGrant().add(RequestedGrant.IMPLICIT);
+    			} else if (r.equals(PARAM_CLIENTCREDENTIALS)) { // OAuth
+    				f.getRequestedGrant().clear();
+    				f.getRequestedGrant().add(RequestedGrant.CLIENTCREDENTIALS);
+    			} else if (r.equals(PARAM_REFRESH_TOKEN)) { // OAuth
+    				f.getRequestedGrant().clear();
+    				f.getRequestedGrant().add(RequestedGrant.REFRESH_TOKEN);
+    			}
+    		}
+    	}
+    	
+    	return f;
+    }
+
     public static Flow of(String pCode) {
-        Flow f = new Flow();
-        f.setResponseType(new String[] {pCode});
-        
-        if (pCode.equals(Flow.CODE)) {
-            f.getRequestedGrant().add(RequestedGrant.AUTHORIZATIONCODE);
-        } else if (pCode.equals(Flow.IMPLICIT) || pCode.equals(Flow.ID_TOKEN)) {
-            f.getRequestedGrant().add(RequestedGrant.IMPLICIT);
-        } else if (pCode.equals(Flow.CLIENTCREDENTIALS)) { // OAuth
-            f.getRequestedGrant().clear();
-            f.getRequestedGrant().add(RequestedGrant.CLIENTCREDENTIALS);
-        } else if (pCode.equals(Flow.REFRESH_TOKEN)) { // OAuth
-            f.getRequestedGrant().clear();
-            f.getRequestedGrant().add(RequestedGrant.REFRESH_TOKEN);
-        }
-        
-        return f;
+    	return of(new String[] {pCode});
     }
     
     public static Flow implicit() {
-        return of(Flow.IMPLICIT);
+        return of(PARAM_IMPLICIT);
     }
     
     public static Flow authCode() {
-        return of(Flow.CODE);
+        return of(PARAM_CODE);
     }
     
     public static Flow clientCredential() {
-        return of(Flow.CLIENTCREDENTIALS);
+        return of(PARAM_CLIENTCREDENTIALS);
     }
     
     public static Flow refreshToken() {
-        return of(Flow.REFRESH_TOKEN);
+        return of(PARAM_REFRESH_TOKEN);
     }
 }

@@ -43,6 +43,7 @@ import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
 import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
 import ca.n4dev.aegaeon.api.protocol.Flow;
+import ca.n4dev.aegaeon.api.protocol.FlowFactory;
 import ca.n4dev.aegaeon.api.protocol.RequestedGrant;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
 import ca.n4dev.aegaeon.server.model.AuthorizationCode;
@@ -106,7 +107,7 @@ public class OAuthAuthorizationController {
                                   Authentication pAuthentication,
                                   RequestMethod pRequestMethod) {
         
-        Flow flow = Flow.of(pResponseType);
+        Flow flow = FlowFactory.of(pResponseType);
 
         // Required
         if (Utils.areOneEmpty(pClientPublicId, pRedirectionUrl, pResponseType, pScope)) {

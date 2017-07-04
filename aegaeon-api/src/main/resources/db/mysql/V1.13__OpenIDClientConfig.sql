@@ -88,7 +88,7 @@ alter table client_contact add constraint cc_client_email_uq_idx unique (email, 
 
 create table client_request_uris (
     id int(11) not null auto_increment,
-    uri varchar(250) not null,
+    uri varchar(180) not null,
     client_id int(11) not null,
     version int(11) not null default 0,
     createdat timestamp not null default CURRENT_TIMESTAMP,
