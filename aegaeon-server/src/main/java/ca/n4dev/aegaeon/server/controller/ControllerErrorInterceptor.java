@@ -38,6 +38,7 @@ import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
 import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
 import ca.n4dev.aegaeon.api.protocol.RequestedGrant;
 import ca.n4dev.aegaeon.server.utils.UriBuilder;
+import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**
  * ControllerErrorInterceptor.java
@@ -69,7 +70,10 @@ public class ControllerErrorInterceptor {
     @ExceptionHandler(OAuthPublicRedirectionException.class)
     public RedirectView oauthPublicException(final OAuthPublicRedirectionException pOAuthPublicException) {
         
-        this.openIdEventLogger.log(OpenIdEvent.PUBLIC_ERROR, pOAuthPublicException.getSource(), null, pOAuthPublicException);
+        this.openIdEventLogger.log(OpenIdEvent.PUBLIC_ERROR, 
+                                   (Class<?>) Utils.coalesce(pOAuthPublicException.getSource(), pOAuthPublicException.getClass()), 
+                                   null, 
+                                   pOAuthPublicException);
         
         String url = UriBuilder.build(pOAuthPublicException.getRedirectUrl(), pOAuthPublicException);
         

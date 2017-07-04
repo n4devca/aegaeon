@@ -77,7 +77,11 @@ public class FlowFactory {
     }
 
     public static Flow of(String pCode) {
-    	return of(new String[] {pCode});
+        if (pCode.indexOf(" ") != -1) {
+            return of(pCode.split(" "));
+        } else {
+            return of(new String[] {pCode});            
+        }
     }
     
     public static Flow implicit() {

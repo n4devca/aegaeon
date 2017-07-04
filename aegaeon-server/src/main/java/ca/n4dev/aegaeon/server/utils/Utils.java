@@ -117,4 +117,16 @@ public class Utils {
         
         return lst;
     }
+    
+    public static Object coalesce(Object... pEntities) {
+        if (pEntities != null) {
+            for (Object e : pEntities) {
+                if (e != null) {
+                    return e;
+                }
+            }
+        }
+        
+        return null;
+    }
 }

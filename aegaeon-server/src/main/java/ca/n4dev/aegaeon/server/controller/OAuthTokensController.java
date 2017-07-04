@@ -129,11 +129,11 @@ public class OAuthTokensController extends BaseController {
 
         // Use flow for test
         
-        if (RequestedGrant.is(pGrantType, RequestedGrant.AUTHORIZATIONCODE)) {
+        if (flow.has(RequestedGrant.AUTHORIZATIONCODE)) {
             response = authorizationCodeResponse(pCode, pRedirectUri, pClientPublicId);
-        } else if (RequestedGrant.is(pGrantType, RequestedGrant.CLIENTCREDENTIALS)) {
+        } else if (flow.has(RequestedGrant.CLIENTCREDENTIALS)) {
             response = clientCredentialResponse(pAuthentication, pScope, pRedirectUri);
-        } else if (RequestedGrant.is(pGrantType, RequestedGrant.REFRESH_TOKEN)) {
+        } else if (flow.has(RequestedGrant.REFRESH_TOKEN)) {
             response = refreshTokenResponse(pAuthentication, pRefreshToken);
         } else {
             throw new OauthRestrictedException(getClass(),
@@ -292,7 +292,7 @@ public class OAuthTokensController extends BaseController {
         }
         
         // Did we set this client to use this flow
-        if (ClientUtils.hasClientGrant(client, GrantType.CODE_AUTH_CODE)) {
+        if (!ClientUtils.hasClientGrant(client, GrantType.CODE_AUTH_CODE)) {
             throw new OAuthPublicRedirectionException(getClass(),
                     flow, OAuthErrorType.unauthorized_client, pRedirectUri);
         }
