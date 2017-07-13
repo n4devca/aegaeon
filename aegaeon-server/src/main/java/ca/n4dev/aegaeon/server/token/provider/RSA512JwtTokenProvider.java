@@ -27,8 +27,8 @@ import java.time.ZoneOffset;
 import java.time.temporal.TemporalUnit;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -185,6 +185,11 @@ public class RSA512JwtTokenProvider implements TokenProvider {
         builder.subject(pOAuthUser.getUniqueIdentifier());
         builder.audience(pOAuthClient.getClientId());
         
+        if (pPayloads != null && !pPayloads.isEmpty()) {
+            for (Entry<String, String> en : pPayloads.entrySet()) {
+                builder.claim(en.getKey(), en.getValue());
+            }
+        }
         
         JWTClaimsSet claimsSet = builder.build();
         
