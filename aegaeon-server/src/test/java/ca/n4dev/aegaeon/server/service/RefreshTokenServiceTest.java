@@ -58,7 +58,7 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         Assert.assertNotNull(scopes);
         Assert.assertTrue(scopes.size() == 3);
         
-        RefreshToken token = refreshTokenService.createRefreshToken(user.getId(), CLIENT_AUTH, scopes);
+        RefreshToken token = refreshTokenService.createToken(user.getId(), CLIENT_AUTH, scopes);
         Assert.assertNotNull(token);
     }
     
@@ -72,7 +72,7 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         Assert.assertNotNull(scopes);
         Assert.assertTrue(scopes.size() == 2);
         
-        RefreshToken token = refreshTokenService.createRefreshToken(user.getId(), CLIENT_AUTH, scopes);
+        RefreshToken token = refreshTokenService.createToken(user.getId(), CLIENT_AUTH, scopes);
         // Creation is skipped, so should be null
         Assert.assertNull(token);
     }
@@ -87,7 +87,7 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         Assert.assertNotNull(scopes);
         Assert.assertTrue(scopes.size() == 3);
         
-        RefreshToken token = refreshTokenService.createRefreshToken(user.getId(), CLIENT_IMPL, scopes);
+        RefreshToken token = refreshTokenService.createToken(user.getId(), CLIENT_IMPL, scopes);
         
         // Exception throwed before getting here
         Assert.assertNull(token);
@@ -103,7 +103,7 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         Assert.assertNotNull(scopes);
         Assert.assertTrue(scopes.size() == 3);
         
-        RefreshToken token = refreshTokenService.createRefreshToken(user.getId(), CLIENT_AUTH_2, scopes);
+        RefreshToken token = refreshTokenService.createToken(user.getId(), CLIENT_AUTH_2, scopes);
         
         // Exception throwed before getting here
         Assert.assertNull(token);

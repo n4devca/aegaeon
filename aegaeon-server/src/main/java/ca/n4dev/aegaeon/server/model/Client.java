@@ -63,6 +63,9 @@ public class Client extends BaseEntity implements OAuthClient {
     @Column(name = "provider_name")
     private String providerName;
     
+    @Column(name = "id_token_seconds")
+    private Long idTokenSeconds;
+    
     @Column(name = "access_token_seconds")
     private Long accessTokenSeconds;
     
@@ -313,6 +316,20 @@ public class Client extends BaseEntity implements OAuthClient {
      */
     public void setRequestedUris(List<ClientRequestedUri> pRequestedUris) {
         requestedUris = pRequestedUris;
+    }
+
+    /**
+     * @return the idTokenSeconds
+     */
+    public Long getIdTokenSeconds() {
+        return idTokenSeconds;
+    }
+
+    /**
+     * @param pIdTokenSeconds the idTokenSeconds to set
+     */
+    public void setIdTokenSeconds(Long pIdTokenSeconds) {
+        idTokenSeconds = pIdTokenSeconds;
     }
     
 }

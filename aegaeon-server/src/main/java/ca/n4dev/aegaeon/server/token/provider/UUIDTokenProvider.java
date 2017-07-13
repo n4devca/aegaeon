@@ -22,6 +22,8 @@
 package ca.n4dev.aegaeon.server.token.provider;
 
 import java.time.temporal.TemporalUnit;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
@@ -57,9 +59,8 @@ public class UUIDTokenProvider implements TokenProvider {
      *      ca.n4dev.aegaeon.server.token.OAuthClient, java.lang.Long, java.time.temporal.TemporalUnit)
      */
     @Override
-    public Token createToken(OAuthUser pOAuthUser, OAuthClient pOAuthClient, Long pTimeValue, TemporalUnit pTemporalUnit) {
-        
-        return new Token(UUID.randomUUID().toString(), pTimeValue, pTemporalUnit);
+    public Token createToken(OAuthUser pOAuthUser, OAuthClient pOAuthClient, Long pTimeValue, TemporalUnit pTemporalUnit) throws Exception {
+        return createToken(pOAuthUser, pOAuthClient, pTimeValue, pTemporalUnit, null);
     }
     
 
@@ -77,6 +78,18 @@ public class UUIDTokenProvider implements TokenProvider {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    /* (non-Javadoc)
+     * @see ca.n4dev.aegaeon.api.token.provider.TokenProvider#createToken(ca.n4dev.aegaeon.api.token.OAuthUser, ca.n4dev.aegaeon.api.token.OAuthClient, java.lang.Long, java.time.temporal.TemporalUnit, java.util.List)
+     */
+    @Override
+    public Token createToken(OAuthUser pOAuthUser, 
+                             OAuthClient pOAuthClient, 
+                             Long pTimeValue, 
+                             TemporalUnit pTemporalUnit,
+                             Map<String, String> pPayloads) throws Exception {
+        return new Token(UUID.randomUUID().toString(), pTimeValue, pTemporalUnit);
     }
 
 }

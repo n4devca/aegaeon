@@ -22,6 +22,7 @@
 package ca.n4dev.aegaeon.api.token.provider;
 
 import java.time.temporal.TemporalUnit;
+import java.util.Map;
 
 import ca.n4dev.aegaeon.api.token.OAuthClient;
 import ca.n4dev.aegaeon.api.token.OAuthUser;
@@ -59,6 +60,22 @@ public interface TokenProvider {
      * @param pOAuthClient The client used during authentication.
      * @return A token.
      */
-    Token createToken(OAuthUser pOAuthUser, OAuthClient pOAuthClient, Long pTimeValue, TemporalUnit pTemporalUnit) throws Exception;
+    Token createToken(OAuthUser pOAuthUser, 
+                      OAuthClient pOAuthClient, 
+                      Long pTimeValue, 
+                      TemporalUnit pTemporalUnit) throws Exception;
+    
+    /**
+     * Create a token.
+     * @param pOAuthUser The authenticated user.
+     * @param pOAuthClient The client used during authentication.
+     * @param pPayloads The payload to add to the token.
+     * @return A token.
+     */
+    Token createToken(OAuthUser pOAuthUser, 
+                      OAuthClient pOAuthClient, 
+                      Long pTimeValue, 
+                      TemporalUnit pTemporalUnit, 
+                      Map<String, String> pPayloads) throws Exception;
     
 }

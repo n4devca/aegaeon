@@ -25,7 +25,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.TemporalUnit;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -114,6 +117,30 @@ public class HMAC512JwtTokenProvider implements TokenProvider {
      */
     @Override
     public Token createToken(OAuthUser pOAuthUser, OAuthClient pOAuthClient, Long pTimeValue, TemporalUnit pTemporalUnit) throws Exception {
+        return createToken(pOAuthUser, pOAuthClient, pTimeValue, pTemporalUnit, Collections.emptyMap());
+    }
+
+    /* (non-Javadoc)
+     * @see ca.n4dev.aegaeon.api.token.provider.TokenProvider#isEnabled()
+     */
+    @Override
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    /**
+     * @return the keyId
+     */
+    public String getKeyId() {
+        return keyId;
+    }
+
+    /* (non-Javadoc)
+     * @see ca.n4dev.aegaeon.api.token.provider.TokenProvider#createToken(ca.n4dev.aegaeon.api.token.OAuthUser, ca.n4dev.aegaeon.api.token.OAuthClient, java.lang.Long, java.time.temporal.TemporalUnit, java.util.List)
+     */
+    @Override
+    public Token createToken(OAuthUser pOAuthUser, OAuthClient pOAuthClient, Long pTimeValue, TemporalUnit pTemporalUnit,
+            Map<String, String> pPayloads) throws Exception {
         
         LocalDateTime expiredIn = LocalDateTime.now().plus(pTimeValue, pTemporalUnit);
         Instant instant = expiredIn.toInstant(ZoneOffset.UTC);
@@ -134,21 +161,6 @@ public class HMAC512JwtTokenProvider implements TokenProvider {
         Token token = new Token(signedJWT.serialize(), expiredIn);
         
         return token;
-    }
-
-    /* (non-Javadoc)
-     * @see ca.n4dev.aegaeon.api.token.provider.TokenProvider#isEnabled()
-     */
-    @Override
-    public boolean isEnabled() {
-        return this.enabled;
-    }
-
-    /**
-     * @return the keyId
-     */
-    public String getKeyId() {
-        return keyId;
     }
 
 }

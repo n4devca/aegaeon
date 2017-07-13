@@ -74,6 +74,19 @@ public class Utils {
         return true;
     }
     
+    public static <E, T> List<T> convert(List<E> pElements, Function<E, T> pFunc) {
+        
+        List<T> l = new ArrayList<>();
+        
+        if (pElements != null) {
+            for (E e : pElements) {
+                l.add(pFunc.apply(e));
+            }
+        }
+        
+        return l;
+    }
+    
     public static <E> String join(List<E> pElements, Function<E, String> pFunc) {
         return join(SPACE, pElements, pFunc);
     }
@@ -128,5 +141,17 @@ public class Utils {
         }
         
         return null;
+    }
+    
+    public static <E> boolean contains(List<E> pEntities, E pValue) {
+        if (pEntities != null) {
+            for (E e : pEntities) {
+                if (e.equals(pValue)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 }

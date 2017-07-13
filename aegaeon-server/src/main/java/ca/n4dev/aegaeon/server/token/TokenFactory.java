@@ -80,11 +80,34 @@ public class TokenFactory {
      * @return A Token or null.
      */
     public Token createToken(OAuthUser pOAuthUser, OAuthClient pOAuthClient, TokenProvider pTokenProvider, 
-                             Long pTimeValue, TemporalUnit pTemporalUnit) throws Exception {
+                             Long pTimeValue, TemporalUnit pTemporalUnit, Map<String, String> pPayloads) throws Exception {
+        
+        
         return pTokenProvider.createToken(pOAuthUser, 
                                           pOAuthClient,
                                           pTimeValue,
-                                          pTemporalUnit);
+                                          pTemporalUnit,
+                                          pPayloads);
+    }
+    
+
+    /**
+     * Create a Token.
+     * @param pOAuthUser The authenticated user.
+     * @param pOAuthClient The client requesting a token.
+     * @param pTokenProviderName The name of the token provider to use. Must be a spring bean.
+     * @return A Token or null.
+     */
+    public Token createToken(OAuthUser pOAuthUser, OAuthClient pOAuthClient, TokenProviderType pTokenProviderType, 
+                             Long pTimeValue, TemporalUnit pTemporalUnit, Map<String, String> pPayloads) throws Exception {
+        
+        TokenProvider tp = this.tokenProviderHolder.get(pTokenProviderType);
+        
+        return tp.createToken(pOAuthUser, 
+                              pOAuthClient,
+                              pTimeValue,
+                              pTemporalUnit,
+                              pPayloads);
     }
     
     /**
@@ -95,14 +118,14 @@ public class TokenFactory {
      * @return A Token or null.
      */
     public Token createToken(OAuthUser pOAuthUser, OAuthClient pOAuthClient, String pTokenProviderName, 
-                             Long pTimeValue, TemporalUnit pTemporalUnit) throws Exception {
+                             Long pTimeValue, TemporalUnit pTemporalUnit, Map<String, String> pPayloads) throws Exception {
         
-        TokenProvider tp = this.tokenProviderHolder.get(TokenProviderType.from(pTokenProviderName));
-        
-        return tp.createToken(pOAuthUser, 
-                              pOAuthClient,
-                              pTimeValue,
-                              pTemporalUnit);
+        return createToken(pOAuthUser, 
+                           pOAuthClient, 
+                           TokenProviderType.from(pTokenProviderName), 
+                           pTimeValue, 
+                           pTemporalUnit, 
+                           pPayloads);
     }
     
     /**
@@ -113,14 +136,15 @@ public class TokenFactory {
      * @return A Token or null.
      */
     public Token createToken(OAuthUser pOAuthUser, OAuthClient pOAuthClient, 
-                             Long pTimeValue, TemporalUnit pTemporalUnit) throws Exception {
+                             Long pTimeValue, TemporalUnit pTemporalUnit, Map<String, String> pPayloads) throws Exception {
         
-        TokenProvider tp = this.tokenProviderHolder.get(TokenProviderType.from(pOAuthClient.getProviderName()));
-        
-        return tp.createToken(pOAuthUser, 
+       
+        return createToken(pOAuthUser, 
                 pOAuthClient,
+                TokenProviderType.from(pOAuthClient.getProviderName()),
                 pTimeValue,
-                pTemporalUnit);
+                pTemporalUnit,
+                pPayloads);
     }
     
 }

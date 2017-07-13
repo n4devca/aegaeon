@@ -22,6 +22,7 @@
 package ca.n4dev.aegaeon.server.service;
 
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,12 +34,14 @@ import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.token.OAuthUser;
 import ca.n4dev.aegaeon.api.token.Token;
 import ca.n4dev.aegaeon.api.token.TokenType;
+import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
 import ca.n4dev.aegaeon.server.model.AccessToken;
 import ca.n4dev.aegaeon.server.model.Client;
 import ca.n4dev.aegaeon.server.model.Scope;
 import ca.n4dev.aegaeon.server.model.User;
 import ca.n4dev.aegaeon.server.repository.AccessTokenRepository;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
+import ca.n4dev.aegaeon.server.token.payload.SimplePayloadProvider;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
 
@@ -61,57 +64,52 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
                               TokenFactory pTokenFactory, 
                               UserService pUserService,
                               ClientService pClientService,
-                              UserAuthorizationService pUserAuthorizationService) {
+                              UserAuthorizationService pUserAuthorizationService,
+                              PayloadProvider pPayloadProvider) {
         
-        super(pRepository, pTokenFactory, pUserService, pClientService, pUserAuthorizationService);
+        super(pRepository, pTokenFactory, pUserService, pClientService, pUserAuthorizationService, pPayloadProvider);
     }
 
-    @Transactional
-    public AccessToken createAccessToken(Long pUserId, String pClientPublicId, List<Scope> pScopes) {
-        Assert.notNull(pUserId, ServerExceptionCode.USER_EMPTY);
-        Assert.notEmpty(pClientPublicId, ServerExceptionCode.CLIENT_EMPTY);
-        
-        Client client = this.clientService.findByPublicId(pClientPublicId);
-        User user = this.userService.findById(pUserId);
-        
-        
-        return createAccessToken(user, client, pScopes);
-    }
-    
-    /**
-     * Create an access token.
-     * 
-     * This function mainly create the "db entity". The actual token creation is delegate to {@link TokenFactory}.
-     * 
-     * @param pUser A user.
-     * @param pClient A client.
-     * @return The saved token.
+    /* (non-Javadoc)
+     * @see ca.n4dev.aegaeon.server.service.BaseTokenService#createManagedToken(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
-    AccessToken createAccessToken(User pUser, Client pClient, List<Scope> pScopes) {
+    @Override
+    AccessToken createManagedToken(User pUser, Client pClient, List<Scope> pScopes) throws Exception {
         
-        // Validate the client, user and authorizations
-        validate(pUser, pClient, pScopes, TokenType.ACCESS_TOKEN);
+        Token token = this.tokenFactory.createToken(pUser, 
+                                                    pClient, 
+                                                    pClient.getAccessTokenSeconds(), 
+                                                    ChronoUnit.SECONDS, 
+                                                    Collections.emptyMap());
         
-        try {
-            
-            Token token = this.tokenFactory.createToken(pUser, pClient, pClient.getAccessTokenSeconds(), ChronoUnit.SECONDS);
-            
-            AccessToken at = new AccessToken();
-            at.setClient(pClient);
-            at.setUser(pUser);
-            
-            at.setToken(token.getValue());
-            at.setValidUntil(token.getValidUntil());
-            
-            if (pScopes != null) {
-                at.setScopes(Utils.join(" ", pScopes, s -> s.getName()));
-            }
-            
-            return this.save(at);
-        } catch (Exception e) {
-            // TODO(RG) : throw something meaningful
-            throw new ServerException(e);
+        AccessToken at = new AccessToken();
+        at.setClient(pClient);
+        at.setUser(pUser);
+        
+        at.setToken(token.getValue());
+        at.setValidUntil(token.getValidUntil());
+        
+        if (pScopes != null) {
+            at.setScopes(Utils.join(" ", pScopes, s -> s.getName()));
         }
+        
+        return this.save(at);
+    }
+
+    /* (non-Javadoc)
+     * @see ca.n4dev.aegaeon.server.service.BaseTokenService#getManagedTokenType()
+     */
+    @Override
+    TokenType getManagedTokenType() {
+        return TokenType.ACCESS_TOKEN;
+    }
+
+    /* (non-Javadoc)
+     * @see ca.n4dev.aegaeon.server.service.BaseTokenService#validate(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
+     */
+    @Override
+    void validate(User pUser, Client pClient, List<Scope> pScopes) throws Exception {
+        // No more validations for access token.
     }
     
     @Transactional
@@ -123,7 +121,9 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
                 ServerExceptionCode.SCOPE_UNAUTHORIZED);
         
         try {
-            Token token = this.tokenFactory.createToken(new ClientOAuthUser(pClient), pClient, pClient.getAccessTokenSeconds(), ChronoUnit.SECONDS);
+            Token token = this.tokenFactory.createToken(new ClientOAuthUser(pClient), pClient, 
+                                                        pClient.getAccessTokenSeconds(), ChronoUnit.SECONDS,
+                                                        Collections.emptyMap());
             
             AccessToken at = new AccessToken();
             at.setClient(pClient);
@@ -187,4 +187,15 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
         }
         
     }
+
+
+    /* (non-Javadoc)
+     * @see ca.n4dev.aegaeon.server.service.BaseTokenService#isTokenToCreate(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
+     */
+    @Override
+    boolean isTokenToCreate(User pUser, Client pClient, List<Scope> pScopes) {
+        return true;
+    }
+
+
 }

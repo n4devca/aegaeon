@@ -24,27 +24,26 @@ package ca.n4dev.aegaeon.server.service;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.token.TokenType;
+import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
 import ca.n4dev.aegaeon.server.model.BaseEntity;
 import ca.n4dev.aegaeon.server.model.Client;
-import ca.n4dev.aegaeon.server.model.ClientScope;
-import ca.n4dev.aegaeon.server.model.GrantType;
 import ca.n4dev.aegaeon.server.model.Scope;
 import ca.n4dev.aegaeon.server.model.User;
 import ca.n4dev.aegaeon.server.model.UserAuthorization;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
 import ca.n4dev.aegaeon.server.utils.Assert;
-import ca.n4dev.aegaeon.server.utils.ClientUtils;
 import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**
  * BaseTokenService.java
  * 
- * TODO(rguillemette) Add description
- *
+ * The base class of all JPA token service.
+ * 
  * @author by rguillemette
  * @since Jun 1, 2017
  */
@@ -57,6 +56,8 @@ public abstract class BaseTokenService<T extends BaseEntity, J extends JpaReposi
     protected ClientService clientService;
     protected UserAuthorizationService userAuthorizationService;
     protected TokenFactory tokenFactory;
+    protected PayloadProvider payloadProvider;
+    
     /**
      * @param pRepository
      */
@@ -64,15 +65,70 @@ public abstract class BaseTokenService<T extends BaseEntity, J extends JpaReposi
                             TokenFactory pTokenFactory,
                             UserService pUserService,
                             ClientService pClientService,
-                            UserAuthorizationService pUserAuthorizationService) {
+                            UserAuthorizationService pUserAuthorizationService,
+                            PayloadProvider pPayloadProvider) {
         super(pRepository);
         this.tokenFactory = pTokenFactory;
         this.userService = pUserService;
         this.clientService = pClientService;
         this.userAuthorizationService = pUserAuthorizationService;
+        this.payloadProvider = pPayloadProvider;
+    }
+
+    
+    abstract T createManagedToken(User pUser, Client pClient, List<Scope> pScopes) throws Exception;
+    
+    abstract boolean isTokenToCreate(User pUser, Client pClient, List<Scope> pScopes);
+    
+    abstract void validate(User pUser, Client pClient, List<Scope> pScopes) throws Exception; 
+    
+    abstract TokenType getManagedTokenType();
+    
+    @Transactional
+    public T createToken(Long pUserId, String pClientPublicId, List<Scope> pScopes) throws ServerException {
+        
+        Assert.notNull(pUserId, ServerExceptionCode.USER_EMPTY);
+        Assert.notEmpty(pClientPublicId, ServerExceptionCode.CLIENT_EMPTY);
+        
+        Client client = this.clientService.findByPublicId(pClientPublicId);
+        User user = this.userService.findById(pUserId);
+        
+        return createToken(user, client, pScopes);
     }
     
-    protected void validate(User pUser, Client pClient, List<Scope> pScopes, TokenType pTokenType) {
+    /**
+     * Create a Token.
+     * @param pUser
+     * @param pClient
+     * @param pScopes
+     * @return
+     */
+    T createToken(User pUser, Client pClient, List<Scope> pScopes) throws ServerException {
+        
+        try {
+            // Basic Validation (not null, authorize)
+            basicValidation(pUser, pClient, pScopes);
+            
+            if (isTokenToCreate(pUser, pClient, pScopes)) {
+                // Call Service Validation
+                validate(pUser, pClient, pScopes);
+                
+                return createManagedToken(pUser, pClient, pScopes);
+                
+            }
+            
+            return null;
+        } catch (ServerException se) {
+            // rethrow
+            throw se;
+        } catch (Exception e) {
+            // wrap
+            throw new ServerException(e);
+        } 
+        
+    }
+    
+    protected void basicValidation(User pUser, Client pClient, List<Scope> pScopes) {
         Assert.notNull(pUser, ServerExceptionCode.USER_EMPTY);
         Assert.notNull(pClient, ServerExceptionCode.CLIENT_EMPTY);
         
@@ -84,14 +140,6 @@ public abstract class BaseTokenService<T extends BaseEntity, J extends JpaReposi
         Assert.isTrue(isAuthorized(Utils.explode(authorization.getScopes(), s -> s), pScopes), 
                       ServerExceptionCode.SCOPE_UNAUTHORIZED);
         
-        // If the type is refresh_token, check client scope and the client type
-        // TODO(RG): Only auth code or client cred is ok ?
-        if (pTokenType == TokenType.REFRESH_TOKEN) {
-            
-            if (!ClientUtils.hasClientScope(pClient, OFFLINE_SCOPE) || !ClientUtils.hasClientGrant(pClient, GrantType.CODE_AUTH_CODE)) {
-                throw new ServerException(ServerExceptionCode.SCOPE_UNAUTHORIZED_OFFLINE);
-            }
-        }
     }
     
     protected boolean isAuthorized(List<String> pAuthorizedScopes, List<Scope> pRequestedScopes) {

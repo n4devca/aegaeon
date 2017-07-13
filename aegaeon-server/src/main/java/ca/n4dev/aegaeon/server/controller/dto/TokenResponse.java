@@ -24,6 +24,7 @@ package ca.n4dev.aegaeon.server.controller.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ca.n4dev.aegaeon.server.model.AccessToken;
+import ca.n4dev.aegaeon.server.model.IdToken;
 import ca.n4dev.aegaeon.server.model.RefreshToken;
 
 /**
@@ -163,14 +164,16 @@ public class TokenResponse {
      */
     @JsonProperty("id_token")
     public String getIdToken() {
-        return idToken;
+        return this.idToken;
     }
 
     /**
      * @param pIdToken the idToken to set
      */
-    public void setIdToken(String pIdToken) {
-        idToken = pIdToken;
+    public void setIdToken(IdToken pIdToken) {
+        if (pIdToken != null) {
+            this.idToken = pIdToken.getToken();            
+        }
     }
     
     public String toString() {
