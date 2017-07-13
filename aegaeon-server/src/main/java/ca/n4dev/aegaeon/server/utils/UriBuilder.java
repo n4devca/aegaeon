@@ -43,9 +43,11 @@ public class UriBuilder {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
         
         append(params, "access_token", pTokenResponse.getAccessToken());
+        append(params, "refresh_token", pTokenResponse.getRefreshToken());
+        append(params, "id_token", pTokenResponse.getIdToken());
+        
         append(params, "token_type", pTokenResponse.getTokenType());
         append(params, "expires_in", pTokenResponse.getExpiresIn());
-        append(params, "refresh_token", pTokenResponse.getRefreshToken());
         append(params, "scope", pTokenResponse.getScope());
         append(params, "state", pState);
 

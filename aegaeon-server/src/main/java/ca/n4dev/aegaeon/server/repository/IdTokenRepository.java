@@ -23,16 +23,16 @@ package ca.n4dev.aegaeon.server.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import ca.n4dev.aegaeon.server.model.ClientType;
+import ca.n4dev.aegaeon.server.model.IdToken;
 
 /**
- * ClientTypeRepository.java
+ * IdTokenRepository.java
  * 
- * ClientType repository.
+ * IdToken Repository.
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since Jul 5, 2017
  */
-public interface ClientTypeRepository extends JpaRepository<ClientType, Long> {
+public interface IdTokenRepository extends JpaRepository<IdToken, Long> {
 
 }

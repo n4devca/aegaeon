@@ -26,6 +26,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.server.model.RefreshToken;
@@ -47,6 +48,7 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
     
     
     @Test
+    @WithMockUser(username = CLIENT_AUTH, roles = {"CLIENT"})
     public void testGetRefreshToken() {
         
         User user = getUser(USERNAME);
@@ -56,11 +58,12 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         Assert.assertNotNull(scopes);
         Assert.assertTrue(scopes.size() == 3);
         
-        RefreshToken token = refreshTokenService.createRefreshToken(user.getId(), CLIENT_AUTH, scopes);
+        RefreshToken token = refreshTokenService.createToken(user.getId(), CLIENT_AUTH, scopes);
         Assert.assertNotNull(token);
     }
     
     @Test
+    @WithMockUser(username = CLIENT_AUTH, roles = {"CLIENT"})
     public void testErrorMissingOffline() {
         User user = getUser(USERNAME);
         Assert.assertNotNull(user);
@@ -69,12 +72,13 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         Assert.assertNotNull(scopes);
         Assert.assertTrue(scopes.size() == 2);
         
-        RefreshToken token = refreshTokenService.createRefreshToken(user.getId(), CLIENT_AUTH, scopes);
+        RefreshToken token = refreshTokenService.createToken(user.getId(), CLIENT_AUTH, scopes);
         // Creation is skipped, so should be null
         Assert.assertNull(token);
     }
     
     @Test(expected = ServerException.class)
+    @WithMockUser(username = CLIENT_IMPL, roles = {"CLIENT"})
     public void testErrorImplicitClient() {
         User user = getUser(USERNAME);
         Assert.assertNotNull(user);
@@ -83,13 +87,14 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         Assert.assertNotNull(scopes);
         Assert.assertTrue(scopes.size() == 3);
         
-        RefreshToken token = refreshTokenService.createRefreshToken(user.getId(), CLIENT_IMPL, scopes);
+        RefreshToken token = refreshTokenService.createToken(user.getId(), CLIENT_IMPL, scopes);
         
         // Exception throwed before getting here
         Assert.assertNull(token);
     }
     
     @Test(expected = ServerException.class)
+    @WithMockUser(username = CLIENT_AUTH_2, roles = {"CLIENT"})
     public void testErrorNotAuthorizedClient() {
         User user = getUser(USERNAME);
         Assert.assertNotNull(user);
@@ -98,7 +103,7 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         Assert.assertNotNull(scopes);
         Assert.assertTrue(scopes.size() == 3);
         
-        RefreshToken token = refreshTokenService.createRefreshToken(user.getId(), CLIENT_AUTH_2, scopes);
+        RefreshToken token = refreshTokenService.createToken(user.getId(), CLIENT_AUTH_2, scopes);
         
         // Exception throwed before getting here
         Assert.assertNull(token);

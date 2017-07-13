@@ -80,7 +80,7 @@ public class AccessTokenServiceTest extends BaseTokenServiceTest {
         User user = getUser(USERNAME);
         Assert.assertNotNull(user);
         
-        AccessToken token = this.accessTokenService.createAccessToken(user, client, scopes);
+        AccessToken token = this.accessTokenService.createToken(user, client, scopes);
         Assert.assertNotNull(token);
         Assert.assertNotNull(token.getScopes());
         Assert.assertNotNull(token.getValidUntil().isAfter(LocalDateTime.now()));
@@ -99,7 +99,7 @@ public class AccessTokenServiceTest extends BaseTokenServiceTest {
         User user = getUser(USERNAME);
         Assert.assertNotNull(user);
         
-        AccessToken token = this.accessTokenService.createAccessToken(user, client, scopes);
+        AccessToken token = this.accessTokenService.createToken(user, client, scopes);
         Assert.assertNotNull(token);
         Assert.assertNotNull(token.getScopes());
         Assert.assertNotNull(token.getValidUntil().isAfter(LocalDateTime.now()));

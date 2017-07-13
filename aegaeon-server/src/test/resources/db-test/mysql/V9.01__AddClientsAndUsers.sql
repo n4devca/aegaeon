@@ -28,22 +28,36 @@ insert into user_authority(user_id, authority_id)
 select @uid, id
 from authority;
 
+select id into @gt_auth from grant_type where code = 'authorization_code';
+select id into @gt_implicit from grant_type where code = 'implicit';
 
-insert into client(grant_type, name, logourl, public_id, secret, provider_name)
-values('AUTHORIZATIONCODE', 'ca.n4dev.auth.client', 'https://n4dev.ca/aegaeon/logo1.jpg', 'ca.n4dev.auth.client', 'kjaskas8993jnskajksj', 'RSA_RS512');
+-- 'AUTHORIZATIONCODE', 
+insert into client( name, logourl, public_id, secret, provider_name)
+values('ca.n4dev.auth.client', 'https://n4dev.ca/aegaeon/logo1.jpg', 'ca.n4dev.auth.client', 'kjaskas8993jnskajksj', 'RSA_RS512');
 select last_insert_id() into @client_auth;
 
-insert into client(grant_type, name, logourl, public_id, secret, provider_name)
-values('AUTHORIZATIONCODE', 'ca.n4dev.auth.client2', 'https://n4dev.ca/aegaeon/logo1.jpg', 'ca.n4dev.auth.client2', 'kjaskas8993jnskajksj', 'RSA_RS512');
+insert into client_grant_type(client_id, grant_type_id) values(@client_auth, @gt_auth);
+
+-- 'AUTHORIZATIONCODE', 
+insert into client( name, logourl, public_id, secret, provider_name)
+values('ca.n4dev.auth.client2', 'https://n4dev.ca/aegaeon/logo1.jpg', 'ca.n4dev.auth.client2', 'kjaskas8993jnskajksj', 'RSA_RS512');
 select last_insert_id() into @client_auth2;
 
-insert into client(grant_type, name, logourl, public_id, secret, provider_name)
-values('AUTHORIZATIONCODE', 'ca.n4dev.auth.client3', 'https://n4dev.ca/aegaeon/logo1.jpg', 'ca.n4dev.auth.client3', 'kjaskas8993jnskajksj', 'HMAC_HS512');
+insert into client_grant_type(client_id, grant_type_id) values(@client_auth2, @gt_auth);
+
+-- 'AUTHORIZATIONCODE', 
+insert into client( name, logourl, public_id, secret, provider_name)
+values('ca.n4dev.auth.client3', 'https://n4dev.ca/aegaeon/logo1.jpg', 'ca.n4dev.auth.client3', 'kjaskas8993jnskajksj', 'HMAC_HS512');
 select last_insert_id() into @client_auth3;
 
-insert into client(grant_type, name, logourl, public_id, secret, provider_name)
-values('IMPLICIT', 'ca.n4dev.auth.client.impl', 'https://n4dev.ca/aegaeon/logo2.jpg', 'ca.n4dev.auth.client.impl', 'kjaskas8993jnskajksj', 'RSA_RS512');
+insert into client_grant_type(client_id, grant_type_id) values(@client_auth3, @gt_auth);
+
+-- 'IMPLICIT', 
+insert into client( name, logourl, public_id, secret, provider_name)
+values('ca.n4dev.auth.client.impl', 'https://n4dev.ca/aegaeon/logo2.jpg', 'ca.n4dev.auth.client.impl', 'kjaskas8993jnskajksj', 'RSA_RS512');
 select last_insert_id() into @client_impl;
+
+insert into client_grant_type(client_id, grant_type_id) values(@client_impl, @gt_implicit);
 
 insert into client_scope(client_id, scope_id)
 select @client_impl, id
@@ -69,8 +83,9 @@ insert into client_redirection(client_id, url) values(@client_auth2, 'http://loc
 insert into client_redirection(client_id, url) values(@client_impl, 'http://localhost/login.html');
 insert into client_redirection(client_id, url) values(@client_auth3, 'http://localhost/login.html');
 
-insert into client(grant_type, name, logourl, public_id, secret, provider_name)
-values('IMPLICIT', 'ca.n4dev.auth.client.impl.notallowed', 'https://n4dev.ca/aegaeon/logo2.jpg', 'ca.n4dev.auth.client.impl.notallowed', 'kjaskas8993jnskajksjsasas2323', 'RSA_RS512');
+-- 'IMPLICIT', 
+insert into client( name, logourl, public_id, secret, provider_name)
+values('ca.n4dev.auth.client.impl.notallowed', 'https://n4dev.ca/aegaeon/logo2.jpg', 'ca.n4dev.auth.client.impl.notallowed', 'kjaskas8993jnskajksjsasas2323', 'RSA_RS512');
 select last_insert_id() into @client_impl_unath;
 
 insert into client_redirection(client_id, url) values(@client_impl_unath, 'http://bad.localhost/login.html');

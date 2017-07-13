@@ -42,7 +42,9 @@ import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
 import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
-import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
+import ca.n4dev.aegaeon.api.protocol.Flow;
+import ca.n4dev.aegaeon.api.protocol.FlowFactory;
+import ca.n4dev.aegaeon.api.protocol.RequestedGrant;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
 import ca.n4dev.aegaeon.server.model.AuthorizationCode;
 import ca.n4dev.aegaeon.server.model.Client;
@@ -97,7 +99,7 @@ public class OAuthAuthorizationController {
     }
     
     @RequestMapping(value = "")
-    public ModelAndView authorize(@RequestParam("response_type") String pResponseType,
+    public ModelAndView authorize(@RequestParam("response_type") String[] pResponseType,
                                   @RequestParam("client_id") String pClientPublicId,
                                   @RequestParam(value = "scope", required = false) String pScope,
                                   @RequestParam(value = "redirection_url", required = false) String pRedirectionUrl,
@@ -105,12 +107,12 @@ public class OAuthAuthorizationController {
                                   Authentication pAuthentication,
                                   RequestMethod pRequestMethod) {
         
-        AuthorizationGrant grantType = AuthorizationGrant.from(pResponseType);
+        Flow flow = FlowFactory.of(pResponseType);
 
         // Required
         if (Utils.areOneEmpty(pClientPublicId, pRedirectionUrl, pResponseType, pScope)) {
             throw new OauthRestrictedException(getClass(),
-                                               grantType, 
+                                               flow, 
                                                OAuthErrorType.invalid_request, 
                                                pClientPublicId, 
                                                pRedirectionUrl,
@@ -120,7 +122,7 @@ public class OAuthAuthorizationController {
         // Test method and param
         if (pRequestMethod != RequestMethod.GET && pRequestMethod != RequestMethod.POST) {
             throw new OAuthPublicRedirectionException(getClass(),
-                                            grantType, 
+                                           flow, 
                                            OAuthErrorType.invalid_request, 
                                            pRedirectionUrl);
         }
@@ -129,7 +131,7 @@ public class OAuthAuthorizationController {
         Client client  = this.clientService.findByPublicId(pClientPublicId);
         if (!client.hasRedirection(pRedirectionUrl)) {
             throw new OauthRestrictedException(getClass(),
-                                            grantType, 
+                    flow, 
                     OAuthErrorType.invalid_request, 
                     pClientPublicId, 
                     pRedirectionUrl,
@@ -143,7 +145,7 @@ public class OAuthAuthorizationController {
         } catch (InvalidScopeException scex) {
             
             throw new OAuthPublicRedirectionException(getClass(),
-                    grantType, 
+                    flow, 
                     OAuthErrorType.invalid_scope, 
                     pRedirectionUrl);
         }
@@ -164,10 +166,10 @@ public class OAuthAuthorizationController {
         RedirectView redirect = null;
         
         // TODO(RG): Client Credential
-        if (grantType == AuthorizationGrant.AUTHORIZATIONCODE) {
-            redirect = authorizeCodeResponse(pAuthentication, pClientPublicId, scopes, pRedirectionUrl, pState);
-        } else if (grantType == AuthorizationGrant.IMPLICIT) {
-            redirect = implicitResponse(pAuthentication, pClientPublicId, scopes, pRedirectionUrl, pState);
+        if (flow.has(RequestedGrant.AUTHORIZATIONCODE)) {
+            redirect = authorizeCodeResponse(pAuthentication, flow, pClientPublicId, scopes, pRedirectionUrl, pState);
+        } else if (flow.has(RequestedGrant.IMPLICIT)) {
+            redirect = implicitResponse(pAuthentication, flow, pClientPublicId, scopes, pRedirectionUrl, pState);
         } 
         
         // TODO(RG) Should throw an exception instead.
@@ -175,7 +177,7 @@ public class OAuthAuthorizationController {
     }
     
     @RequestMapping(value = "/accept")
-    public ModelAndView addUserAuthorization(@RequestParam("response_type") String pResponseType,
+    public ModelAndView addUserAuthorization(@RequestParam("response_type") String[] pResponseType,
                                              @RequestParam("client_id") String pClientPublicId,
                                              @RequestParam(value = "scope", required = false) String pScope,
                                              @RequestParam(value = "redirection_url", required = false) String pRedirectionUrl,
@@ -214,6 +216,7 @@ public class OAuthAuthorizationController {
     
     
     private RedirectView authorizeCodeResponse(Authentication pAuthentication,
+                                               Flow pFlow,
                                                String pClientId,
                                                List<Scope> pScopes,
                                                String pRedirectionUrl,
@@ -245,6 +248,7 @@ public class OAuthAuthorizationController {
     }
     
     private RedirectView implicitResponse(Authentication pAuthentication, 
+                                          Flow pFlow,
                                           String pClientId,
                                           List<Scope> pScopes,
                                           String pRedirectionUrl,
@@ -254,7 +258,7 @@ public class OAuthAuthorizationController {
         
         try {
            
-            TokenResponse token = this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.IMPLICIT, pClientId, user.getId(), pScopes, pRedirectionUrl);
+            TokenResponse token = this.tokenServicesFacade.createTokenResponse(pFlow, pClientId, user.getId(), pScopes, pRedirectionUrl);
             
             RedirectView view = new RedirectView(
                     UriBuilder.build(pRedirectionUrl, 

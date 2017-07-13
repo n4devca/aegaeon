@@ -36,8 +36,9 @@ import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
 import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
-import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
+import ca.n4dev.aegaeon.api.protocol.RequestedGrant;
 import ca.n4dev.aegaeon.server.utils.UriBuilder;
+import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**
  * ControllerErrorInterceptor.java
@@ -69,13 +70,16 @@ public class ControllerErrorInterceptor {
     @ExceptionHandler(OAuthPublicRedirectionException.class)
     public RedirectView oauthPublicException(final OAuthPublicRedirectionException pOAuthPublicException) {
         
-        this.openIdEventLogger.log(OpenIdEvent.PUBLIC_ERROR, pOAuthPublicException.getSource(), null, pOAuthPublicException);
+        this.openIdEventLogger.log(OpenIdEvent.PUBLIC_ERROR, 
+                                   (Class<?>) Utils.coalesce(pOAuthPublicException.getSource(), pOAuthPublicException.getClass()), 
+                                   null, 
+                                   pOAuthPublicException);
         
         String url = UriBuilder.build(pOAuthPublicException.getRedirectUrl(), pOAuthPublicException);
         
-        if (pOAuthPublicException.getGrantType() == AuthorizationGrant.AUTHORIZATIONCODE) {
+        if (pOAuthPublicException.getFlow().has(RequestedGrant.AUTHORIZATIONCODE)) {
             return new RedirectView(url, false);            
-        } else if (pOAuthPublicException.getGrantType() == AuthorizationGrant.IMPLICIT) {
+        } else if (pOAuthPublicException.getFlow().has(RequestedGrant.IMPLICIT)) {
             // TODO(RG): this smell bad
             url = url.replace(QUESTIONMARK, HASHTAG);
             return new RedirectView(url, false);

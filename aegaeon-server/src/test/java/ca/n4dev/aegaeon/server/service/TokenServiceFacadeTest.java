@@ -26,9 +26,12 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
-import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
+import ca.n4dev.aegaeon.api.protocol.Flow;
+import ca.n4dev.aegaeon.api.protocol.FlowFactory;
+import ca.n4dev.aegaeon.api.protocol.RequestedGrant;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
 import ca.n4dev.aegaeon.server.model.Client;
 import ca.n4dev.aegaeon.server.model.Scope;
@@ -48,13 +51,14 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
     private TokenServicesFacade tokenServicesFacade;
     
     @Test
+    @WithMockUser(username = CLIENT_IMPL, roles = {"CLIENT"})
     public void accessTokenRSA() {
         
         Client client = clientService.findByPublicId(CLIENT_IMPL);
         User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES);
         
-        TokenResponse token = this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.IMPLICIT, 
+        TokenResponse token = this.tokenServicesFacade.createTokenResponse(FlowFactory.implicit(), 
                                                                            client.getPublicId(), 
                                                                            user.getId(), 
                                                                            scopes, 
@@ -69,12 +73,13 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
     }
     
     @Test
+    @WithMockUser(username = CLIENT_AUTH, roles = {"CLIENT"})
     public void accessTokenWithRefreshRSA() {
         Client client = clientService.findByPublicId(CLIENT_AUTH);
         User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES + " offline_access");
         
-        TokenResponse token = this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.AUTHORIZATIONCODE, 
+        TokenResponse token = this.tokenServicesFacade.createTokenResponse(FlowFactory.authCode(), 
                 client.getPublicId(), 
                 user.getId(), 
                 scopes, 
@@ -89,12 +94,13 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
     }
     
     @Test
+    @WithMockUser(username = CLIENT_AUTH_3, roles = {"CLIENT"})
     public void accessTokenHMAC() {
         Client client = clientService.findByPublicId(CLIENT_AUTH_3);
         User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES);
         
-        TokenResponse token = this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.AUTHORIZATIONCODE, 
+        TokenResponse token = this.tokenServicesFacade.createTokenResponse(FlowFactory.authCode(), 
                                                                            client.getPublicId(), 
                                                                            user.getId(), 
                                                                            scopes, 
@@ -114,7 +120,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
         User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES + " offline_access");
         
-        this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.AUTHORIZATIONCODE, 
+        this.tokenServicesFacade.createTokenResponse(FlowFactory.authCode(), 
                 client.getPublicId(), 
                 user.getId(), 
                 scopes, 
@@ -130,7 +136,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
         User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES + " offline_access");
         
-        this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.IMPLICIT, 
+        this.tokenServicesFacade.createTokenResponse(FlowFactory.implicit(), 
                 client.getPublicId(), 
                 user.getId(), 
                 scopes, 
@@ -146,7 +152,7 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
         User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES);
         
-        this.tokenServicesFacade.createTokenResponse(AuthorizationGrant.IMPLICIT, 
+        this.tokenServicesFacade.createTokenResponse(FlowFactory.authCode(), 
                 client.getPublicId(), 
                 user.getId(), 
                 scopes, 

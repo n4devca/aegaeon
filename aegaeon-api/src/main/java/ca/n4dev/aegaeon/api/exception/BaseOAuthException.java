@@ -24,7 +24,7 @@ package ca.n4dev.aegaeon.api.exception;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
+import ca.n4dev.aegaeon.api.protocol.Flow;
 
 /**
  * BaseOAuthException.java
@@ -45,7 +45,7 @@ public abstract class BaseOAuthException extends ServerException {
     protected OAuthErrorType error;
     
     @JsonIgnore
-    protected AuthorizationGrant grantType;
+    protected Flow flow;
     
     @JsonProperty("error_description")
     protected String errorDescription;
@@ -59,15 +59,15 @@ public abstract class BaseOAuthException extends ServerException {
     @JsonIgnore
     protected String clientPublicId;
     
-    public BaseOAuthException(Class<?> pSource, AuthorizationGrant pGrantType, OAuthErrorType pError) {
+    public BaseOAuthException(Class<?> pSource, Flow pFlow, OAuthErrorType pError) {
         this.error = pError;
-        this.grantType = pGrantType;
+        this.flow = pFlow;
     }
     
 
     public String toString() {
         return new StringBuilder()
-                        .append(this.grantType)
+                        .append(this.flow.toString())
                         .append(",")
                         .append(this.error)
                         .toString();
@@ -144,20 +144,6 @@ public abstract class BaseOAuthException extends ServerException {
     }
 
     /**
-     * @return the grantType
-     */
-    public AuthorizationGrant getGrantType() {
-        return grantType;
-    }
-
-    /**
-     * @param pGrantType the grantType to set
-     */
-    public void setGrantType(AuthorizationGrant pGrantType) {
-        grantType = pGrantType;
-    }
-
-    /**
      * @return the source
      */
     public Class<?> getSource() {
@@ -185,6 +171,22 @@ public abstract class BaseOAuthException extends ServerException {
      */
     public void setUserId(String pUserId) {
         userId = pUserId;
+    }
+
+
+    /**
+     * @return the flow
+     */
+    public Flow getFlow() {
+        return flow;
+    }
+
+
+    /**
+     * @param pFlow the flow to set
+     */
+    public void setFlow(Flow pFlow) {
+        flow = pFlow;
     }
 
 }

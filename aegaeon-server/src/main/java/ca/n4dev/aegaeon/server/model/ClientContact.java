@@ -19,42 +19,56 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.service;
+package ca.n4dev.aegaeon.server.model;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import ca.n4dev.aegaeon.server.model.User;
-import ca.n4dev.aegaeon.server.repository.UserRepository;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
- * UserService.java
+ * ClientContact.java
  * 
- * User service.
+ * Client's contacts.
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since Jun 20, 2017
  */
-@Service
-public class UserService extends BaseService<User, UserRepository> {
+@Entity
+@Table(name = "client_contact")
+public class ClientContact extends BaseEntity {
+
+    private String email;
+    
+    @ManyToOne
+    @JoinColumn(name = "client_id")
+    private Client client;
 
     /**
-     * Default constructor.
-     * @param pRepository The user repo.
+     * @return the email
      */
-    @Autowired
-    public UserService(UserRepository pRepository) {
-        super(pRepository);
+    public String getEmail() {
+        return email;
     }
 
     /**
-     * Find one user by id.
+     * @param pEmail the email to set
      */
-    @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('CLIENT') or principal.id == #pId")
-    public User findById(Long pId) {
-        return this.getRepository().findOne(pId);
+    public void setEmail(String pEmail) {
+        email = pEmail;
+    }
+
+    /**
+     * @return the client
+     */
+    public Client getClient() {
+        return client;
+    }
+
+    /**
+     * @param pClient the client to set
+     */
+    public void setClient(Client pClient) {
+        client = pClient;
     }
 }

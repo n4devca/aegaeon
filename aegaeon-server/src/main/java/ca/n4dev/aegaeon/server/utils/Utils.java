@@ -43,12 +43,14 @@ public class Utils {
         return pValue == null || pValue.isEmpty();
     }
     
-    public static boolean areOneEmpty(String... pValues) {
+    public static boolean areOneEmpty(Object... pValues) {
         
         if (pValues != null) {
             
-            for (String v : pValues) {
-                if (isEmpty(v)) {
+            for (Object v : pValues) {
+                if (v instanceof String && isEmpty((String) v)) {
+                    return true;
+                } else if (v == null) {
                     return true;
                 }
             }
@@ -70,6 +72,19 @@ public class Utils {
         }
         
         return true;
+    }
+    
+    public static <E, T> List<T> convert(List<E> pElements, Function<E, T> pFunc) {
+        
+        List<T> l = new ArrayList<>();
+        
+        if (pElements != null) {
+            for (E e : pElements) {
+                l.add(pFunc.apply(e));
+            }
+        }
+        
+        return l;
     }
     
     public static <E> String join(List<E> pElements, Function<E, String> pFunc) {
@@ -114,5 +129,29 @@ public class Utils {
         }
         
         return lst;
+    }
+    
+    public static Object coalesce(Object... pEntities) {
+        if (pEntities != null) {
+            for (Object e : pEntities) {
+                if (e != null) {
+                    return e;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    public static <E> boolean contains(List<E> pEntities, E pValue) {
+        if (pEntities != null) {
+            for (E e : pEntities) {
+                if (e.equals(pValue)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 }

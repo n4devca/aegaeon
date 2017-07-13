@@ -19,31 +19,33 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.exception;
+package ca.n4dev.aegaeon.api.token.payload;
 
-import ca.n4dev.aegaeon.api.protocol.Flow;
+import java.util.List;
+import java.util.Map;
+
+import ca.n4dev.aegaeon.api.token.OAuthClient;
+import ca.n4dev.aegaeon.api.token.OAuthUser;
 
 /**
- * OAuthPublicJsonException.java
+ * PayloadProvider.java
  * 
- * OAuth error throwed by the token or authorize endpoint.
- * Public and mostly shown to client by returning http400 + json.
- * 
- * https://tools.ietf.org/html/rfc6749#section-4.2.2.1
+ * A provider able to translate the result of an authentication
+ * into a payload, ie. a set of user's information.
  *
  * @author by rguillemette
- * @since May 29, 2017
+ * @since Jul 12, 2017
  */
-public class OAuthPublicJsonException extends BaseOAuthException {
-
-    private static final long serialVersionUID = -3097198698305780764L;
+public interface PayloadProvider {
 
     /**
-     * @param pGrantType
-     * @param pError
+     * Create a Payload (some user's info) to include in a JWT token.
+     * @param pOAuthUser The authenticated user.
+     * @param pOAuthClient The client used during authentication.
+     * @param pRequestedScopes The requested scopes.
+     * @return A payload as a Map (k=>v).
      */
-    public OAuthPublicJsonException(Class<?> pSource, Flow pFlow, OAuthErrorType pError) {
-        super(pSource, pFlow, pError);
-    }
-
+    Map<String, String> createPayload(OAuthUser pOAuthUser, 
+                                      OAuthClient pOAuthClient,
+                                      List<String> pRequestedScopes);
 }

@@ -21,7 +21,7 @@
  */
 package ca.n4dev.aegaeon.api.exception;
 
-import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
+import ca.n4dev.aegaeon.api.protocol.Flow;
 
 /**
  * OAuthPublicRedirectionException.java
@@ -44,8 +44,8 @@ public class OAuthPublicRedirectionException extends BaseOAuthException {
      * Create an OAuthServerException with an error code.
      * @param pError The error code.
      */
-    public OAuthPublicRedirectionException(Class<?> pSource, AuthorizationGrant pGrantType, OAuthErrorType pError, String pRedirectUrl) {
-        super(pSource, pGrantType, pError);
+    public OAuthPublicRedirectionException(Class<?> pSource, Flow pFlow, OAuthErrorType pError, String pRedirectUrl) {
+        super(pSource, pFlow, pError);
         setRedirectUrl(pRedirectUrl);
     }
     

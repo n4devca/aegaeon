@@ -82,7 +82,7 @@ public class SimpleOpenIdLogger implements OpenIdEventLogger {
                 new StringBuilder()
                         .append(pOpenIdEvent.toString())
                         .append(SEPARATOR)
-                        .append(pSource.getSimpleName())
+                        .append(pSource != null ? pSource.getSimpleName() : DASH)
                         .append(SEPARATOR)
                         .append(pUser != null ? pUser : DASH)
                         .append(SEPARATOR)

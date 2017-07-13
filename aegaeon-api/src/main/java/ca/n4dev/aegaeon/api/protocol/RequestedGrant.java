@@ -29,25 +29,16 @@ package ca.n4dev.aegaeon.api.protocol;
  * @author by rguillemette
  * @since May 24, 2017
  */
-public enum AuthorizationGrant {
-    AUTHORIZATIONCODE("code", true),
-    IMPLICIT("token", true),
-    CLIENTCREDENTIALS("client_credentials", true),
-    
-    REFRESH_TOKEN("refresh_token", false)
+public enum RequestedGrant {
+    AUTHORIZATIONCODE,
+    IMPLICIT,
+    CLIENTCREDENTIALS,
+    REFRESH_TOKEN
     ;
     
-    final String parameter;
-    final boolean selectable;
-    
-    AuthorizationGrant(String pParam, boolean pSelectable) {
-        this.parameter = pParam;
-        this.selectable = pSelectable;
-    }
-    
-    public static AuthorizationGrant from(String pParam) {
-        for (AuthorizationGrant grant : AuthorizationGrant.values()) {
-            if (grant.parameter.equals(pParam)) {
+    public static RequestedGrant from(String pGrantString) {
+        for (RequestedGrant grant : RequestedGrant.values()) {
+            if (grant.toString().equals(pGrantString)) {
                 return grant;
             }
         }
@@ -55,7 +46,7 @@ public enum AuthorizationGrant {
         return null;
     }
     
-    public static boolean is(String pParameter, AuthorizationGrant pGrant) {
+    public static boolean is(String pParameter, RequestedGrant pGrant) {
         if (pGrant != null && pParameter != null && !pParameter.isEmpty()) {
             return pGrant == from(pParameter);            
         }
@@ -63,17 +54,4 @@ public enum AuthorizationGrant {
         return false;
     }
 
-    /**
-     * @return the selectable
-     */
-    public boolean isSelectable() {
-        return selectable;
-    }
-    
-    /**
-     * @return the parameter
-     */
-    public String getParameter() {
-        return this.parameter;
-    }
 }

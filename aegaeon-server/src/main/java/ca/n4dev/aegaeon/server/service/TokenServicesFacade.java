@@ -32,9 +32,10 @@ import org.springframework.transaction.annotation.Transactional;
 import ca.n4dev.aegaeon.api.exception.OAuthErrorType;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.api.exception.ServerException;
-import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
+import ca.n4dev.aegaeon.api.protocol.Flow;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
 import ca.n4dev.aegaeon.server.model.AccessToken;
+import ca.n4dev.aegaeon.server.model.IdToken;
 import ca.n4dev.aegaeon.server.model.RefreshToken;
 import ca.n4dev.aegaeon.server.model.Scope;
 import ca.n4dev.aegaeon.server.utils.Utils;
@@ -51,17 +52,22 @@ import ca.n4dev.aegaeon.server.utils.Utils;
 @Service
 public class TokenServicesFacade {
 
+    private IdTokenService idTokenService;
     private AccessTokenService accessTokenService;
     private RefreshTokenService refreshTokenService;
     
     @Autowired
-    public TokenServicesFacade(AccessTokenService pAccessTokenService, RefreshTokenService pRefreshTokenService) {
+    public TokenServicesFacade(IdTokenService pIdTokenService, 
+                               AccessTokenService pAccessTokenService, 
+                               RefreshTokenService pRefreshTokenService) {
+        
+        this.idTokenService = pIdTokenService;
         this.accessTokenService = pAccessTokenService;
         this.refreshTokenService = pRefreshTokenService;
     }
     
     @Transactional
-    public TokenResponse createTokenResponse(AuthorizationGrant pGrantType,
+    public TokenResponse createTokenResponse(Flow pFlow,
                                              String pClientPublicId,
                                              Long pUserId,
                                              List<Scope> pScopes,
@@ -74,9 +80,11 @@ public class TokenServicesFacade {
             t.setTokenType(TokenResponse.BEARER);
             
             // Tokens
-            AccessToken accessToken = this.accessTokenService.createAccessToken(pUserId, pClientPublicId, pScopes);
-            RefreshToken refreshToken = this.refreshTokenService.createRefreshToken(pUserId, pClientPublicId, pScopes);
+            IdToken idToken = this.idTokenService.createToken(pUserId, pClientPublicId, pScopes);
+            AccessToken accessToken = this.accessTokenService.createToken(pUserId, pClientPublicId, pScopes);
+            RefreshToken refreshToken = this.refreshTokenService.createToken(pUserId, pClientPublicId, pScopes);
             
+            t.setIdToken(idToken);
             t.setAccessToken(accessToken);
             t.setRefreshToken(refreshToken);
             
@@ -90,7 +98,7 @@ public class TokenServicesFacade {
             throw se;
         } catch (Exception e) {
             throw new OauthRestrictedException(getClass(),
-                                               pGrantType, 
+                                               pFlow, 
                                                OAuthErrorType.server_error, 
                                                pClientPublicId, 
                                                pRedirectUrl, 

@@ -27,17 +27,13 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import ca.n4dev.aegaeon.api.exception.ServerException;
-import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
-import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
 import ca.n4dev.aegaeon.api.token.OAuthClient;
 import ca.n4dev.aegaeon.server.utils.Utils;
 
@@ -67,21 +63,33 @@ public class Client extends BaseEntity implements OAuthClient {
     @Column(name = "provider_name")
     private String providerName;
     
+    @Column(name = "id_token_seconds")
+    private Long idTokenSeconds;
+    
     @Column(name = "access_token_seconds")
     private Long accessTokenSeconds;
     
     @Column(name = "refresh_token_seconds")
     private Long refreshTokenSeconds;
     
-    @Column(name = "grant_type")
-    @Enumerated(EnumType.STRING)
-    private AuthorizationGrant grantType;
-    
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     private List<ClientRedirection> redirections;
     
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     private List<ClientScope> scopes;
+    
+    @ManyToMany
+    @JoinTable(name = "client_grant_type",
+               joinColumns = @JoinColumn(name = "client_id", referencedColumnName = "id"),
+               inverseJoinColumns = @JoinColumn(name = "grant_type_id", referencedColumnName = "id"))
+    private List<GrantType> grantTypes;
+    
+    @OneToMany(mappedBy = "client")
+    private List<ClientContact> contacts;
+    
+    @OneToMany(mappedBy = "client")
+    private List<ClientRequestedUri> requestedUris;
+    
     
     public Client() {}
     
@@ -255,24 +263,6 @@ public class Client extends BaseEntity implements OAuthClient {
     }
 
     /**
-     * @return the grantType
-     */
-    public AuthorizationGrant getGrantType() {
-        return grantType;
-    }
-
-    /**
-     * @param pGrantType the grantType to set
-     */
-    public void setGrantType(AuthorizationGrant pGrantType) {
-        if (pGrantType == null || !pGrantType.isSelectable()) {
-            throw new ServerException(ServerExceptionCode.UNEXPECTED_ERROR, "Invalid AuthorizationGrant");
-        }
-        
-        this.grantType = pGrantType;
-    }
-
-    /**
      * @return the refreshTokenSeconds
      */
     public Long getRefreshTokenSeconds() {
@@ -284,6 +274,62 @@ public class Client extends BaseEntity implements OAuthClient {
      */
     public void setRefreshTokenSeconds(Long pRefreshTokenSeconds) {
         refreshTokenSeconds = pRefreshTokenSeconds;
+    }
+
+    /**
+     * @return the grantTypes
+     */
+    public List<GrantType> getGrantTypes() {
+        return grantTypes;
+    }
+
+    /**
+     * @param pGrantTypes the grantTypes to set
+     */
+    public void setGrantTypes(List<GrantType> pGrantTypes) {
+        grantTypes = pGrantTypes;
+    }
+
+    /**
+     * @return the contacts
+     */
+    public List<ClientContact> getContacts() {
+        return contacts;
+    }
+
+    /**
+     * @param pContacts the contacts to set
+     */
+    public void setContacts(List<ClientContact> pContacts) {
+        contacts = pContacts;
+    }
+
+    /**
+     * @return the requestedUris
+     */
+    public List<ClientRequestedUri> getRequestedUris() {
+        return requestedUris;
+    }
+
+    /**
+     * @param pRequestedUris the requestedUris to set
+     */
+    public void setRequestedUris(List<ClientRequestedUri> pRequestedUris) {
+        requestedUris = pRequestedUris;
+    }
+
+    /**
+     * @return the idTokenSeconds
+     */
+    public Long getIdTokenSeconds() {
+        return idTokenSeconds;
+    }
+
+    /**
+     * @param pIdTokenSeconds the idTokenSeconds to set
+     */
+    public void setIdTokenSeconds(Long pIdTokenSeconds) {
+        idTokenSeconds = pIdTokenSeconds;
     }
     
 }

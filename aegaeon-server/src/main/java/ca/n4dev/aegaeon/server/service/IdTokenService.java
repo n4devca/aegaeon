@@ -22,12 +22,12 @@
 package ca.n4dev.aegaeon.server.service;
 
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
@@ -36,75 +36,69 @@ import ca.n4dev.aegaeon.api.token.TokenType;
 import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
 import ca.n4dev.aegaeon.api.token.provider.TokenProviderType;
 import ca.n4dev.aegaeon.server.model.Client;
-import ca.n4dev.aegaeon.server.model.GrantType;
-import ca.n4dev.aegaeon.server.model.RefreshToken;
+import ca.n4dev.aegaeon.server.model.IdToken;
 import ca.n4dev.aegaeon.server.model.Scope;
 import ca.n4dev.aegaeon.server.model.User;
-import ca.n4dev.aegaeon.server.repository.RefreshTokenRepository;
+import ca.n4dev.aegaeon.server.repository.IdTokenRepository;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
-import ca.n4dev.aegaeon.server.utils.ClientUtils;
 import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**
- * RefreshTokenService.java
+ * IdTokenService.java
  * 
- * Service managing RefreshToken.
+ * Service managing the creation of id token.
  *
  * @author by rguillemette
- * @since Jun 1, 2017
+ * @since Jul 5, 2017
  */
 @Service
-public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshTokenRepository> {
+public class IdTokenService extends BaseTokenService<IdToken, IdTokenRepository> {
 
-    
     /**
-     * Default Constructor.
-     * @param pRepository RefreshToken repository.
+     * @param pRepository
+     * @param pTokenFactory
+     * @param pUserService
+     * @param pClientService
+     * @param pUserAuthorizationService
      */
     @Autowired
-    public RefreshTokenService(RefreshTokenRepository pRepository,
-                                TokenFactory pTokenFactory, 
-                                UserService pUserService,
-                                ClientService pClientService,
-                                UserAuthorizationService pUserAuthorizationService,
-                                PayloadProvider pPayloadProvider) {
+    public IdTokenService(IdTokenRepository pRepository, 
+                          TokenFactory pTokenFactory, 
+                          UserService pUserService, 
+                          ClientService pClientService,
+                          UserAuthorizationService pUserAuthorizationService,
+                          PayloadProvider pPayloadProvider) {
         super(pRepository, pTokenFactory, pUserService, pClientService, pUserAuthorizationService, pPayloadProvider);
-    }
-
-    /**
-     * Find a refresh token using its value and client to whom it has been granted.
-     * @param pTokenValue The token value.
-     * @param pClientId The client primary key.
-     * @return A RefreshToken or null.
-     */
-    @Transactional(readOnly = true)
-    public RefreshToken findByTokenValueAndClientId(String pTokenValue, Long pClientId) {
-        return this.getRepository().findByTokenAndClientId(pTokenValue, pClientId);
     }
 
     /* (non-Javadoc)
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#createManagedToken(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    RefreshToken createManagedToken(User pUser, Client pClient, List<Scope> pScopes) throws Exception {
+    IdToken createManagedToken(User pUser, Client pClient, List<Scope> pScopes) throws Exception {
 
+        // Create Payload.
+        List<String> scopes = Utils.convert(pScopes, s -> s.getName());
+        Map<String, String> payload = this.payloadProvider.createPayload(pUser, pClient, scopes);
+
+        // Create Token.
         Token token = this.tokenFactory.createToken(pUser, pClient, 
-                                                    TokenProviderType.UUID, 
-                                                    pClient.getRefreshTokenSeconds(), ChronoUnit.SECONDS,
-                                                    Collections.emptyMap());
+                                                    TokenProviderType.RSA_RS512, 
+                                                    pClient.getIdTokenSeconds(), ChronoUnit.SECONDS,
+                                                    payload);
         
-        RefreshToken rf = new RefreshToken();
-        rf.setClient(pClient);
-        rf.setUser(pUser);
-        rf.setToken(token.getValue());
-        rf.setValidUntil(token.getValidUntil());
+        IdToken idt = new IdToken();
+        idt.setClient(pClient);
+        idt.setUser(pUser);
+        
+        idt.setToken(token.getValue());
+        idt.setValidUntil(token.getValidUntil());
         
         if (pScopes != null) {
-            rf.setScopes(Utils.join(" ", pScopes, s -> s.getName()));
+            idt.setScopes(Utils.join(" ", pScopes, s -> s.getName()));
         }
         
-        return this.save(rf);
-        
+        return this.save(idt);
     }
 
     /* (non-Javadoc)
@@ -112,9 +106,11 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
      */
     @Override
     void validate(User pUser, Client pClient, List<Scope> pScopes) throws Exception {
-        if (!ClientUtils.hasClientScope(pClient, OFFLINE_SCOPE) || !ClientUtils.hasClientGrant(pClient, GrantType.CODE_AUTH_CODE)) {
-            throw new ServerException(ServerExceptionCode.SCOPE_UNAUTHORIZED_OFFLINE);
+        // Must have the right scope
+        if (!contains(pScopes, "openid")) {
+            throw new ServerException(ServerExceptionCode.SCOPE_INVALID);
         }
+        
     }
 
     /* (non-Javadoc)
@@ -122,7 +118,7 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
      */
     @Override
     TokenType getManagedTokenType() {
-        return TokenType.REFRESH_TOKEN;
+        return TokenType.ID_TOKEN;
     }
 
     /* (non-Javadoc)
@@ -130,9 +126,7 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
      */
     @Override
     boolean isTokenToCreate(User pUser, Client pClient, List<Scope> pScopes) {
-        if (ClientUtils.hasClientScope(pClient, OFFLINE_SCOPE) && ClientUtils.hasClientGrant(pClient, GrantType.CODE_AUTH_CODE)) {
-            return true;
-        }
-        return false;
+        return contains(pScopes, "openid");
     }
+
 }

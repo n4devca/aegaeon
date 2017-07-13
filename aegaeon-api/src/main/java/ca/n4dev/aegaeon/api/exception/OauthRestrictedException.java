@@ -21,7 +21,7 @@
  */
 package ca.n4dev.aegaeon.api.exception;
 
-import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
+import ca.n4dev.aegaeon.api.protocol.Flow;
 
 /**
  * OauthRestrictedException.java
@@ -47,8 +47,8 @@ public class OauthRestrictedException extends BaseOAuthException {
      * @param pClientPublicId The client public id.
      * @param pRedirectUrl The redirection url.
      */
-    public OauthRestrictedException(Class<?> pSource, AuthorizationGrant pGrantType, OAuthErrorType pError, String pClientPublicId, String pRedirectUrl) {
-        this(pSource, pGrantType, pError, pClientPublicId, pRedirectUrl, null);
+    public OauthRestrictedException(Class<?> pSource, Flow pFlow, OAuthErrorType pError, String pClientPublicId, String pRedirectUrl) {
+        this(pSource, pFlow, pError, pClientPublicId, pRedirectUrl, null);
     }
     
 
@@ -60,8 +60,8 @@ public class OauthRestrictedException extends BaseOAuthException {
      * @param pRedirectUrl The redirection url.
      * @param pMessage A message or error description.
      */
-    public OauthRestrictedException(Class<?> pSource, AuthorizationGrant pGrantType, OAuthErrorType pError, String pClientPublicId, String pRedirectUrl, String pMessage) {
-        super(pSource, pGrantType, pError);
+    public OauthRestrictedException(Class<?> pSource, Flow pFlow, OAuthErrorType pError, String pClientPublicId, String pRedirectUrl, String pMessage) {
+        super(pSource, pFlow, pError);
         setRedirectUrl(pRedirectUrl);
         this.clientPublicId = pClientPublicId;
         setErrorDescription(pMessage);

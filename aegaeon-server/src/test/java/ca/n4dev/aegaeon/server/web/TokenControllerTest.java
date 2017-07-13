@@ -21,6 +21,7 @@
  */
 package ca.n4dev.aegaeon.server.web;
 
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import org.junit.Assert;
@@ -28,12 +29,13 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import ca.n4dev.aegaeon.api.protocol.AuthorizationGrant;
+import ca.n4dev.aegaeon.api.protocol.FlowFactory;
 import ca.n4dev.aegaeon.server.controller.OAuthTokensController;
 import ca.n4dev.aegaeon.server.model.RefreshToken;
 import ca.n4dev.aegaeon.server.service.ClientService;
@@ -66,6 +68,7 @@ public class TokenControllerTest extends BaseWebTest {
     public void init() {
         mockMvc = MockMvcBuilders
                 .standaloneSetup(OAuthTokensController.class)
+                .apply(springSecurity())
                 .build();
     }
     
@@ -79,7 +82,7 @@ public class TokenControllerTest extends BaseWebTest {
                         post(OAuthTokensController.URL)
                             .accept(MediaType.APPLICATION_JSON)
                             .param("code", AUTH_CODE_A)
-                            .param("grant_type", AuthorizationGrant.AUTHORIZATIONCODE.getParameter())
+                            .param("grant_type", FlowFactory.PARAM_CODE + " " + FlowFactory.PARAM_ID_TOKEN)
                             .param("client_id", "ca.n4dev.auth.client")
                             .param("scope", "openid profile")
                             .param("redirect_uri", "http://localhost/login.html")
@@ -103,7 +106,7 @@ public class TokenControllerTest extends BaseWebTest {
                         post(OAuthTokensController.URL)
                             .accept(MediaType.APPLICATION_JSON)
                             .param("refresh_token", token.getToken())
-                            .param("grant_type", AuthorizationGrant.REFRESH_TOKEN.getParameter())
+                            .param("grant_type", FlowFactory.PARAM_REFRESH_TOKEN)
                             .param("client_id", "ca.n4dev.auth.client")
                             .param("scope", "openid profile")
                             .param("redirect_uri", "http://localhost/login.html")
@@ -116,4 +119,8 @@ public class TokenControllerTest extends BaseWebTest {
         
     }
     
+    public static void main(String[] pArgs) {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        System.out.println(encoder.encode("admin@localhost"));
+    }
 }

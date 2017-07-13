@@ -19,42 +19,56 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.service;
+package ca.n4dev.aegaeon.server.model;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import ca.n4dev.aegaeon.server.model.User;
-import ca.n4dev.aegaeon.server.repository.UserRepository;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
- * UserService.java
+ * ClientRequestedUri.java
  * 
- * User service.
+ * Uris that can be fetched (and cached) by the OP to be used by a client during authorization.
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since Jun 20, 2017
  */
-@Service
-public class UserService extends BaseService<User, UserRepository> {
+@Entity
+@Table(name = "client_request_uris")
+public class ClientRequestedUri extends BaseEntity {
+
+    private String uri;
+    
+    @ManyToOne
+    @JoinColumn(name = "client_id")
+    private Client client;
 
     /**
-     * Default constructor.
-     * @param pRepository The user repo.
+     * @return the uri
      */
-    @Autowired
-    public UserService(UserRepository pRepository) {
-        super(pRepository);
+    public String getUri() {
+        return uri;
     }
 
     /**
-     * Find one user by id.
+     * @param pUri the uri to set
      */
-    @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('CLIENT') or principal.id == #pId")
-    public User findById(Long pId) {
-        return this.getRepository().findOne(pId);
+    public void setUri(String pUri) {
+        uri = pUri;
+    }
+
+    /**
+     * @return the client
+     */
+    public Client getClient() {
+        return client;
+    }
+
+    /**
+     * @param pClient the client to set
+     */
+    public void setClient(Client pClient) {
+        client = pClient;
     }
 }

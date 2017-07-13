@@ -25,4 +25,4 @@ flyway:
     
 aegaeon:
     issuer: localhost
-    jwks: /home/rguillemette/dev/java/Keystore/simpleaos.jwks
+    jwks: /home/rguillemette/dev/jwks/aegaeon.jwks
