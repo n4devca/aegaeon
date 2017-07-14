@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.api.protocol.Flow;
 import ca.n4dev.aegaeon.api.token.Token;
 import ca.n4dev.aegaeon.api.token.TokenType;
 import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
@@ -86,7 +87,7 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#createManagedToken(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    RefreshToken createManagedToken(User pUser, Client pClient, List<Scope> pScopes) throws Exception {
+    RefreshToken createManagedToken(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
 
         Token token = this.tokenFactory.createToken(pUser, pClient, 
                                                     TokenProviderType.UUID, 
@@ -111,7 +112,7 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#validate(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    void validate(User pUser, Client pClient, List<Scope> pScopes) throws Exception {
+    void validate(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
         if (!ClientUtils.hasClientScope(pClient, OFFLINE_SCOPE) || !ClientUtils.hasClientGrant(pClient, GrantType.CODE_AUTH_CODE)) {
             throw new ServerException(ServerExceptionCode.SCOPE_UNAUTHORIZED_OFFLINE);
         }
@@ -129,7 +130,7 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#isTokenToCreate(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    boolean isTokenToCreate(User pUser, Client pClient, List<Scope> pScopes) {
+    boolean isTokenToCreate(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) {
         if (ClientUtils.hasClientScope(pClient, OFFLINE_SCOPE) && ClientUtils.hasClientGrant(pClient, GrantType.CODE_AUTH_CODE)) {
             return true;
         }

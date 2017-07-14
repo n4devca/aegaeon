@@ -39,6 +39,8 @@ public class Flow {
     
     private String[] responseType;
     
+    private String nonce;
+    
     public Flow() {
     	this.requestedGrant = new HashSet<>();
     }
@@ -92,6 +94,22 @@ public class Flow {
         }
         
         return b.toString();            
+    }
+
+
+    /**
+     * @return the nonce
+     */
+    public String getNonce() {
+        return nonce;
+    }
+
+
+    /**
+     * @param pNonce the nonce to set
+     */
+    public void setNonce(String pNonce) {
+        nonce = pNonce;
     }
     
 }

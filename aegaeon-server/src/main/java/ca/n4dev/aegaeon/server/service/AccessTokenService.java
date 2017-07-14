@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.api.protocol.Flow;
 import ca.n4dev.aegaeon.api.token.OAuthUser;
 import ca.n4dev.aegaeon.api.token.Token;
 import ca.n4dev.aegaeon.api.token.TokenType;
@@ -41,7 +42,6 @@ import ca.n4dev.aegaeon.server.model.Scope;
 import ca.n4dev.aegaeon.server.model.User;
 import ca.n4dev.aegaeon.server.repository.AccessTokenRepository;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
-import ca.n4dev.aegaeon.server.token.payload.SimplePayloadProvider;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
 
@@ -74,7 +74,7 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#createManagedToken(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    AccessToken createManagedToken(User pUser, Client pClient, List<Scope> pScopes) throws Exception {
+    AccessToken createManagedToken(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
         
         Token token = this.tokenFactory.createToken(pUser, 
                                                     pClient, 
@@ -108,7 +108,7 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#validate(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    void validate(User pUser, Client pClient, List<Scope> pScopes) throws Exception {
+    void validate(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
         // No more validations for access token.
     }
     
@@ -193,7 +193,13 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#isTokenToCreate(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    boolean isTokenToCreate(User pUser, Client pClient, List<Scope> pScopes) {
+    boolean isTokenToCreate(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) {
+        
+        // OpenID: don't return access token if the requested type is only id_token
+        if (pFlow.getResponseType().length == 1 && pFlow.getResponseType()[0].equals("id_token")) {
+            return false;
+        }
+        
         return true;
     }
 

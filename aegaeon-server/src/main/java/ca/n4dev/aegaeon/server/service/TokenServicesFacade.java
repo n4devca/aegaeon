@@ -80,9 +80,9 @@ public class TokenServicesFacade {
             t.setTokenType(TokenResponse.BEARER);
             
             // Tokens
-            IdToken idToken = this.idTokenService.createToken(pUserId, pClientPublicId, pScopes);
-            AccessToken accessToken = this.accessTokenService.createToken(pUserId, pClientPublicId, pScopes);
-            RefreshToken refreshToken = this.refreshTokenService.createToken(pUserId, pClientPublicId, pScopes);
+            IdToken idToken = this.idTokenService.createToken(pFlow, pUserId, pClientPublicId, pScopes);
+            AccessToken accessToken = this.accessTokenService.createToken(pFlow, pUserId, pClientPublicId, pScopes);
+            RefreshToken refreshToken = this.refreshTokenService.createToken(pFlow, pUserId, pClientPublicId, pScopes);
             
             t.setIdToken(idToken);
             t.setAccessToken(accessToken);

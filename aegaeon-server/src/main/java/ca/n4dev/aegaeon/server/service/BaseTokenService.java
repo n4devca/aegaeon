@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.api.protocol.Flow;
 import ca.n4dev.aegaeon.api.token.TokenType;
 import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
 import ca.n4dev.aegaeon.server.model.BaseEntity;
@@ -76,16 +77,16 @@ public abstract class BaseTokenService<T extends BaseEntity, J extends JpaReposi
     }
 
     
-    abstract T createManagedToken(User pUser, Client pClient, List<Scope> pScopes) throws Exception;
+    abstract T createManagedToken(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) throws Exception;
     
-    abstract boolean isTokenToCreate(User pUser, Client pClient, List<Scope> pScopes);
+    abstract boolean isTokenToCreate(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes);
     
-    abstract void validate(User pUser, Client pClient, List<Scope> pScopes) throws Exception; 
+    abstract void validate(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) throws Exception; 
     
     abstract TokenType getManagedTokenType();
     
     @Transactional
-    public T createToken(Long pUserId, String pClientPublicId, List<Scope> pScopes) throws ServerException {
+    public T createToken(Flow pFlow, Long pUserId, String pClientPublicId, List<Scope> pScopes) throws ServerException {
         
         Assert.notNull(pUserId, ServerExceptionCode.USER_EMPTY);
         Assert.notEmpty(pClientPublicId, ServerExceptionCode.CLIENT_EMPTY);
@@ -93,7 +94,7 @@ public abstract class BaseTokenService<T extends BaseEntity, J extends JpaReposi
         Client client = this.clientService.findByPublicId(pClientPublicId);
         User user = this.userService.findById(pUserId);
         
-        return createToken(user, client, pScopes);
+        return createToken(pFlow, user, client, pScopes);
     }
     
     /**
@@ -103,17 +104,17 @@ public abstract class BaseTokenService<T extends BaseEntity, J extends JpaReposi
      * @param pScopes
      * @return
      */
-    T createToken(User pUser, Client pClient, List<Scope> pScopes) throws ServerException {
+    T createToken(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) throws ServerException {
         
         try {
             // Basic Validation (not null, authorize)
             basicValidation(pUser, pClient, pScopes);
             
-            if (isTokenToCreate(pUser, pClient, pScopes)) {
+            if (isTokenToCreate(pFlow, pUser, pClient, pScopes)) {
                 // Call Service Validation
-                validate(pUser, pClient, pScopes);
+                validate(pFlow, pUser, pClient, pScopes);
                 
-                return createManagedToken(pUser, pClient, pScopes);
+                return createManagedToken(pFlow, pUser, pClient, pScopes);
                 
             }
             

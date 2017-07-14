@@ -29,6 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
+import ca.n4dev.aegaeon.api.protocol.Flow;
+import ca.n4dev.aegaeon.api.protocol.FlowFactory;
 import ca.n4dev.aegaeon.server.model.RefreshToken;
 import ca.n4dev.aegaeon.server.model.Scope;
 import ca.n4dev.aegaeon.server.model.User;
@@ -58,7 +60,9 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         Assert.assertNotNull(scopes);
         Assert.assertTrue(scopes.size() == 3);
         
-        RefreshToken token = refreshTokenService.createToken(user.getId(), CLIENT_AUTH, scopes);
+        Flow flow = FlowFactory.authCode();
+        
+        RefreshToken token = refreshTokenService.createToken(flow, user.getId(), CLIENT_AUTH, scopes);
         Assert.assertNotNull(token);
     }
     
@@ -72,7 +76,9 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         Assert.assertNotNull(scopes);
         Assert.assertTrue(scopes.size() == 2);
         
-        RefreshToken token = refreshTokenService.createToken(user.getId(), CLIENT_AUTH, scopes);
+        Flow flow = FlowFactory.authCode();
+        
+        RefreshToken token = refreshTokenService.createToken(flow, user.getId(), CLIENT_AUTH, scopes);
         // Creation is skipped, so should be null
         Assert.assertNull(token);
     }
@@ -87,7 +93,9 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         Assert.assertNotNull(scopes);
         Assert.assertTrue(scopes.size() == 3);
         
-        RefreshToken token = refreshTokenService.createToken(user.getId(), CLIENT_IMPL, scopes);
+        Flow flow = FlowFactory.implicit();
+        
+        RefreshToken token = refreshTokenService.createToken(flow, user.getId(), CLIENT_IMPL, scopes);
         
         // Exception throwed before getting here
         Assert.assertNull(token);
@@ -103,7 +111,9 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         Assert.assertNotNull(scopes);
         Assert.assertTrue(scopes.size() == 3);
         
-        RefreshToken token = refreshTokenService.createToken(user.getId(), CLIENT_AUTH_2, scopes);
+        Flow flow = FlowFactory.authCode();
+        
+        RefreshToken token = refreshTokenService.createToken(flow, user.getId(), CLIENT_AUTH_2, scopes);
         
         // Exception throwed before getting here
         Assert.assertNull(token);

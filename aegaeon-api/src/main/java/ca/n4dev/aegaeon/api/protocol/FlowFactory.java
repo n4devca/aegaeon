@@ -52,8 +52,14 @@ public class FlowFactory {
      * code token id_token: authorization_code, implicit
      */
     public static Flow of(String[] pCode) {
-    	
+        return of(pCode, null);
+    }
+    
+    public static Flow of(String[] pCode, String pNonce) {
+        
     	Flow f = new Flow();
+    	
+    	f.setNonce(pNonce);
     	f.setResponseType(pCode);
     	
     	if (f.getResponseType() != null && f.getResponseType().length > 0) {

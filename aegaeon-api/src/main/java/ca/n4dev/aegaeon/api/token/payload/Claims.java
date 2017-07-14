@@ -42,4 +42,6 @@ public class Claims {
     public static final String PHONE_NUMBER = "phone_number";
     public static final String UPDATED_AT = "updated_at";
     
+    public static final String NONCE = "nonce";
+    
 }

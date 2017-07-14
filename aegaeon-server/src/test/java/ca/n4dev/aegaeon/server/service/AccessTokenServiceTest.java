@@ -30,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
+import ca.n4dev.aegaeon.api.protocol.Flow;
+import ca.n4dev.aegaeon.api.protocol.FlowFactory;
 import ca.n4dev.aegaeon.server.model.AccessToken;
 import ca.n4dev.aegaeon.server.model.Client;
 import ca.n4dev.aegaeon.server.model.Scope;
@@ -79,8 +81,9 @@ public class AccessTokenServiceTest extends BaseTokenServiceTest {
         
         User user = getUser(USERNAME);
         Assert.assertNotNull(user);
+        Flow flow = FlowFactory.implicit();
         
-        AccessToken token = this.accessTokenService.createToken(user, client, scopes);
+        AccessToken token = this.accessTokenService.createToken(flow, user, client, scopes);
         Assert.assertNotNull(token);
         Assert.assertNotNull(token.getScopes());
         Assert.assertNotNull(token.getValidUntil().isAfter(LocalDateTime.now()));
@@ -99,7 +102,9 @@ public class AccessTokenServiceTest extends BaseTokenServiceTest {
         User user = getUser(USERNAME);
         Assert.assertNotNull(user);
         
-        AccessToken token = this.accessTokenService.createToken(user, client, scopes);
+        Flow flow = FlowFactory.implicit();
+        
+        AccessToken token = this.accessTokenService.createToken(flow, user, client, scopes);
         Assert.assertNotNull(token);
         Assert.assertNotNull(token.getScopes());
         Assert.assertNotNull(token.getValidUntil().isAfter(LocalDateTime.now()));

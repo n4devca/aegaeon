@@ -104,10 +104,11 @@ public class OAuthAuthorizationController {
                                   @RequestParam(value = "scope", required = false) String pScope,
                                   @RequestParam(value = "redirection_url", required = false) String pRedirectionUrl,
                                   @RequestParam(value = "state", required = false) String pState,
+                                  @RequestParam(value = "nonce", required = false) String pNonce,
                                   Authentication pAuthentication,
                                   RequestMethod pRequestMethod) {
         
-        Flow flow = FlowFactory.of(pResponseType);
+        Flow flow = FlowFactory.of(pResponseType, pNonce);
 
         // Required
         if (Utils.areOneEmpty(pClientPublicId, pRedirectionUrl, pResponseType, pScope)) {
@@ -197,7 +198,7 @@ public class OAuthAuthorizationController {
             
             this.openIdEventLogger.log(OpenIdEvent.AUTHORIZATION, getClass(), userDetails.getUsername(), ua);
             
-            return authorize(pResponseType, pClientPublicId, pScope, pRedirectionUrl, pState, pAuthentication, RequestMethod.POST);
+            return authorize(pResponseType, pClientPublicId, pScope, pRedirectionUrl, pState, null, pAuthentication, RequestMethod.POST);
             
         } catch (ServerException se) {
             // Rethrow, will be catch
