@@ -20,3 +20,12 @@ flyway:
     enabled: true
     locations: classpath:db/mysql
     out-of-order: true
+aegaeon:
+    modules:
+        oauth: true
+        login: true
+        home: true
+        account: false
+        discovery: false
+        admin: false
+        

@@ -21,50 +21,26 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import ca.n4dev.aegaeon.server.model.User;
-import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
-import ca.n4dev.aegaeon.server.service.UserService;
-
 /**
- * SimpleUserProfileController.java
+ * SimpleLoginController.java
  * 
  * TODO(rguillemette) Add description
  *
  * @author by rguillemette
- * @since Jun 12, 2017
+ * @since Jul 14, 2017
  */
 @Controller
-@RequestMapping(value = "/user-account")
-@ConditionalOnProperty(prefix = "aegaeon.modules", name = "account", havingValue = "true", matchIfMissing = true)
-public class SimpleUserAccountController {
+@RequestMapping("/login")
+@ConditionalOnProperty(prefix = "aegaeon.modules", name = "login", havingValue = "true", matchIfMissing = true)
+public class SimpleLoginController {
 
-    private UserService userService;
-    
-    /**
-     * Default Constructor.
-     * @param pUserService Service to access user's informations
-     */
-    @Autowired
-    public SimpleUserAccountController(UserService pUserService) {
-        this.userService = pUserService;
-    }
-    
     @RequestMapping("")
-    public ModelAndView account(@AuthenticationPrincipal SpringAuthUserDetails pUser) {
-        ModelAndView mv = new ModelAndView("user-account");
-        
-        // user
-        User u = this.userService.findById(pUser.getId());
-        
-        mv.addObject("user", u);
-        
-        return mv;
+    public ModelAndView login() {
+        return new ModelAndView("signinpage");
     }
 }

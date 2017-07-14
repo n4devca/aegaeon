@@ -52,14 +52,6 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
     
     @Value("${aegaeon.issuer}")
     private String issuer;
-
-    @Override
-    public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/home").setViewName("homepage");
-        registry.addViewController("/").setViewName("homepage");
-        registry.addViewController("/login").setViewName("signinpage");
-        registry.addViewController("/userprofile").setViewName("userprofile");
-    }
     
     @Bean
     public LocaleResolver localeResolver() {
