@@ -99,7 +99,7 @@ public class OAuthAuthorizationController {
     }
     
     @RequestMapping(value = "")
-    public ModelAndView authorize(@RequestParam("response_type") String[] pResponseType,
+    public ModelAndView authorize(@RequestParam("response_type") String pResponseType,
                                   @RequestParam("client_id") String pClientPublicId,
                                   @RequestParam(value = "scope", required = false) String pScope,
                                   @RequestParam(value = "redirection_url", required = false) String pRedirectionUrl,
@@ -178,7 +178,7 @@ public class OAuthAuthorizationController {
     }
     
     @RequestMapping(value = "/accept")
-    public ModelAndView addUserAuthorization(@RequestParam("response_type") String[] pResponseType,
+    public ModelAndView addUserAuthorization(@RequestParam("response_type") String pResponseType,
                                              @RequestParam("client_id") String pClientPublicId,
                                              @RequestParam(value = "scope", required = false) String pScope,
                                              @RequestParam(value = "redirection_url", required = false) String pRedirectionUrl,

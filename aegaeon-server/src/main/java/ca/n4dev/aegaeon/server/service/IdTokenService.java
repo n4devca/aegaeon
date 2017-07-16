@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.protocol.Flow;
+import ca.n4dev.aegaeon.api.protocol.FlowFactory;
 import ca.n4dev.aegaeon.api.token.Token;
 import ca.n4dev.aegaeon.api.token.TokenType;
 import ca.n4dev.aegaeon.api.token.payload.Claims;
@@ -113,7 +114,7 @@ public class IdTokenService extends BaseTokenService<IdToken, IdTokenRepository>
     @Override
     void validate(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
         // Must have the right scope
-        if (!contains(pScopes, "openid")) {
+        if (!contains(pScopes, FlowFactory.PARAM_ID_TOKEN)) {
             throw new ServerException(ServerExceptionCode.SCOPE_INVALID);
         }
         
@@ -132,7 +133,7 @@ public class IdTokenService extends BaseTokenService<IdToken, IdTokenRepository>
      */
     @Override
     boolean isTokenToCreate(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) {
-        return contains(pScopes, "openid");
+        return contains(pScopes, FlowFactory.PARAM_ID_TOKEN);
     }
 
 }

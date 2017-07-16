@@ -32,7 +32,7 @@ package ca.n4dev.aegaeon.api.protocol;
 public class FlowFactory {
 	
     public static final String PARAM_CODE = "code";
-    public static final String PARAM_IMPLICIT = "token";
+    public static final String PARAM_TOKEN = "token";
     public static final String PARAM_ID_TOKEN = "id_token";
     public static final String PARAM_CLIENTCREDENTIALS = "client_credentials";
     public static final String PARAM_REFRESH_TOKEN = "refresh_token";
@@ -67,7 +67,7 @@ public class FlowFactory {
     		for (String r : f.getResponseType()) {
     			if (r.equals(PARAM_CODE)) {
     				f.getRequestedGrant().add(RequestedGrant.AUTHORIZATIONCODE);
-    			} else if (r.equals(PARAM_IMPLICIT) || r.equals(PARAM_ID_TOKEN)) {
+    			} else if (r.equals(PARAM_TOKEN) || r.equals(PARAM_ID_TOKEN)) {
     				f.getRequestedGrant().add(RequestedGrant.IMPLICIT);
     			} else if (r.equals(PARAM_CLIENTCREDENTIALS)) { // OAuth
     				f.getRequestedGrant().clear();
@@ -83,26 +83,30 @@ public class FlowFactory {
     }
 
     public static Flow of(String pCode) {
+        return of(pCode, null);
+    }
+            
+    public static Flow of(String pCode, String pNonce) {
         if (pCode.indexOf(" ") != -1) {
-            return of(pCode.split(" "));
+            return of(pCode.split(" "), pNonce);
         } else {
-            return of(new String[] {pCode});            
+            return of(new String[] {pCode}, pNonce);            
         }
     }
     
     public static Flow implicit() {
-        return of(PARAM_IMPLICIT);
+        return of(new String[] {PARAM_ID_TOKEN, PARAM_TOKEN}, null);
     }
     
     public static Flow authCode() {
-        return of(PARAM_CODE);
+        return of(PARAM_CODE, null);
     }
     
     public static Flow clientCredential() {
-        return of(PARAM_CLIENTCREDENTIALS);
+        return of(PARAM_CLIENTCREDENTIALS, null);
     }
     
     public static Flow refreshToken() {
-        return of(PARAM_REFRESH_TOKEN);
+        return of(PARAM_REFRESH_TOKEN, null);
     }
 }

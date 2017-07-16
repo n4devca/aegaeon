@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.protocol.Flow;
+import ca.n4dev.aegaeon.api.protocol.FlowFactory;
 import ca.n4dev.aegaeon.api.token.OAuthUser;
 import ca.n4dev.aegaeon.api.token.Token;
 import ca.n4dev.aegaeon.api.token.TokenType;
@@ -196,7 +197,7 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
     boolean isTokenToCreate(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) {
         
         // OpenID: don't return access token if the requested type is only id_token
-        if (pFlow.getResponseType().length == 1 && pFlow.getResponseType()[0].equals("id_token")) {
+        if (pFlow.getResponseType().length == 1 && pFlow.getResponseType()[0].equals(FlowFactory.PARAM_ID_TOKEN)) {
             return false;
         }
         

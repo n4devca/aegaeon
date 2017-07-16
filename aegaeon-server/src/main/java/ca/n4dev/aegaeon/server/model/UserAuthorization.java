@@ -69,6 +69,7 @@ public class UserAuthorization extends BaseEntity {
     public UserAuthorization(User pUser, Client pClient, String pScopes) {
         this.user = pUser;
         this.client = pClient;
+        this.scopes = pScopes;
     }
     
     /**
