@@ -26,6 +26,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -71,6 +72,7 @@ import ca.n4dev.aegaeon.server.utils.Utils;
  */
 @Controller
 @RequestMapping(value = OAuthTokensController.URL)
+@ConditionalOnProperty(prefix = "aegaeon.modules", name = "oauth", havingValue = "true", matchIfMissing = true)
 public class OAuthTokensController extends BaseController {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(OAuthTokensController.class);
@@ -228,7 +230,7 @@ public class OAuthTokensController extends BaseController {
         // Load the refresh_token
         RefreshToken rftoken = this.refreshTokenService.findByTokenValueAndClientId(pRefreshToken, client.getId());
         
-        if (rftoken == null || !Utils.isStillValid(rftoken.getValidUntil())) {
+        if (rftoken == null || !Utils.isAfterNow(rftoken.getValidUntil())) {
             throw new OAuthPublicJsonException(getClass(),
                     flow, OAuthErrorType.invalid_grant);
         }
@@ -299,7 +301,7 @@ public class OAuthTokensController extends BaseController {
         
         // Ok, check the code now
         AuthorizationCode authCode = this.authorizationCodeService.findByCode(pCode);
-        if (authCode == null || !Utils.isStillValid(authCode.getValidUntil())) {
+        if (authCode == null || !Utils.isAfterNow(authCode.getValidUntil())) {
             throw new OAuthPublicRedirectionException(getClass(),
                     flow, OAuthErrorType.access_denied, pRedirectUri);
         }

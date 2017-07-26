@@ -31,8 +31,8 @@ import org.springframework.stereotype.Component;
 import ca.n4dev.aegaeon.api.token.OAuthClient;
 import ca.n4dev.aegaeon.api.token.OAuthUser;
 import ca.n4dev.aegaeon.api.token.Token;
+import ca.n4dev.aegaeon.api.token.TokenProviderType;
 import ca.n4dev.aegaeon.api.token.provider.TokenProvider;
-import ca.n4dev.aegaeon.api.token.provider.TokenProviderType;
 
 /**
  * UUIDTokenProvider.java

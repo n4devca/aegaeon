@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -42,6 +43,15 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import ca.n4dev.aegaeon.server.controller.OAuthTokensController;
+import ca.n4dev.aegaeon.server.controller.OAuthUserInfoController;
+import ca.n4dev.aegaeon.server.security.AccessTokenAuthenticationFilter;
+import ca.n4dev.aegaeon.server.security.AccessTokenAuthenticationProvider;
+import ca.n4dev.aegaeon.server.service.AccessTokenService;
+import ca.n4dev.aegaeon.server.service.ClientService;
+import ca.n4dev.aegaeon.server.token.TokenFactory;
 
 /**
  * WebSecurityConfig.java
@@ -61,6 +71,7 @@ public class WebSecurityConfig {
     }
     
     
+    
     @Configuration
     @Order(1)
     public static class ClientAuthWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
@@ -74,7 +85,7 @@ public class WebSecurityConfig {
         @Override
         protected void configure(HttpSecurity pHttp) throws Exception {
             pHttp
-                .antMatcher("/token")
+                .antMatcher(OAuthTokensController.URL)
                     .authorizeRequests()
                     .anyRequest().hasAnyAuthority("ROLE_CLIENT")
                 .and()
@@ -89,6 +100,65 @@ public class WebSecurityConfig {
         }
         
     }
+    
+    @Configuration
+    @Order(2) 
+    public static class UserInfoWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
+        
+        @Autowired
+        private AuthenticationEntryPoint authenticationEntryPoint;
+        
+        @Autowired
+        private ClientService clientService;
+        
+        @Autowired
+        private AccessTokenService accessTokenService;
+        
+        @Autowired
+        private TokenFactory tokenFactory;
+        
+        @Autowired
+        private ServerInfo serverInfo;
+        
+        /**
+         * Remember me config
+         */
+        @Override 
+        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+            auth.authenticationProvider(accessTokenAuthenticationProvider());
+        }
+        
+        
+        public AccessTokenAuthenticationFilter accessTokenAuthenticationFilter() throws Exception{
+            return new AccessTokenAuthenticationFilter(authenticationManagerBean(), authenticationEntryPoint);
+        }
+        
+        
+        public AccessTokenAuthenticationProvider accessTokenAuthenticationProvider() {
+            return new AccessTokenAuthenticationProvider(clientService, accessTokenService, tokenFactory, serverInfo);
+        }
+        
+        @Bean 
+        @Override 
+        public AuthenticationManager authenticationManagerBean() throws Exception {
+            return super.authenticationManagerBean();
+        }
+        
+        @Override
+        protected void configure(HttpSecurity pHttp) throws Exception {
+            pHttp
+                .antMatcher(OAuthUserInfoController.URL)
+                    .csrf().disable()
+                .authorizeRequests()
+                    .anyRequest().hasAnyAuthority("ROLE_USER")
+                .and()
+                .addFilterBefore(accessTokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                    .sessionManagement()
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    ;
+        }
+    }
+    
     
     @Configuration
     public static class FormLoginWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
@@ -139,8 +209,4 @@ public class WebSecurityConfig {
         };
     }
     
-//    public static void main(String[] args) {
-//        PasswordEncoder p = new BCryptPasswordEncoder();
-//        System.out.println(p.encode("admin@localhost"));
-//    }
 }

@@ -19,7 +19,7 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.token.provider;
+package ca.n4dev.aegaeon.api.token;
 
 /**
  * TokenProviderType.java

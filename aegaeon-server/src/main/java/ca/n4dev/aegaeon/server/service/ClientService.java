@@ -56,4 +56,5 @@ public class ClientService extends BaseService<Client, ClientRepository> {
     public Client findByPublicId(String pPublicId) {
         return this.getRepository().findByPublicId(pPublicId);
     }
+    
 }

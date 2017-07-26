@@ -19,28 +19,31 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.token;
+package ca.n4dev.aegaeon.server.controller;
+
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
 
 /**
- * OAuthUser.java
+ * OAuthUserInfoController.java
  * 
- * A simple interface describing an authenticated user.
- * This will be used by the {@link TokenFactory} to create token.
+ * TODO(rguillemette) Add description
  *
  * @author by rguillemette
- * @since May 11, 2017
+ * @since Jul 16, 2017
  */
-public interface OAuthUser {
-    
-    Long getId();
+@Controller
+@RequestMapping(value = OAuthUserInfoController.URL)
+@ConditionalOnProperty(prefix = "aegaeon.modules", name = "oauth", havingValue = "true", matchIfMissing = true)
+public class OAuthUserInfoController {
 
-    String getUniqueIdentifier();
+    public static final String URL = "/userinfo";
     
-    String getEmail();
-    
-    String getName();
-    
-    default String getRole() {
-        return "USER";
+    @RequestMapping(value = "")
+    public ModelAndView userInfo() {
+        
+        return null;
     }
 }

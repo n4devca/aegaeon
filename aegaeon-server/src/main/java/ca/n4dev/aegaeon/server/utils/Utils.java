@@ -65,7 +65,7 @@ public class Utils {
         return pValue != null && !pValue.isEmpty();
     }
     
-    public static boolean isStillValid(LocalDateTime pValidUntil) {
+    public static boolean isAfterNow(LocalDateTime pValidUntil) {
         if (pValidUntil != null) {
             LocalDateTime now = LocalDateTime.now();
             return pValidUntil.isAfter(now);
@@ -131,9 +131,9 @@ public class Utils {
         return lst;
     }
     
-    public static Object coalesce(Object... pEntities) {
+    public static <O> O coalesce(O... pEntities) {
         if (pEntities != null) {
-            for (Object e : pEntities) {
+            for (O e : pEntities) {
                 if (e != null) {
                     return e;
                 }

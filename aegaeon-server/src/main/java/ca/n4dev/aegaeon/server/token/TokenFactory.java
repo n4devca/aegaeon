@@ -27,14 +27,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.nimbusds.jwt.SignedJWT;
 
 import ca.n4dev.aegaeon.api.token.OAuthClient;
 import ca.n4dev.aegaeon.api.token.OAuthUser;
 import ca.n4dev.aegaeon.api.token.Token;
+import ca.n4dev.aegaeon.api.token.TokenProviderType;
 import ca.n4dev.aegaeon.api.token.provider.TokenProvider;
-import ca.n4dev.aegaeon.api.token.provider.TokenProviderType;
+import ca.n4dev.aegaeon.api.token.verifier.TokenVerifier;
 
 /**
  * TokenFactory.java
@@ -47,7 +52,10 @@ import ca.n4dev.aegaeon.api.token.provider.TokenProviderType;
 @Component
 public class TokenFactory {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TokenFactory.class);
+    
     private Map<TokenProviderType, TokenProvider> tokenProviderHolder;
+    private Map<TokenProviderType, TokenVerifier> tokenVerifierHolder; 
     
     /**
      * Default Constructor.
@@ -55,12 +63,19 @@ public class TokenFactory {
      * @param pTokenProviders The declared TokenProviders.
      */
     @Autowired
-    public TokenFactory(List<TokenProvider> pTokenProviders) {
+    public TokenFactory(List<TokenProvider> pTokenProviders, List<TokenVerifier> pTokenVerifiers) {
         this.tokenProviderHolder = new HashMap<>();
+        this.tokenVerifierHolder = new HashMap<>();
         
         if (pTokenProviders != null) {
             for (TokenProvider t : pTokenProviders) {
                 this.tokenProviderHolder.put(t.getType(), t);
+            }
+        }
+        
+        if (pTokenVerifiers != null) {
+            for (TokenVerifier v : pTokenVerifiers) {
+                this.tokenVerifierHolder.put(v.getType(), v);
             }
         }
     }
@@ -70,6 +85,23 @@ public class TokenFactory {
      */
     public String uniqueCode() {
         return UUID.randomUUID().toString();
+    }
+    
+    /**
+     * Validate and extract a token.
+     * @param pToken The token.
+     * @return A OAuthUser or null.
+     */
+    public boolean validate(OAuthClient pOAuthClient, String pTokenValue) {
+        
+        TokenProviderType type = TokenProviderType.from(pOAuthClient.getProviderName());
+        TokenVerifier verifier = this.tokenVerifierHolder.get(type);
+        
+        if (verifier != null) {
+            return verifier.validate(pTokenValue);            
+        }
+        
+        return false;
     }
     
     /**
@@ -147,4 +179,9 @@ public class TokenFactory {
                 pPayloads);
     }
     
+    
+    public OAuthUser extractAndValidate(OAuthClient pOAuthClient, String pTokenValue) throws Exception {
+        
+        return this.tokenVerifierHolder.get(pOAuthClient.getProviderName()).extractAndValidate(pTokenValue);
+    }
 }

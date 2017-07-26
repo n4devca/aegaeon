@@ -19,19 +19,28 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.token.verifier;
-
-import com.nimbusds.jose.JWSObject;
+package ca.n4dev.aegaeon.api.caching;
 
 /**
- * TokenVerifier.java
+ * CacheProvider.java
  * 
- * TODO(rguillemette) Add description
+ * A simple interface describing a cache provider used by aegaeon.
+ * To add a new Cache Provider, implement this and configure the server 
+ * to use your provider.
  *
+ * @param <E> Cached entity.
+ * 
  * @author by rguillemette
- * @since May 16, 2017
+ * @since Jul 21, 2017
  */
-public interface TokenVerifier {
+public interface CacheProvider {
+
+    String get(String pNameSpace, String pKey);
     
-    boolean verify(JWSObject pJWSObject);
+    void set(String pNameSpace, String pKey, int pTTL, String pEntity);
+    
+    void remove(String pNameSpace, String pKey);
+    
+    void clear(String pNameSpace);
+    
 }

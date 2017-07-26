@@ -35,4 +35,10 @@ import ca.n4dev.aegaeon.server.model.AccessToken;
  */
 public interface AccessTokenRepository extends JpaRepository<AccessToken, Long> {
 
+    /**
+     * Find an access token by its token value.
+     * @param pToken The token.
+     * @return An access token or null.
+     */
+    AccessToken findByToken(String pToken);
 }
