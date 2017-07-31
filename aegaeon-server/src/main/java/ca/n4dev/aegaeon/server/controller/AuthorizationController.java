@@ -69,8 +69,8 @@ import ca.n4dev.aegaeon.server.utils.Utils;
  * @since May 9, 2017
  */
 @Controller
-@RequestMapping(value = OAuthAuthorizationController.URL)
-public class OAuthAuthorizationController {
+@RequestMapping(value = AuthorizationController.URL)
+public class AuthorizationController {
     
     public static final String URL = "/authorize";
     
@@ -83,7 +83,7 @@ public class OAuthAuthorizationController {
     private OpenIdEventLogger openIdEventLogger;
     
     @Autowired
-    public OAuthAuthorizationController(UserAuthorizationService pUserAuthorizationService, 
+    public AuthorizationController(UserAuthorizationService pUserAuthorizationService, 
                                         AuthorizationCodeService pAuthorizationCodeService,
                                         ClientService pClientService,
                                         ScopeService pScopeService,

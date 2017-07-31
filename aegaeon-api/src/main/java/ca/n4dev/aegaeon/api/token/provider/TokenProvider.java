@@ -42,7 +42,7 @@ public interface TokenProvider {
     /**
      * @return The name of this provider. Must be unique.
      */
-    String getProviderName();
+    String getAlgorithmName();
     
     /**
      * @return The type of token created by this provider.

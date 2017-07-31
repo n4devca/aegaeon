@@ -22,6 +22,7 @@
 package ca.n4dev.aegaeon.server.token;
 
 import java.time.temporal.TemporalUnit;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import ca.n4dev.aegaeon.api.token.Token;
 import ca.n4dev.aegaeon.api.token.TokenProviderType;
 import ca.n4dev.aegaeon.api.token.provider.TokenProvider;
 import ca.n4dev.aegaeon.api.token.verifier.TokenVerifier;
+import ca.n4dev.aegaeon.server.token.key.KeysProvider;
 
 /**
  * TokenFactory.java
@@ -57,13 +59,15 @@ public class TokenFactory {
     private Map<TokenProviderType, TokenProvider> tokenProviderHolder;
     private Map<TokenProviderType, TokenVerifier> tokenVerifierHolder; 
     
+    private KeysProvider keysProvider;
+    
     /**
      * Default Constructor.
      * Take all TokenProvider and keep them in a map for easy access.
      * @param pTokenProviders The declared TokenProviders.
      */
     @Autowired
-    public TokenFactory(List<TokenProvider> pTokenProviders, List<TokenVerifier> pTokenVerifiers) {
+    public TokenFactory(KeysProvider pKeysProvider, List<TokenProvider> pTokenProviders, List<TokenVerifier> pTokenVerifiers) {
         this.tokenProviderHolder = new HashMap<>();
         this.tokenVerifierHolder = new HashMap<>();
         
@@ -78,6 +82,8 @@ public class TokenFactory {
                 this.tokenVerifierHolder.put(v.getType(), v);
             }
         }
+        
+        this.keysProvider = pKeysProvider;
     }
     
     /**
@@ -177,6 +183,18 @@ public class TokenFactory {
                 pTimeValue,
                 pTemporalUnit,
                 pPayloads);
+    }
+    
+    public List<String> getSupportedAlgorithm() {
+        List<String> algos = new ArrayList<>();
+        
+        this.tokenProviderHolder.entrySet().forEach(p -> algos.add(p.getValue().getAlgorithmName()));
+        
+        return algos;
+    }
+    
+    public String publicJwks() throws Exception {
+        return this.keysProvider.toPublicJson();
     }
     
     

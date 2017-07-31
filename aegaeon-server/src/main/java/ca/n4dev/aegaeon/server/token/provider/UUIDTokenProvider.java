@@ -50,7 +50,7 @@ public class UUIDTokenProvider implements TokenProvider {
      * @see ca.n4dev.aegaeon.server.token.TokenProvider#getProviderName()
      */
     @Override
-    public String getProviderName() {
+    public String getAlgorithmName() {
         return TokenProviderType.UUID.getTypeName();
     }
 

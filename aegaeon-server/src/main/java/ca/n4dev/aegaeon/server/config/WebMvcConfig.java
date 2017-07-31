@@ -73,11 +73,6 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
     }
     
     @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
-    }
-    
-    @Bean
     public ServerInfo serverInfo() {
         return new ServerInfo(issuer);
     }

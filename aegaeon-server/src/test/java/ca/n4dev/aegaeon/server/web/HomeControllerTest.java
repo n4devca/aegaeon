@@ -32,7 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import ca.n4dev.aegaeon.server.controller.OAuthAuthorizationController;
+import ca.n4dev.aegaeon.server.controller.AuthorizationController;
 
 /**
  * HomeControllerTest.java
@@ -50,7 +50,7 @@ public class HomeControllerTest extends BaseWebTest {
     @Before
     public void init() {
         mockMvc = MockMvcBuilders
-                .standaloneSetup(OAuthAuthorizationController.class)
+                .standaloneSetup(AuthorizationController.class)
                 .build();
     }
     

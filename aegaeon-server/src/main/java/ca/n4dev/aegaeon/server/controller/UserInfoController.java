@@ -35,9 +35,9 @@ import org.springframework.web.servlet.ModelAndView;
  * @since Jul 16, 2017
  */
 @Controller
-@RequestMapping(value = OAuthUserInfoController.URL)
+@RequestMapping(value = UserInfoController.URL)
 @ConditionalOnProperty(prefix = "aegaeon.modules", name = "oauth", havingValue = "true", matchIfMissing = true)
-public class OAuthUserInfoController {
+public class UserInfoController {
 
     public static final String URL = "/userinfo";
     

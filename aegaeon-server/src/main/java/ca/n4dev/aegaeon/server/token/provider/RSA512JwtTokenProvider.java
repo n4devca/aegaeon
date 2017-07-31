@@ -101,8 +101,8 @@ public class RSA512JwtTokenProvider implements TokenProvider {
      * @see ca.n4dev.aegaeon.server.token.TokenProvider#getProviderName()
      */
     @Override
-    public String getProviderName() {
-        return TokenProviderType.RSA_RS512.getTypeName();
+    public String getAlgorithmName() {
+        return JWSAlgorithm.RS512.toString();
     }
 
     /* (non-Javadoc)

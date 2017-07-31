@@ -71,11 +71,11 @@ import ca.n4dev.aegaeon.server.utils.Utils;
  * @since May 9, 2017
  */
 @Controller
-@RequestMapping(value = OAuthTokensController.URL)
+@RequestMapping(value = TokensController.URL)
 @ConditionalOnProperty(prefix = "aegaeon.modules", name = "oauth", havingValue = "true", matchIfMissing = true)
-public class OAuthTokensController extends BaseController {
+public class TokensController extends BaseController {
     
-    private static final Logger LOGGER = LoggerFactory.getLogger(OAuthTokensController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TokensController.class);
     
     public static final String URL = "/token";
     
@@ -92,7 +92,7 @@ public class OAuthTokensController extends BaseController {
      * @param pAuthorizationCodeService Service used to access auth code.
      */
     @Autowired
-    public OAuthTokensController(ClientService pClientService,
+    public TokensController(ClientService pClientService,
                                  AuthorizationCodeService pAuthorizationCodeService,
                                  TokenServicesFacade pTokenServicesFacade,
                                  ScopeService pScopeService,

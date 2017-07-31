@@ -45,8 +45,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import ca.n4dev.aegaeon.server.controller.OAuthTokensController;
-import ca.n4dev.aegaeon.server.controller.OAuthUserInfoController;
+import ca.n4dev.aegaeon.server.controller.PublicJwkController;
+import ca.n4dev.aegaeon.server.controller.TokensController;
+import ca.n4dev.aegaeon.server.controller.UserInfoController;
+import ca.n4dev.aegaeon.server.controller.ServerInfoController;
 import ca.n4dev.aegaeon.server.security.AccessTokenAuthenticationFilter;
 import ca.n4dev.aegaeon.server.security.AccessTokenAuthenticationProvider;
 import ca.n4dev.aegaeon.server.service.AccessTokenService;
@@ -85,7 +87,7 @@ public class WebSecurityConfig {
         @Override
         protected void configure(HttpSecurity pHttp) throws Exception {
             pHttp
-                .antMatcher(OAuthTokensController.URL)
+                .antMatcher(TokensController.URL)
                     .authorizeRequests()
                     .anyRequest().hasAnyAuthority("ROLE_CLIENT")
                 .and()
@@ -147,7 +149,7 @@ public class WebSecurityConfig {
         @Override
         protected void configure(HttpSecurity pHttp) throws Exception {
             pHttp
-                .antMatcher(OAuthUserInfoController.URL)
+                .antMatcher(UserInfoController.URL)
                     .csrf().disable()
                 .authorizeRequests()
                     .anyRequest().hasAnyAuthority("ROLE_USER")
@@ -174,6 +176,8 @@ public class WebSecurityConfig {
             pHttp
                 .authorizeRequests()
                     .antMatchers("/resources/**").permitAll()
+                    .antMatchers(ServerInfoController.URL).permitAll()
+                    .antMatchers(PublicJwkController.URL).permitAll()
                     //.antMatchers("/", "/home").permitAll()
                     .anyRequest().hasAnyAuthority("ROLE_USER")
                     //.antMatchers("/authorize").hasAnyAuthority("ROLE_USER")

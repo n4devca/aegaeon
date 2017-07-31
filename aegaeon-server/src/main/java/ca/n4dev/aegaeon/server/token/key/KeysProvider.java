@@ -27,8 +27,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
+
+import net.minidev.json.JSONObject;
 
 /**
  * KeysProvider.java
@@ -68,5 +71,12 @@ public class KeysProvider {
      */
     public JWKSet getJwkSet() {
         return jwkSet;
+    }
+    
+    public String toPublicJson() throws Exception {
+        
+        JSONObject jsonObj = this.jwkSet.toJSONObject(true);
+        
+        return jsonObj.toJSONString();
     }
 }

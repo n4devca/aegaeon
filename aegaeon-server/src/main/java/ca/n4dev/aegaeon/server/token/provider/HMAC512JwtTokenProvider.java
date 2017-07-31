@@ -100,8 +100,8 @@ public class HMAC512JwtTokenProvider implements TokenProvider {
      * @see ca.n4dev.aegaeon.api.token.provider.TokenProvider#getProviderName()
      */
     @Override
-    public String getProviderName() {
-        return TokenProviderType.HMAC_HS512.getTypeName();
+    public String getAlgorithmName() {
+        return JWSAlgorithm.HS512.toString();
     }
 
     /* (non-Javadoc)

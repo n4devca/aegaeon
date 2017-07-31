@@ -36,7 +36,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import ca.n4dev.aegaeon.api.protocol.FlowFactory;
-import ca.n4dev.aegaeon.server.controller.OAuthTokensController;
+import ca.n4dev.aegaeon.server.controller.TokensController;
 import ca.n4dev.aegaeon.server.model.RefreshToken;
 import ca.n4dev.aegaeon.server.service.ClientService;
 import ca.n4dev.aegaeon.server.service.RefreshTokenService;
@@ -67,7 +67,7 @@ public class TokenControllerTest extends BaseWebTest {
     //@Before
     public void init() {
         mockMvc = MockMvcBuilders
-                .standaloneSetup(OAuthTokensController.class)
+                .standaloneSetup(TokensController.class)
                 .apply(springSecurity())
                 .build();
     }
@@ -79,7 +79,7 @@ public class TokenControllerTest extends BaseWebTest {
         
         MvcResult result =
                 this.mockMvc.perform(
-                        post(OAuthTokensController.URL)
+                        post(TokensController.URL)
                             .accept(MediaType.APPLICATION_JSON)
                             .param("code", AUTH_CODE_A)
                             .param("grant_type", FlowFactory.PARAM_CODE + " " + FlowFactory.PARAM_ID_TOKEN)
@@ -103,7 +103,7 @@ public class TokenControllerTest extends BaseWebTest {
         
         MvcResult result =
                 this.mockMvc.perform(
-                        post(OAuthTokensController.URL)
+                        post(TokensController.URL)
                             .accept(MediaType.APPLICATION_JSON)
                             .param("refresh_token", token.getToken())
                             .param("grant_type", FlowFactory.PARAM_REFRESH_TOKEN)
