@@ -41,6 +41,8 @@ public class Claims {
     public static final String EMAIL = "email";
     public static final String PHONE_NUMBER = "phone_number";
     public static final String UPDATED_AT = "updated_at";
+    public static final String LOCALE = "locale";
+    public static final String ZONEINFO = "zoneinfo";
     
     public static final String NONCE = "nonce";
     

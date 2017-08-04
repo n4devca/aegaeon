@@ -22,6 +22,8 @@
 package ca.n4dev.aegaeon.server.security;
 
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +36,7 @@ import com.nimbusds.jwt.SignedJWT;
 
 import ca.n4dev.aegaeon.server.config.ServerInfo;
 import ca.n4dev.aegaeon.server.model.AccessToken;
+import ca.n4dev.aegaeon.server.model.User;
 import ca.n4dev.aegaeon.server.service.AccessTokenService;
 import ca.n4dev.aegaeon.server.service.ClientService;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
@@ -112,7 +115,17 @@ public class AccessTokenAuthenticationProvider implements AuthenticationProvider
             }
             
             // OK, good
-            Authentication auth = new AccessTokenAuthentication(token, "ROLE_USER");
+            User u = accessToken.getUser();
+            List<String> roles = new ArrayList<>();
+            
+            if (u.getAuthorities() != null) {
+                u.getAuthorities().forEach(a -> roles.add(a.getCode()));
+            }
+
+            Authentication auth = new AccessTokenAuthentication(u, 
+                                                                token, 
+                                                                accessToken.getScopeList(), 
+                                                                roles);
             
             return auth;
             

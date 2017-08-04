@@ -21,15 +21,26 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
+import java.util.Map;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
+import ca.n4dev.aegaeon.server.controller.dto.UserInfoResponse;
+import ca.n4dev.aegaeon.server.model.User;
+import ca.n4dev.aegaeon.server.security.AccessTokenAuthentication;
+import ca.n4dev.aegaeon.server.service.UserService;
 
 /**
- * OAuthUserInfoController.java
+ * UserInfoController.java
  * 
- * TODO(rguillemette) Add description
+ * Return user's information (restricted by scopes) following 
+ * a successful authentication by access token.
  *
  * @author by rguillemette
  * @since Jul 16, 2017
@@ -41,8 +52,29 @@ public class UserInfoController {
 
     public static final String URL = "/userinfo";
     
-    @RequestMapping(value = "")
-    public ModelAndView userInfo() {
+    private UserService userService;
+    
+    private PayloadProvider payloadProvider;
+    
+    public UserInfoController(UserService pUserService, PayloadProvider pPayloadProvider) {
+        this.userService = pUserService;
+        this.payloadProvider = pPayloadProvider;
+    }
+    
+    @RequestMapping(value = "", method = {RequestMethod.GET, RequestMethod.POST})
+    @ResponseBody
+    public UserInfoResponse userInfo(Authentication pAuthentication) {
+        
+        if (pAuthentication != null && pAuthentication instanceof AccessTokenAuthentication) {
+            
+            AccessTokenAuthentication auth = (AccessTokenAuthentication) pAuthentication;
+            User u = this.userService.findById(auth.getUserId());
+            Map<String, String> payload = this.payloadProvider.createPayload(u, null, auth.getScopes());
+
+            UserInfoResponse response = new UserInfoResponse(auth.getUniqueIdentifier(), payload);
+            
+            return response;
+        }
         
         return null;
     }

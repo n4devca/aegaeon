@@ -29,6 +29,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import ca.n4dev.aegaeon.api.token.OAuthUser;
+
 /**
  * AccessTokenAuthentication.java
  * 
@@ -41,7 +43,10 @@ public class AccessTokenAuthentication implements Authentication {
 
     private static final long serialVersionUID = 5436208889960585525L;
     
+    private Long userId;
+    private String uniqueIdentifier;
     private String accessToken;
+    private List<String> scopes;
     private boolean authenticated = false;
     private Collection<? extends GrantedAuthority> authorities;
     
@@ -49,7 +54,10 @@ public class AccessTokenAuthentication implements Authentication {
         this.accessToken = pAccessToken;
     }
 
-    public AccessTokenAuthentication(String pAccessToken, String... pRoles) {
+    public AccessTokenAuthentication(OAuthUser pOAuthUser, String pAccessToken, List<String> pScopes, List<String> pRoles) {
+        this.userId = pOAuthUser.getId();
+        this.uniqueIdentifier = pOAuthUser.getUniqueIdentifier();
+        this.scopes = pScopes;
         this.accessToken = pAccessToken;
         
         if (pRoles != null) {
@@ -131,6 +139,27 @@ public class AccessTokenAuthentication implements Authentication {
      */
     public void setAccessToken(String pAccessToken) {
         accessToken = pAccessToken;
+    }
+
+    /**
+     * @return the userId
+     */
+    public Long getUserId() {
+        return userId;
+    }
+
+    /**
+     * @return the scopes
+     */
+    public List<String> getScopes() {
+        return scopes;
+    }
+
+    /**
+     * @return the uniqueIdentifier
+     */
+    public String getUniqueIdentifier() {
+        return uniqueIdentifier;
     }
 
 }
