@@ -34,6 +34,7 @@ import org.springframework.web.servlet.view.RedirectView;
 import ca.n4dev.aegaeon.api.exception.OAuthPublicJsonException;
 import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
+import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
 import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
 import ca.n4dev.aegaeon.api.protocol.RequestedGrant;
@@ -116,6 +117,7 @@ public class ControllerErrorInterceptor {
         return new ResponseEntity<OAuthPublicJsonException>(pOAuthPublicJsonException, 
                                                             HttpStatus.BAD_REQUEST);
     }
+        
     
     @ExceptionHandler(Throwable.class)
     public ModelAndView exception(final Throwable pThrowable) {

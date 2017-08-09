@@ -34,8 +34,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import ca.n4dev.aegaeon.server.controller.interceptor.RequestMethodInterceptor;
 
 /**

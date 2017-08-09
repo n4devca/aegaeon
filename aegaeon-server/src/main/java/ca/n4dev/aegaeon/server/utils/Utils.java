@@ -27,6 +27,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
+import ca.n4dev.aegaeon.api.exception.ServerException;
+
 /**
  * ObjectUtils.java
  * 
@@ -41,6 +46,14 @@ public class Utils {
 
     public static boolean isEmpty(String pValue) {
         return pValue == null || pValue.isEmpty();
+    }
+    
+    public static <E> boolean equals(E pEntity1, E pEntity2) {
+        if (pEntity1 != null) {
+            return pEntity1.equals(pEntity2);
+        }
+        
+        return false;
     }
     
     public static boolean areOneEmpty(Object... pValues) {
@@ -143,6 +156,17 @@ public class Utils {
         return null;
     }
     
+    public static <E> boolean contains(E[] pEntities, E pValue) {
+        if (pEntities != null) {
+            for (E e : pEntities) {
+                if (e.equals(pValue)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     public static <E> boolean contains(List<E> pEntities, E pValue) {
         if (pEntities != null) {
             for (E e : pEntities) {
@@ -153,5 +177,22 @@ public class Utils {
         }
         
         return false;
+    }
+    
+    public static MultiValueMap<String, String> asMap(String... pKeyValues) {
+        MultiValueMap<String, String> p = new LinkedMultiValueMap<>();
+
+        if (pKeyValues != null) {
+            
+            if (pKeyValues.length % 2 != 0) {
+                throw new ServerException(new ArrayIndexOutOfBoundsException());                
+            }
+            
+            for (int i = 0, j = pKeyValues.length; i < j; i += 2) {
+                p.add(pKeyValues[i], pKeyValues[i+1]);
+            }
+        }
+          
+        return p;
     }
 }

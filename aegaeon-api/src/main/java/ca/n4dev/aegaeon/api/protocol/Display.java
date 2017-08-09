@@ -19,26 +19,27 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.exception;
+package ca.n4dev.aegaeon.api.protocol;
 
 /**
- * OAuthErrorType.java
+ * Display.java
  * 
- * TODO(rguillemette) Add description
+ * Enum describing display parameter.
  *
  * @author by rguillemette
- * @since May 22, 2017
+ * @since Aug 7, 2017
  */
-public enum OAuthErrorType {
-    invalid_request,
-    unauthorized_client,
-    access_denied,
-    unsupported_response_type,
-    invalid_scope,
-    invalid_grant,
-    server_error,
-    temporarily_unavailable,
+public enum Display {
+    page, popup, touch, wap;
     
-    login_required
-    ;
+    public static final Display from(String pDisplayValue) {
+        
+        for (Display d : values()) {
+            if (d.toString().equalsIgnoreCase(pDisplayValue)) {
+                return d;
+            }
+        }
+        
+        return null;
+    }
 }

@@ -45,12 +45,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import ca.n4dev.aegaeon.server.controller.ControllerErrorInterceptor;
 import ca.n4dev.aegaeon.server.controller.PublicJwkController;
 import ca.n4dev.aegaeon.server.controller.TokensController;
 import ca.n4dev.aegaeon.server.controller.UserInfoController;
 import ca.n4dev.aegaeon.server.controller.ServerInfoController;
 import ca.n4dev.aegaeon.server.security.AccessTokenAuthenticationFilter;
 import ca.n4dev.aegaeon.server.security.AccessTokenAuthenticationProvider;
+import ca.n4dev.aegaeon.server.security.PromptAwareAuthenticationFilter;
 import ca.n4dev.aegaeon.server.service.AccessTokenService;
 import ca.n4dev.aegaeon.server.service.ClientService;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
@@ -169,7 +171,17 @@ public class WebSecurityConfig {
         private UserDetailsService userDetailsService;
         
         @Autowired
+        private ControllerErrorInterceptor controllerErrorInterceptor;
+
+        @Autowired
+        private ClientService clientService;
+        
+        @Autowired
         private PasswordEncoder passwordEncoder;
+        
+        public PromptAwareAuthenticationFilter promptAwareAuthenticationFilter() {
+            return new PromptAwareAuthenticationFilter(this.clientService, this.controllerErrorInterceptor);
+        }
         
         @Override
         protected void configure(HttpSecurity pHttp) throws Exception {
@@ -182,6 +194,7 @@ public class WebSecurityConfig {
                     .anyRequest().hasAnyAuthority("ROLE_USER")
                     //.antMatchers("/authorize").hasAnyAuthority("ROLE_USER")
                     .and()
+                .addFilterBefore(promptAwareAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .formLogin()
                     .loginPage("/login")
                     .permitAll()

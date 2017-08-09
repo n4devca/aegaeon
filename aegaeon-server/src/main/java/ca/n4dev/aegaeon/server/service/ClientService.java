@@ -23,6 +23,7 @@ package ca.n4dev.aegaeon.server.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ca.n4dev.aegaeon.server.model.Client;
 import ca.n4dev.aegaeon.server.repository.ClientRepository;
@@ -53,8 +54,20 @@ public class ClientService extends BaseService<Client, ClientRepository> {
      * @param pPublicId The client's public id.
      * @return A client or null.
      */
+    @Transactional(readOnly = true)
     public Client findByPublicId(String pPublicId) {
         return this.getRepository().findByPublicId(pPublicId);
+    }
+    
+    /**
+     * Find a client by its public id. Usually, the public id 
+     * is what is used duriong authorization.
+     * @param pPublicId The client's public id.
+     * @return A client or null.
+     */
+    @Transactional(readOnly = true)
+    public Client findByPublicIdWithRedirections(String pPublicId) {
+        return this.getRepository().findByPublicIdWithRedirections(pPublicId);
     }
     
 }

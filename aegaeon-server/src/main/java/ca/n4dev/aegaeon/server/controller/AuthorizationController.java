@@ -36,6 +36,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import ca.n4dev.aegaeon.api.exception.InvalidScopeException;
 import ca.n4dev.aegaeon.api.exception.OAuthErrorType;
+import ca.n4dev.aegaeon.api.exception.OAuthPublicJsonException;
 import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.api.exception.ServerException;
@@ -44,6 +45,7 @@ import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
 import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
 import ca.n4dev.aegaeon.api.protocol.Flow;
 import ca.n4dev.aegaeon.api.protocol.FlowFactory;
+import ca.n4dev.aegaeon.api.protocol.Prompt;
 import ca.n4dev.aegaeon.api.protocol.RequestedGrant;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
 import ca.n4dev.aegaeon.server.model.AuthorizationCode;
@@ -105,6 +107,8 @@ public class AuthorizationController {
                                   @RequestParam(value = "redirection_url", required = false) String pRedirectionUrl,
                                   @RequestParam(value = "state", required = false) String pState,
                                   @RequestParam(value = "nonce", required = false) String pNonce,
+                                  @RequestParam(value = "prompt", required = false) String pPrompt,
+                                  @RequestParam(value = "display", required = false) String pDisplay,
                                   Authentication pAuthentication,
                                   RequestMethod pRequestMethod) {
         
@@ -130,7 +134,7 @@ public class AuthorizationController {
         
         // Check redirection
         Client client  = this.clientService.findByPublicId(pClientPublicId);
-        if (!client.hasRedirection(pRedirectionUrl)) {
+        if (client == null || !client.hasRedirection(pRedirectionUrl)) {
             throw new OauthRestrictedException(getClass(),
                     flow, 
                     OAuthErrorType.invalid_request, 
@@ -151,16 +155,20 @@ public class AuthorizationController {
                     pRedirectionUrl);
         }
         
-        if (!isAuthorized(pAuthentication, pClientPublicId)) {
-            ModelAndView authPage = new ModelAndView("authorize");
+        Prompt p = Prompt.from(pPrompt);
+        boolean isAlreadyAuthorized = isAuthorized(pAuthentication, pClientPublicId);
+        ModelAndView authPage = authorizationPage(pResponseType, pClientPublicId, pRedirectionUrl, pScope, pState, pPrompt, pDisplay);
+        
+        
+        if (p != null) {
             
-            authPage.addObject("client_id", pClientPublicId);
-            authPage.addObject("redirection_url", pRedirectionUrl);
-            authPage.addObject("scopes", pScope);
-            authPage.addObject("state", pState);
-            authPage.addObject("response_type", pResponseType);
+            if (p == Prompt.none && !isAlreadyAuthorized) {
+                throw new OAuthPublicJsonException(getClass(), flow, OAuthErrorType.unauthorized_client);
+            } else if (!isAlreadyAuthorized || p == Prompt.login || p == Prompt.consent) {
+                return authPage;
+            }  // else OK
             
-            
+        } else if (!isAlreadyAuthorized) {
             return authPage;
         }
         
@@ -173,7 +181,6 @@ public class AuthorizationController {
             redirect = implicitResponse(pAuthentication, flow, pClientPublicId, scopes, pRedirectionUrl, pState);
         } 
         
-        // TODO(RG) Should throw an exception instead.
         return new ModelAndView(redirect);
     }
     
@@ -183,6 +190,8 @@ public class AuthorizationController {
                                              @RequestParam(value = "scope", required = false) String pScope,
                                              @RequestParam(value = "redirection_url", required = false) String pRedirectionUrl,
                                              @RequestParam(value = "state", required = false) String pState,
+                                             @RequestParam(value = "prompt", required = false) String pPrompt,
+                                             @RequestParam(value = "display", required = false) String pDisplay,
                                              Authentication pAuthentication) {
         
         // Create a UserAuth and redirect
@@ -198,7 +207,7 @@ public class AuthorizationController {
             
             this.openIdEventLogger.log(OpenIdEvent.AUTHORIZATION, getClass(), userDetails.getUsername(), ua);
             
-            return authorize(pResponseType, pClientPublicId, pScope, pRedirectionUrl, pState, null, pAuthentication, RequestMethod.POST);
+            return authorize(pResponseType, pClientPublicId, pScope, pRedirectionUrl, pState, null, pPrompt, pDisplay, pAuthentication, RequestMethod.POST);
             
         } catch (ServerException se) {
             // Rethrow, will be catch
@@ -274,5 +283,40 @@ public class AuthorizationController {
             throw new ServerException(e);
         }
         
+    }
+    
+    /**
+     * Create a page to ask user consent.
+     * @see authorize endpoint.
+     * 
+     * @param pResponseType The response type.
+     * @param pClientPublicId The client public id.
+     * @param pRedirectionUrl The selected redirect url
+     * @param pScope The requested scopes.
+     * @param pState A client state.
+     * @param pPrompt Which prompt option.
+     * @param pDisplay How to display page.
+     * @return A model and view.
+     */
+    private ModelAndView authorizationPage(String pResponseType, 
+                                           String pClientPublicId, 
+                                           String pRedirectionUrl, 
+                                           String pScope, 
+                                           String pState, 
+                                           String pPrompt, 
+                                           String pDisplay) {
+        
+        ModelAndView authPage = new ModelAndView("authorize");
+        
+        authPage.addObject("client_id", pClientPublicId);
+        authPage.addObject("redirection_url", pRedirectionUrl);
+        authPage.addObject("scopes", pScope);
+        authPage.addObject("state", pState);
+        authPage.addObject("response_type", pResponseType);
+        authPage.addObject("display", pDisplay);
+        authPage.addObject("prompt", pPrompt);
+        
+        
+        return authPage;
     }
 }

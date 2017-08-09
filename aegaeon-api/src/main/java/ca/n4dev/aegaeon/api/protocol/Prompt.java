@@ -19,26 +19,27 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.exception;
+package ca.n4dev.aegaeon.api.protocol;
 
 /**
- * OAuthErrorType.java
+ * Prompt.java
  * 
- * TODO(rguillemette) Add description
+ * Enum describing prompt parameter.
  *
  * @author by rguillemette
- * @since May 22, 2017
+ * @since Aug 7, 2017
  */
-public enum OAuthErrorType {
-    invalid_request,
-    unauthorized_client,
-    access_denied,
-    unsupported_response_type,
-    invalid_scope,
-    invalid_grant,
-    server_error,
-    temporarily_unavailable,
+public enum Prompt {
+    none, login, consent, select_account;
     
-    login_required
-    ;
+    public static final Prompt from(String pPromptValue) {
+        
+        for (Prompt p : values()) {
+            if (p.toString().equalsIgnoreCase(pPromptValue)) {
+                return p;
+            }
+        }
+        
+        return null;
+    }
 }
