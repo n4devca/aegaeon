@@ -55,18 +55,14 @@ public class AccessTokenAuthenticationProvider implements AuthenticationProvider
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessTokenAuthenticationProvider.class);
     
     private AccessTokenService accessTokenService;
-    private ClientService clientService;
     private TokenFactory tokenFactory;
-    private ServerInfo serverInfo;
     
     public AccessTokenAuthenticationProvider(ClientService pClientService, 
                                              AccessTokenService pAccessTokenService,
                                              TokenFactory pTokenFactory,
                                              ServerInfo pServerInfo) {
         this.accessTokenService = pAccessTokenService;
-        this.clientService = pClientService;
         this.tokenFactory = pTokenFactory;
-        this.serverInfo = pServerInfo;
     }
     
     /* (non-Javadoc)
@@ -91,10 +87,10 @@ public class AccessTokenAuthenticationProvider implements AuthenticationProvider
         
         AccessTokenAuthentication accessTokenAuthentication = (AccessTokenAuthentication) pAuthentication;
         String token = accessTokenAuthentication.getAccessToken();
-        SignedJWT signedJWT = null;
 
         try {
-            signedJWT = SignedJWT.parse(token);
+            // JWT ?
+            SignedJWT.parse(token);
             
             // Try to get access token
             AccessToken accessToken = this.accessTokenService.findByTokenValue(token);

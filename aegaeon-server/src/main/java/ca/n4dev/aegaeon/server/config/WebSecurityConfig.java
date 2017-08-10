@@ -46,6 +46,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import ca.n4dev.aegaeon.server.controller.ControllerErrorInterceptor;
+import ca.n4dev.aegaeon.server.controller.IntrospectController;
 import ca.n4dev.aegaeon.server.controller.PublicJwkController;
 import ca.n4dev.aegaeon.server.controller.TokensController;
 import ca.n4dev.aegaeon.server.controller.UserInfoController;
@@ -90,6 +91,7 @@ public class WebSecurityConfig {
         protected void configure(HttpSecurity pHttp) throws Exception {
             pHttp
                 .antMatcher(TokensController.URL)
+                .antMatcher(IntrospectController.URL)
                     .authorizeRequests()
                     .anyRequest().hasAnyAuthority("ROLE_CLIENT")
                 .and()
