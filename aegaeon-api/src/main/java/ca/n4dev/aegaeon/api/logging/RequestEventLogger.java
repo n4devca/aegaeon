@@ -22,21 +22,15 @@
 package ca.n4dev.aegaeon.api.logging;
 
 /**
- * OpenIdEventLogger.java
+ * RequestEventLogger.java
  * 
- * A component that may be used by controller or services to log various events happening 
- * during authentication and authorization.
+ * This is a stub interface allowing Aegaeon to log events related to 
+ * requests made by user or client upon a successful authentication, authorization.
+ *
  *
  * @author by rguillemette
- * @since Jun 16, 2017
+ * @since Aug 11, 2017
  */
-public interface OpenIdEventLogger {
-    
-    static final String SEPARATOR = ";";
+public interface RequestEventLogger {
 
-    void log(OpenIdEvent pOpenIdEvent, Class<?> pSource);
-    
-    void log(OpenIdEvent pOpenIdEvent, Class<?> pSource, Object pDetails);
-    
-    void log(OpenIdEvent pOpenIdEvent, Class<?> pSource, String pUser, Object pDetails);
 }

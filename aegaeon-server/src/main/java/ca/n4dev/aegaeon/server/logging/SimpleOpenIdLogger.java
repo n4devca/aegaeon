@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import ca.n4dev.aegaeon.api.logging.AuthenticationLogger;
@@ -36,6 +35,7 @@ import ca.n4dev.aegaeon.api.logging.AuthorizationLogger;
 import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
 import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
 import ca.n4dev.aegaeon.api.logging.ProtocolErrorLogger;
+import ca.n4dev.aegaeon.api.logging.RequestEventLogger;
 import ca.n4dev.aegaeon.api.logging.TokenGrantingLogger;
 
 /**
@@ -66,6 +66,7 @@ public class SimpleOpenIdLogger implements OpenIdEventLogger {
         LOGGERS.put(OpenIdEvent.AUTHORIZATION, LoggerFactory.getLogger(AuthorizationLogger.class));
         LOGGERS.put(OpenIdEvent.TOKEN_GRANTING, LoggerFactory.getLogger(TokenGrantingLogger.class));
         LOGGERS.put(OpenIdEvent.TOKEN_DENYING, LoggerFactory.getLogger(TokenGrantingLogger.class));
+        LOGGERS.put(OpenIdEvent.REQUEST_INFO, LoggerFactory.getLogger(RequestEventLogger.class));
         LOGGERS.put(OpenIdEvent.RESTRICTED_ERROR, errLogger);
         LOGGERS.put(OpenIdEvent.PUBLIC_ERROR, errLogger);
         LOGGERS.put(OpenIdEvent.OTHERS, generalLogger);
@@ -101,6 +102,14 @@ public class SimpleOpenIdLogger implements OpenIdEventLogger {
     @Override
     public void log(OpenIdEvent pOpenIdEvent, Class<?> pSource) {
         this.log(pOpenIdEvent, pSource, DASH, DASH);
+    }
+
+    /* (non-Javadoc)
+     * @see ca.n4dev.aegaeon.api.logging.OpenIdEventLogger#log(ca.n4dev.aegaeon.api.logging.OpenIdEvent, java.lang.Class, java.lang.Object)
+     */
+    @Override
+    public void log(OpenIdEvent pOpenIdEvent, Class<?> pSource, Object pDetails) {
+        this.log(pOpenIdEvent, pSource, DASH, pDetails);
     }
     
 }

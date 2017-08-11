@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
+import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
 import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
 import ca.n4dev.aegaeon.server.controller.dto.UserInfoResponse;
 import ca.n4dev.aegaeon.server.model.User;
@@ -53,12 +55,19 @@ public class UserInfoController {
     public static final String URL = "/userinfo";
     
     private UserService userService;
-    
     private PayloadProvider payloadProvider;
+    private OpenIdEventLogger openIdEventLogger;
     
-    public UserInfoController(UserService pUserService, PayloadProvider pPayloadProvider) {
+    /**
+     * Default Constructor.
+     * @param pUserService The user's service.
+     * @param pPayloadProvider A payload provider.
+     * @param pOpenIdEventLogger The logger service.
+     */
+    public UserInfoController(UserService pUserService, PayloadProvider pPayloadProvider, OpenIdEventLogger pOpenIdEventLogger) {
         this.userService = pUserService;
         this.payloadProvider = pPayloadProvider;
+        this.openIdEventLogger = pOpenIdEventLogger;
     }
     
     @RequestMapping(value = "", method = {RequestMethod.GET, RequestMethod.POST})
@@ -72,6 +81,8 @@ public class UserInfoController {
             Map<String, String> payload = this.payloadProvider.createPayload(u, null, auth.getScopes());
 
             UserInfoResponse response = new UserInfoResponse(auth.getUniqueIdentifier(), payload);
+            
+            openIdEventLogger.log(OpenIdEvent.REQUEST_INFO, getClass(), u.getUserName(), null);
             
             return response;
         }

@@ -36,5 +36,6 @@ public enum OpenIdEvent {
     TOKEN_DENYING,
     RESTRICTED_ERROR,
     PUBLIC_ERROR,
+    REQUEST_INFO,
     OTHERS
 }

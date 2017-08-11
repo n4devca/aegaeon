@@ -132,6 +132,16 @@ public class AuthorizationController {
                                            pRedirectionUrl);
         }
         
+        // Supported flow ?
+        if (flow == null || flow.getRequestedGrant() == null || flow.getRequestedGrant().size() == 0) {
+            throw new OauthRestrictedException(getClass(),
+                    flow, 
+                    OAuthErrorType.invalid_request, 
+                    pClientPublicId, 
+                    pRedirectionUrl,
+                    "Invalid flow");
+        }
+        
         // Check redirection
         Client client  = this.clientService.findByPublicId(pClientPublicId);
         if (client == null || !client.hasRedirection(pRedirectionUrl)) {

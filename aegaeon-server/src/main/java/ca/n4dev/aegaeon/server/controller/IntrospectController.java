@@ -21,9 +21,6 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -34,6 +31,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nimbusds.jwt.SignedJWT;
 
+import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
+import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
 import ca.n4dev.aegaeon.server.config.ServerInfo;
 import ca.n4dev.aegaeon.server.controller.dto.IntrospectResponse;
 import ca.n4dev.aegaeon.server.model.AccessToken;
@@ -59,6 +58,7 @@ public class IntrospectController {
     private AccessTokenService accessTokenService;
     private TokenFactory tokenFactory;
     private ServerInfo serverInfo;
+    private OpenIdEventLogger openIdEventLogger;
     
     /**
      * Default Constructor.
@@ -69,10 +69,12 @@ public class IntrospectController {
      */
     public IntrospectController(AccessTokenService pAccessTokenService,
                                 TokenFactory pTokenFactory,
-                                ServerInfo pServerInfo) {
+                                ServerInfo pServerInfo,
+                                OpenIdEventLogger pOpenIdEventLogger) {
         this.accessTokenService = pAccessTokenService;
         this.tokenFactory = pTokenFactory;
         this.serverInfo = pServerInfo;
+        this.openIdEventLogger = pOpenIdEventLogger;
     }
     
     /**
@@ -122,11 +124,6 @@ public class IntrospectController {
                 
                 // OK, good
                 User u = accessToken.getUser();
-                List<String> roles = new ArrayList<>();
-                
-                if (u.getAuthorities() != null) {
-                    u.getAuthorities().forEach(a -> roles.add(a.getCode()));
-                }
                 
                 // Complete response
                 response.setActive(true);
@@ -134,12 +131,13 @@ public class IntrospectController {
                 response.setSub(u.getUniqueIdentifier());
                 response.setClientId(accessToken.getClient().getPublicId());
                 response.setIssuer(this.serverInfo.getIssuer());
-                
-                
+                response.setScope(accessToken.getScopes());
+
+                openIdEventLogger.log(OpenIdEvent.REQUEST_INFO, getClass(), u.getUserName(), null);
                 return ResponseEntity.ok(response);
 
             } catch (Exception e) {
-                // TODO(rg): log error
+                openIdEventLogger.log(OpenIdEvent.OTHERS, getClass(), e.getMessage());
             }
             
         }
