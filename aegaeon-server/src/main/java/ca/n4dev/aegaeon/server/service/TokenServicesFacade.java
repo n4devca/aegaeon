@@ -32,12 +32,12 @@ import org.springframework.transaction.annotation.Transactional;
 import ca.n4dev.aegaeon.api.exception.OAuthErrorType;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.api.exception.ServerException;
+import ca.n4dev.aegaeon.api.model.AccessToken;
+import ca.n4dev.aegaeon.api.model.IdToken;
+import ca.n4dev.aegaeon.api.model.RefreshToken;
+import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.api.protocol.Flow;
 import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
-import ca.n4dev.aegaeon.server.model.AccessToken;
-import ca.n4dev.aegaeon.server.model.IdToken;
-import ca.n4dev.aegaeon.server.model.RefreshToken;
-import ca.n4dev.aegaeon.server.model.Scope;
 import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**

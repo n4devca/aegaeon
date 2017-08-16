@@ -19,46 +19,26 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.service;
+package ca.n4dev.aegaeon.api.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.transaction.annotation.Transactional;
 
-import ca.n4dev.aegaeon.api.model.BaseEntity;
+import ca.n4dev.aegaeon.api.model.AuthorizationCode;
 
 /**
- * BaseService.java
+ * AuthorizationCodeRepository.java
  * 
- * Basic service with common functions.
+ * Repository managing authorization code.
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since May 10, 2017
  */
-@Transactional
-public abstract class BaseService<E extends BaseEntity, R extends JpaRepository<E, Long>> {
+public interface AuthorizationCodeRepository extends JpaRepository<AuthorizationCode, Long> {
 
-    private R repository;
+    AuthorizationCode findByCode(String pCode);
     
-    protected BaseService(R pRepository) {
-        this.repository = pRepository;
-    }
+    Iterable<AuthorizationCode> findByClientId(Long pClientId);
     
-    @Transactional(readOnly = true)
-    public E findById(Long pId) {
-        return getRepository().findOne(pId);
-    }
+    Iterable<AuthorizationCode> findByUserId(Long pUserId);
     
-    @Transactional
-    public E save(E pEntity) {
-        return getRepository().save(pEntity);
-    }
-    
-    @Transactional
-    public void delete(E pEntity) {
-        getRepository().delete(pEntity);
-    }
-    
-    protected R getRepository() {
-        return this.repository;
-    }
 }

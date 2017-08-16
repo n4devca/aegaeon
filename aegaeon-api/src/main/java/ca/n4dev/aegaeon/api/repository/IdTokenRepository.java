@@ -19,27 +19,20 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.repository;
+package ca.n4dev.aegaeon.api.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import ca.n4dev.aegaeon.server.model.RefreshToken;
+import ca.n4dev.aegaeon.api.model.IdToken;
 
 /**
- * RefreshTokenRepository.java
+ * IdTokenRepository.java
  * 
- * Repository managing refresh token entity.
+ * IdToken Repository.
  *
  * @author by rguillemette
- * @since May 9, 2017
+ * @since Jul 5, 2017
  */
-public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
+public interface IdTokenRepository extends JpaRepository<IdToken, Long> {
 
-    /**
-     * Find a refresh token using its value and client to whom it has been granted.
-     * @param pToken The token value.
-     * @param pClientId The client primary key.
-     * @return A RefreshToken or null.
-     */
-    RefreshToken findByTokenAndClientId(String pToken, Long pClientId);
 }

@@ -19,27 +19,37 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.repository;
+package ca.n4dev.aegaeon.api.model;
 
-import java.util.List;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import ca.n4dev.aegaeon.server.model.UserAuthorization;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 /**
- * UserAuthorizationRepository.java
+ * Authority.java
  * 
- * Provide db access to UserAuthorization.
+ * Represent a user's authority.
  *
  * @author by rguillemette
- * @since May 13, 2017
+ * @since May 8, 2017
  */
-public interface UserAuthorizationRepository extends JpaRepository<UserAuthorization, Long> {
+@Entity
+@Table(name = "authority")
+public class Authority extends BaseEntity {
 
-    UserAuthorization findByUserIdAndClientId(Long pUserId, Long pClientId);
+    private String code;
+
+    /**
+     * @return the code
+     */
+    public String getCode() {
+        return code;
+    }
+
+    /**
+     * @param pCode the code to set
+     */
+    public void setCode(String pCode) {
+        code = pCode;
+    }
     
-    List<UserAuthorization> findByUserId(Long pUserId);
-    
-    List<UserAuthorization> findByClientId(Long pClientId);
 }

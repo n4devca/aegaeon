@@ -40,12 +40,12 @@ import org.springframework.web.servlet.view.RedirectView;
 import ca.n4dev.aegaeon.api.exception.OAuthErrorType;
 import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
+import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.protocol.Flow;
 import ca.n4dev.aegaeon.api.protocol.FlowFactory;
 import ca.n4dev.aegaeon.api.protocol.Prompt;
 import ca.n4dev.aegaeon.server.controller.AuthorizationController;
 import ca.n4dev.aegaeon.server.controller.ControllerErrorInterceptor;
-import ca.n4dev.aegaeon.server.model.Client;
 import ca.n4dev.aegaeon.server.service.ClientService;
 import ca.n4dev.aegaeon.server.utils.Utils;
 

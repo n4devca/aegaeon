@@ -24,7 +24,7 @@ package ca.n4dev.aegaeon.server.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import ca.n4dev.aegaeon.server.model.User;
+import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
 
 /**

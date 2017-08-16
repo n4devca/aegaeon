@@ -30,8 +30,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ca.n4dev.aegaeon.api.exception.InvalidScopeException;
-import ca.n4dev.aegaeon.server.model.Scope;
-import ca.n4dev.aegaeon.server.repository.ScopeRepository;
+import ca.n4dev.aegaeon.api.model.Scope;
+import ca.n4dev.aegaeon.api.repository.ScopeRepository;
 import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**

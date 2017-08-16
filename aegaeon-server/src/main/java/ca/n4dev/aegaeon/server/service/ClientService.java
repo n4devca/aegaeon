@@ -25,8 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ca.n4dev.aegaeon.server.model.Client;
-import ca.n4dev.aegaeon.server.repository.ClientRepository;
+import ca.n4dev.aegaeon.api.model.Client;
+import ca.n4dev.aegaeon.api.repository.ClientRepository;
 
 /**
  * ClientService.java

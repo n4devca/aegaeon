@@ -28,7 +28,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import ca.n4dev.aegaeon.server.model.User;
+import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
 import ca.n4dev.aegaeon.server.service.UserService;
 

@@ -27,7 +27,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import ca.n4dev.aegaeon.server.model.Scope;
+import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**

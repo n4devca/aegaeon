@@ -19,28 +19,26 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.repository;
-
-import java.util.List;
+package ca.n4dev.aegaeon.api.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import ca.n4dev.aegaeon.server.model.Scope;
+import ca.n4dev.aegaeon.api.model.User;
 
 /**
- * ScopeRepository.java
+ * UserRepository.java
  * 
- * Scope repository.
+ * User repository.
  *
  * @author by rguillemette
  * @since May 8, 2017
  */
-public interface ScopeRepository extends JpaRepository<Scope, Long> {
+public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
-     * Find all scope with the following list of name.
-     * @param pNames Name of the scope to load.
-     * @return A list
+     * Find a user by username. 
+     * @param pUsername The username to find.
+     * @return A user or null.
      */
-    List<Scope> findByNameIn(List<String> pNames);
+    User findByUserName(String pUsername);
 }

@@ -19,37 +19,26 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.model;
+package ca.n4dev.aegaeon.api.repository;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import ca.n4dev.aegaeon.api.model.AccessToken;
 
 /**
- * Authority.java
+ * AccessTokenRepository.java
  * 
- * Represent a user's authority.
+ * AccessToken Repository.
  *
  * @author by rguillemette
  * @since May 8, 2017
  */
-@Entity
-@Table(name = "authority")
-public class Authority extends BaseEntity {
-
-    private String code;
+public interface AccessTokenRepository extends JpaRepository<AccessToken, Long> {
 
     /**
-     * @return the code
+     * Find an access token by its token value.
+     * @param pToken The token.
+     * @return An access token or null.
      */
-    public String getCode() {
-        return code;
-    }
-
-    /**
-     * @param pCode the code to set
-     */
-    public void setCode(String pCode) {
-        code = pCode;
-    }
-    
+    AccessToken findByToken(String pToken);
 }

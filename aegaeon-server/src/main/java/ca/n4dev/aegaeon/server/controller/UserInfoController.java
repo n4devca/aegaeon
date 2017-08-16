@@ -32,9 +32,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
 import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
+import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
 import ca.n4dev.aegaeon.server.controller.dto.UserInfoResponse;
-import ca.n4dev.aegaeon.server.model.User;
 import ca.n4dev.aegaeon.server.security.AccessTokenAuthentication;
 import ca.n4dev.aegaeon.server.service.UserService;
 

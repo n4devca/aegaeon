@@ -19,26 +19,28 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.repository;
+package ca.n4dev.aegaeon.api.repository;
+
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import ca.n4dev.aegaeon.server.model.AccessToken;
+import ca.n4dev.aegaeon.api.model.Scope;
 
 /**
- * AccessTokenRepository.java
+ * ScopeRepository.java
  * 
- * AccessToken Repository.
+ * Scope repository.
  *
  * @author by rguillemette
  * @since May 8, 2017
  */
-public interface AccessTokenRepository extends JpaRepository<AccessToken, Long> {
+public interface ScopeRepository extends JpaRepository<Scope, Long> {
 
     /**
-     * Find an access token by its token value.
-     * @param pToken The token.
-     * @return An access token or null.
+     * Find all scope with the following list of name.
+     * @param pNames Name of the scope to load.
+     * @return A list
      */
-    AccessToken findByToken(String pToken);
+    List<Scope> findByNameIn(List<String> pNames);
 }

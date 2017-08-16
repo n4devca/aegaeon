@@ -33,10 +33,10 @@ import com.nimbusds.jwt.SignedJWT;
 
 import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
 import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
+import ca.n4dev.aegaeon.api.model.AccessToken;
+import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.server.config.ServerInfo;
 import ca.n4dev.aegaeon.server.controller.dto.IntrospectResponse;
-import ca.n4dev.aegaeon.server.model.AccessToken;
-import ca.n4dev.aegaeon.server.model.User;
 import ca.n4dev.aegaeon.server.service.AccessTokenService;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
 import ca.n4dev.aegaeon.server.utils.Utils;

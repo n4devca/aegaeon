@@ -29,11 +29,11 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.token.OAuthClient;
 import ca.n4dev.aegaeon.api.token.OAuthUser;
 import ca.n4dev.aegaeon.api.token.payload.Claims;
 import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
-import ca.n4dev.aegaeon.server.model.User;
 import ca.n4dev.aegaeon.server.service.UserService;
 import ca.n4dev.aegaeon.server.utils.Utils;
 

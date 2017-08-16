@@ -28,11 +28,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
-import ca.n4dev.aegaeon.server.model.Client;
-import ca.n4dev.aegaeon.server.model.Scope;
-import ca.n4dev.aegaeon.server.model.User;
-import ca.n4dev.aegaeon.server.model.UserAuthorization;
-import ca.n4dev.aegaeon.server.repository.UserAuthorizationRepository;
+import ca.n4dev.aegaeon.api.model.Client;
+import ca.n4dev.aegaeon.api.model.Scope;
+import ca.n4dev.aegaeon.api.model.User;
+import ca.n4dev.aegaeon.api.model.UserAuthorization;
+import ca.n4dev.aegaeon.api.repository.UserAuthorizationRepository;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
 

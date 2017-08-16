@@ -23,10 +23,14 @@ package ca.n4dev.aegaeon.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
+@EntityScan(basePackages = "ca.n4dev.aegaeon.api.model")
+@EnableJpaRepositories(basePackages = "ca.n4dev.aegaeon.api.repository")
 public class AegaeonApplication extends SpringBootServletInitializer {
 
     @Override

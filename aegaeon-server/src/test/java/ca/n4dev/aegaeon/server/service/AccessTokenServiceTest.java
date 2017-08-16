@@ -30,12 +30,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
+import ca.n4dev.aegaeon.api.model.AccessToken;
+import ca.n4dev.aegaeon.api.model.Client;
+import ca.n4dev.aegaeon.api.model.Scope;
+import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.protocol.Flow;
 import ca.n4dev.aegaeon.api.protocol.FlowFactory;
-import ca.n4dev.aegaeon.server.model.AccessToken;
-import ca.n4dev.aegaeon.server.model.Client;
-import ca.n4dev.aegaeon.server.model.Scope;
-import ca.n4dev.aegaeon.server.model.User;
 
 /**
  * AccessTokenServiceTest.java

@@ -19,56 +19,20 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.model;
+package ca.n4dev.aegaeon.api.repository;
 
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import ca.n4dev.aegaeon.api.model.GrantType;
 
 /**
- * ClientContact.java
+ * GrantTypeRepository.java
  * 
- * Client's contacts.
+ * GrantType repository.
  *
  * @author by rguillemette
- * @since Jun 20, 2017
+ * @since May 8, 2017
  */
-@Entity
-@Table(name = "client_contact")
-public class ClientContact extends BaseEntity {
+public interface GrantTypeRepository extends JpaRepository<GrantType, Long> {
 
-    private String email;
-    
-    @ManyToOne
-    @JoinColumn(name = "client_id")
-    private Client client;
-
-    /**
-     * @return the email
-     */
-    public String getEmail() {
-        return email;
-    }
-
-    /**
-     * @param pEmail the email to set
-     */
-    public void setEmail(String pEmail) {
-        email = pEmail;
-    }
-
-    /**
-     * @return the client
-     */
-    public Client getClient() {
-        return client;
-    }
-
-    /**
-     * @param pClient the client to set
-     */
-    public void setClient(Client pClient) {
-        client = pClient;
-    }
 }

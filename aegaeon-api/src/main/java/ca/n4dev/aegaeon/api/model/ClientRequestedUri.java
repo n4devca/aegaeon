@@ -19,38 +19,56 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.repository;
+package ca.n4dev.aegaeon.api.model;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-
-import ca.n4dev.aegaeon.server.model.Client;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
- * ClientRepository.java
+ * ClientRequestedUri.java
  * 
- * Client repository.
+ * Uris that can be fetched (and cached) by the OP to be used by a client during authorization.
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since Jun 20, 2017
  */
-@Repository
-public interface ClientRepository extends JpaRepository<Client, Long>{
+@Entity
+@Table(name = "client_request_uris")
+public class ClientRequestedUri extends BaseEntity {
+
+    private String uri;
+    
+    @ManyToOne
+    @JoinColumn(name = "client_id")
+    private Client client;
 
     /**
-     * Find a client by public id.
-     * @param pPublicId The public id.
-     * @return A client or null.
+     * @return the uri
      */
-    Client findByPublicId(String pPublicId);
-    
+    public String getUri() {
+        return uri;
+    }
+
     /**
-     * Find a client by public id (and load redirection uri).
-     * @param pPublicId The public id.
-     * @return A client or null.
+     * @param pUri the uri to set
      */
-    @Query("from Client c join fetch c.redirections where c.publicId = :publicId ")
-    Client findByPublicIdWithRedirections(@Param("publicId") String pPublicId);
+    public void setUri(String pUri) {
+        uri = pUri;
+    }
+
+    /**
+     * @return the client
+     */
+    public Client getClient() {
+        return client;
+    }
+
+    /**
+     * @param pClient the client to set
+     */
+    public void setClient(Client pClient) {
+        client = pClient;
+    }
 }

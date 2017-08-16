@@ -19,26 +19,27 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.repository;
+package ca.n4dev.aegaeon.api.repository;
+
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import ca.n4dev.aegaeon.server.model.AuthorizationCode;
+import ca.n4dev.aegaeon.api.model.UserAuthorization;
 
 /**
- * AuthorizationCodeRepository.java
+ * UserAuthorizationRepository.java
  * 
- * Repository managing authorization code.
+ * Provide db access to UserAuthorization.
  *
  * @author by rguillemette
- * @since May 10, 2017
+ * @since May 13, 2017
  */
-public interface AuthorizationCodeRepository extends JpaRepository<AuthorizationCode, Long> {
+public interface UserAuthorizationRepository extends JpaRepository<UserAuthorization, Long> {
 
-    AuthorizationCode findByCode(String pCode);
+    UserAuthorization findByUserIdAndClientId(Long pUserId, Long pClientId);
     
-    Iterable<AuthorizationCode> findByClientId(Long pClientId);
+    List<UserAuthorization> findByUserId(Long pUserId);
     
-    Iterable<AuthorizationCode> findByUserId(Long pUserId);
-    
+    List<UserAuthorization> findByClientId(Long pClientId);
 }

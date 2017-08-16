@@ -34,9 +34,9 @@ import org.springframework.security.core.AuthenticationException;
 
 import com.nimbusds.jwt.SignedJWT;
 
+import ca.n4dev.aegaeon.api.model.AccessToken;
+import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.server.config.ServerInfo;
-import ca.n4dev.aegaeon.server.model.AccessToken;
-import ca.n4dev.aegaeon.server.model.User;
 import ca.n4dev.aegaeon.server.service.AccessTokenService;
 import ca.n4dev.aegaeon.server.service.ClientService;
 import ca.n4dev.aegaeon.server.token.TokenFactory;

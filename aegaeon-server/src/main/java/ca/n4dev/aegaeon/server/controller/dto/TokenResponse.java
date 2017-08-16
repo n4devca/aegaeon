@@ -23,9 +23,9 @@ package ca.n4dev.aegaeon.server.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import ca.n4dev.aegaeon.server.model.AccessToken;
-import ca.n4dev.aegaeon.server.model.IdToken;
-import ca.n4dev.aegaeon.server.model.RefreshToken;
+import ca.n4dev.aegaeon.api.model.AccessToken;
+import ca.n4dev.aegaeon.api.model.IdToken;
+import ca.n4dev.aegaeon.api.model.RefreshToken;
 
 /**
  * TokenResponse.java

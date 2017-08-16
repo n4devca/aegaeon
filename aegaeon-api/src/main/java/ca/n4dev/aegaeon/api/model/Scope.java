@@ -19,78 +19,75 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.model;
+package ca.n4dev.aegaeon.api.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Type;
 
 /**
- * ClientScope.java
+ * Scope.java
  * 
- * Scopes asked by a client.
+ * Represent a scope that can be requested by a client.
  *
  * @author by rguillemette
  * @since May 8, 2017
  */
 @Entity
-@Table(name = "client_scope")
-public class ClientScope extends BaseEntity {
+@Table(name = "scope")
+public class Scope extends BaseEntity {
 
-    @ManyToOne
-    @JoinColumn(name = "client_id")
-    private Client client;
+    private String name;
     
-    @ManyToOne
-    @JoinColumn(name = "scope_id")
-    private Scope scope;
+    private String description;
     
+    @Column(name = "issystem")
     @Type(type = "boolean")
-    private boolean mandatory;
+    private boolean system;
 
     /**
-     * @return the client
+     * @return the name
      */
-    public Client getClient() {
-        return client;
+    public String getName() {
+        return name;
     }
 
     /**
-     * @param pClient the client to set
+     * @param pName the name to set
      */
-    public void setClient(Client pClient) {
-        client = pClient;
+    public void setName(String pName) {
+        name = pName;
     }
 
     /**
-     * @return the scope
+     * @return the description
      */
-    public Scope getScope() {
-        return scope;
+    public String getDescription() {
+        return description;
     }
 
     /**
-     * @param pScope the scope to set
+     * @param pDescription the description to set
      */
-    public void setScope(Scope pScope) {
-        scope = pScope;
+    public void setDescription(String pDescription) {
+        description = pDescription;
     }
 
     /**
-     * @return the mandatory
+     * @return the system
      */
-    public boolean isMandatory() {
-        return mandatory;
+    public boolean isSystem() {
+        return system;
     }
 
     /**
-     * @param pMandatory the mandatory to set
+     * @param pSystem the system to set
      */
-    public void setMandatory(boolean pMandatory) {
-        mandatory = pMandatory;
+    public void setSystem(boolean pSystem) {
+        system = pSystem;
     }
+    
     
 }

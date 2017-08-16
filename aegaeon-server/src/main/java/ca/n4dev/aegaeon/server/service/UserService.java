@@ -26,8 +26,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ca.n4dev.aegaeon.server.model.User;
-import ca.n4dev.aegaeon.server.repository.UserRepository;
+import ca.n4dev.aegaeon.api.model.User;
+import ca.n4dev.aegaeon.api.repository.UserRepository;
 
 /**
  * UserService.java

@@ -19,26 +19,38 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.repository;
+package ca.n4dev.aegaeon.api.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
-import ca.n4dev.aegaeon.server.model.User;
+import ca.n4dev.aegaeon.api.model.Client;
 
 /**
- * UserRepository.java
+ * ClientRepository.java
  * 
- * User repository.
+ * Client repository.
  *
  * @author by rguillemette
  * @since May 8, 2017
  */
-public interface UserRepository extends JpaRepository<User, Long> {
+@Repository
+public interface ClientRepository extends JpaRepository<Client, Long>{
 
     /**
-     * Find a user by username. 
-     * @param pUsername The username to find.
-     * @return A user or null.
+     * Find a client by public id.
+     * @param pPublicId The public id.
+     * @return A client or null.
      */
-    User findByUserName(String pUsername);
+    Client findByPublicId(String pPublicId);
+    
+    /**
+     * Find a client by public id (and load redirection uri).
+     * @param pPublicId The public id.
+     * @return A client or null.
+     */
+    @Query("from Client c join fetch c.redirections where c.publicId = :publicId ")
+    Client findByPublicIdWithRedirections(@Param("publicId") String pPublicId);
 }

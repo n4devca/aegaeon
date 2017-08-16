@@ -19,43 +19,44 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.model;
+package ca.n4dev.aegaeon.api.model;
 
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+
 /**
- * ClientRequestedUri.java
+ * ClientRedirection.java
  * 
- * Uris that can be fetched (and cached) by the OP to be used by a client during authorization.
+ * TODO(rguillemette) Add description
  *
  * @author by rguillemette
- * @since Jun 20, 2017
+ * @since May 8, 2017
  */
 @Entity
-@Table(name = "client_request_uris")
-public class ClientRequestedUri extends BaseEntity {
+@Table(name = "client_redirection")
+public class ClientRedirection extends BaseEntity {
 
-    private String uri;
+    private String url;
     
     @ManyToOne
     @JoinColumn(name = "client_id")
     private Client client;
 
     /**
-     * @return the uri
+     * @return the url
      */
-    public String getUri() {
-        return uri;
+    public String getUrl() {
+        return url;
     }
 
     /**
-     * @param pUri the uri to set
+     * @param pUrl the url to set
      */
-    public void setUri(String pUri) {
-        uri = pUri;
+    public void setUrl(String pUrl) {
+        url = pUrl;
     }
 
     /**
@@ -71,4 +72,5 @@ public class ClientRequestedUri extends BaseEntity {
     public void setClient(Client pClient) {
         client = pClient;
     }
+    
 }

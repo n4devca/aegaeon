@@ -21,9 +21,9 @@
  */
 package ca.n4dev.aegaeon.server.utils;
 
-import ca.n4dev.aegaeon.server.model.Client;
-import ca.n4dev.aegaeon.server.model.ClientScope;
-import ca.n4dev.aegaeon.server.model.GrantType;
+import ca.n4dev.aegaeon.api.model.Client;
+import ca.n4dev.aegaeon.api.model.ClientScope;
+import ca.n4dev.aegaeon.api.model.GrantType;
 
 /**
  * ClientUtils.java

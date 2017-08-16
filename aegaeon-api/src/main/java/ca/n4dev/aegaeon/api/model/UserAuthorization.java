@@ -19,7 +19,7 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.model;
+package ca.n4dev.aegaeon.api.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

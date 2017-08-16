@@ -26,7 +26,7 @@ import java.util.Collection;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import ca.n4dev.aegaeon.server.model.User;
+import ca.n4dev.aegaeon.api.model.User;
 
 /**
  * SimpleUserDetails.java

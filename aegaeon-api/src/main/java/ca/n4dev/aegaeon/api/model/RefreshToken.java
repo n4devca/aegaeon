@@ -19,12 +19,9 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.model;
+package ca.n4dev.aegaeon.api.model;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -32,18 +29,18 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
- * IdToken.java
+ * RefreshToken.java
  * 
- * Open ID Token entity.
+ * Refresh Token entity.
  *
  * @author by rguillemette
- * @since Jul 5, 2017
+ * @since May 9, 2017
  */
 @Entity
-@Table(name = "id_token")
-public class IdToken extends BaseEntity {
+@Table(name = "refresh_token")
+public class RefreshToken extends BaseEntity {
 
-private String token;
+    private String token;
     
     private LocalDateTime validUntil;
     
@@ -126,15 +123,5 @@ private String token;
     public void setScopes(String pScopes) {
         scopes = pScopes;
     }
-    
-    /**
-     * @return the scopes
-     */
-    public List<String> getScopeList() {
-        if (this.scopes == null || this.scopes.isEmpty()) {
-            return Collections.emptyList();
-        }
-        
-        return Arrays.asList(scopes.split(" "));
-    }
+
 }

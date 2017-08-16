@@ -31,8 +31,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import ca.n4dev.aegaeon.server.model.User;
-import ca.n4dev.aegaeon.server.repository.UserRepository;
+import ca.n4dev.aegaeon.api.model.User;
+import ca.n4dev.aegaeon.api.repository.UserRepository;
 import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
 
 /**
