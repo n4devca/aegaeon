@@ -21,6 +21,7 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -51,6 +52,7 @@ import ca.n4dev.aegaeon.server.utils.Utils;
  */
 @Controller
 @RequestMapping(value = IntrospectController.URL)
+@ConditionalOnProperty(prefix = "aegaeon.modules", name = "introspect", havingValue = "true", matchIfMissing = false)
 public class IntrospectController {
     
     public static final String URL = "/introspect";

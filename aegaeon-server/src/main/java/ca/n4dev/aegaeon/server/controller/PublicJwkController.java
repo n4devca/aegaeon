@@ -22,6 +22,7 @@
 package ca.n4dev.aegaeon.server.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -42,6 +43,7 @@ import ca.n4dev.aegaeon.server.token.TokenFactory;
  */
 @Controller
 @RequestMapping(value = PublicJwkController.URL)
+@ConditionalOnProperty(prefix = "aegaeon.modules", name = "information", havingValue = "true", matchIfMissing = true)
 public class PublicJwkController {
 
     public static final String URL = "/jwk";

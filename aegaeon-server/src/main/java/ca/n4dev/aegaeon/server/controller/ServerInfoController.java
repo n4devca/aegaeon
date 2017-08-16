@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -53,6 +54,7 @@ import ca.n4dev.aegaeon.server.token.TokenFactory;
  */
 @Controller
 @RequestMapping(value = ServerInfoController.URL)
+@ConditionalOnProperty(prefix = "aegaeon.modules", name = "information", havingValue = "true", matchIfMissing = true)
 public class ServerInfoController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerInfoController.class);

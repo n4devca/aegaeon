@@ -28,4 +28,6 @@ aegaeon:
         account: false
         discovery: false
         admin: false
+        introspect: true
+        information: true
         
