@@ -34,7 +34,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
-import ca.n4dev.aegaeon.server.controller.interceptor.RequestMethodInterceptor;
+import ca.n4dev.aegaeon.server.controller.interceptor.RequestMethodArgumentResolver;
+import ca.n4dev.aegaeon.server.controller.interceptor.ServerInfoInterceptor;
 
 /**
  * WebMvcConfig.java
@@ -47,8 +48,21 @@ import ca.n4dev.aegaeon.server.controller.interceptor.RequestMethodInterceptor;
 @Configuration
 public class WebMvcConfig extends WebMvcConfigurerAdapter {
     
-    @Value("${aegaeon.issuer}")
+    @Value("${aegaeon.info.issuer}")
     private String issuer;
+    
+    @Value("${aegaeon.info.logoUrl}")
+    private String logoUrl;
+    
+    @Value("${aegaeon.info.legalEntity}")
+    private String legalEntity;
+
+    @Value("${aegaeon.info.privacyPolicy}")
+    private String privacyPolicy;
+    
+    @Value("${aegaeon.info.customStyleSheet}")
+    private String customStyleSheet;
+    
     
     @Bean
     public LocaleResolver localeResolver() {
@@ -66,18 +80,18 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
     }
     
     @Bean
-    public RequestMethodInterceptor requestMethodInterceptor() {
-        return new RequestMethodInterceptor();
-    }
-    
-    @Bean
     public ServerInfo serverInfo() {
-        return new ServerInfo(issuer);
+        return new ServerInfo(this.issuer, 
+        					  this.legalEntity, 
+        					  this.logoUrl, 
+        					  this.privacyPolicy, 
+        					  this.customStyleSheet);
     }
     
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
+        registry.addInterceptor(new ServerInfoInterceptor(serverInfo()));
     }
 
     /* (non-Javadoc)
@@ -85,6 +99,6 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
      */
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> pArgumentResolvers) {
-        pArgumentResolvers.add(new RequestMethodInterceptor());
+        pArgumentResolvers.add(new RequestMethodArgumentResolver());
     }
 }

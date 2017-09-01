@@ -15,9 +15,9 @@ spring:
     jackson:
         default-property-inclusion: non_null
 flyway:
+    enabled: false
     baseline-version: 1
     check-location: false
-    enabled: true
     locations: classpath:db/mysql
     out-of-order: true
 aegaeon:

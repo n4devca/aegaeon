@@ -40,13 +40,15 @@ public class ServerInfo {
 
     private String privacyPolicy;
     
-    public ServerInfo() {}
+    private String customStyleSheet;
+
+	public ServerInfo() {}
     
     public ServerInfo(String pIssuer) {
-        this(pIssuer, null, null, null);
+        this(pIssuer, null, null, null, null);
     }
     
-    public ServerInfo(String pIssuer, String pLegalEntity, String pLogoUrl, String pPrivacyPolicy) {
+    public ServerInfo(String pIssuer, String pLegalEntity, String pLogoUrl, String pPrivacyPolicy, String pCustomStyleSheet) {
         
         if (pIssuer == null || pIssuer.isEmpty()) {
             throw new RuntimeException("Issuer is mandatory");
@@ -56,6 +58,7 @@ public class ServerInfo {
         this.logoUrl = pLogoUrl;
         this.legalEntity = pLegalEntity;
         this.privacyPolicy = pPrivacyPolicy;
+        this.customStyleSheet = pCustomStyleSheet;
     }
     
 
@@ -115,4 +118,18 @@ public class ServerInfo {
         privacyPolicy = pPrivacyPolicy;
     }
     
+
+    /**
+	 * @return the customStyleSheet
+	 */
+	public String getCustomStyleSheet() {
+		return customStyleSheet;
+	}
+
+	/**
+	 * @param customStyleSheet the customStyleSheet to set
+	 */
+	public void setCustomStyleSheet(String customStyleSheet) {
+		this.customStyleSheet = customStyleSheet;
+	}
 }

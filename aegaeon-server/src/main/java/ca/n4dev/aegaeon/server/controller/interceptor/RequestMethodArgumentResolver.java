@@ -38,7 +38,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author by rguillemette
  * @since May 24, 2017
  */
-public class RequestMethodInterceptor implements HandlerMethodArgumentResolver {
+public class RequestMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
     /* (non-Javadoc)
      * @see org.springframework.web.method.support.HandlerMethodArgumentResolver#supportsParameter(org.springframework.core.MethodParameter)

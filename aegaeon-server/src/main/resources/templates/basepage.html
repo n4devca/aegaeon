@@ -15,6 +15,10 @@
     <link href="../../css/origin.css" th:href="@{/resources/css/origin.css}" rel="stylesheet" />
     <script src="../../js/bootstrap.min.js" th:src="@{/resources/js/bootstrap.min.js}"></script>
      -->
+    <th:block th:if="${serverInfo}">
+	    <meta name="privacy policy" th:attr="content=${serverInfo.legalEntity}" />
+    	<link th:if="${serverInfo.customStyleSheet}" th:href="@{${serverInfo.customStyleSheet}}" rel="stylesheet" />
+    </th:block>
 </head>
 <body>
 
