@@ -51,16 +51,16 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
     @Value("${aegaeon.info.issuer}")
     private String issuer;
     
-    @Value("${aegaeon.info.logoUrl}")
+    @Value("${aegaeon.info.logoUrl:#{null}}")
     private String logoUrl;
     
-    @Value("${aegaeon.info.legalEntity}")
+    @Value("${aegaeon.info.legalEntity:#{null}}")
     private String legalEntity;
 
-    @Value("${aegaeon.info.privacyPolicy}")
+    @Value("${aegaeon.info.privacyPolicy:#{null}}")
     private String privacyPolicy;
     
-    @Value("${aegaeon.info.customStyleSheet}")
+    @Value("${aegaeon.info.customStyleSheet:#{null}}")
     private String customStyleSheet;
     
     

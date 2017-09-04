@@ -42,7 +42,9 @@ import ca.n4dev.aegaeon.api.exception.ServerException;
  */
 public class Utils {
     
-    private static final String SPACE = " ";
+    public static final String SPACE = " ";
+    public static final String TRUE = "true";
+    public static final String FALSE = "false";
 
     public static boolean isEmpty(String pValue) {
         return pValue == null || pValue.isEmpty();

@@ -21,32 +21,50 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
+
+import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**
- * HomeController.java
+ * SimpleHomeController.java
  * 
- * TODO(rguillemette) Add description
- *
+ * A simple controller managing the homepage or redirecting to user-account if the home is disabled.
+ * 
  * @author by rguillemette
  * @since Jul 14, 2017
  */
 @Controller
-@RequestMapping(value = {SimpleHomeController.URL, SimpleHomeController.URL_HOME})
-@ConditionalOnProperty(prefix = "aegaeon.modules", name = "home", havingValue = "true", matchIfMissing = false)
+@RequestMapping(value = SimpleHomeController.URL)
+//@ConditionalOnProperty(prefix = "aegaeon.modules", name = "home", havingValue = "true", matchIfMissing = false)
 public class SimpleHomeController {
 
-    public static final String URL = "/";
-    public static final String URL_HOME = "/home";
-    
+	public static final String URL = "";
+	
+	private String homeModule;
+	
+	/**
+	 * Default Constructor.
+	 * @param pHomeModuleEnable If home is enabled.
+	 */
+	public SimpleHomeController(@Value("aegaeon.modules.home:false") String pHomeModuleEnable) {
+		this.homeModule = pHomeModuleEnable;
+	}
+	
     /**
      * @return Aegaeon home page.
      */
     @RequestMapping("")
     public ModelAndView home() {
-        return new ModelAndView("homepage");
+  
+    	if (Utils.FALSE.equalsIgnoreCase(homeModule)) {
+    		// home is disabled
+    		return new ModelAndView(new RedirectView(SimpleUserAccountController.URL, true));
+    	}
+    	
+    	return new ModelAndView("homepage");
     }
 }

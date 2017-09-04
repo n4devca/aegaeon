@@ -35,9 +35,11 @@ import org.springframework.web.servlet.ModelAndView;
  * @since Jul 14, 2017
  */
 @Controller
-@RequestMapping("/login")
+@RequestMapping(SimpleLoginController.URL)
 @ConditionalOnProperty(prefix = "aegaeon.modules", name = "login", havingValue = "true", matchIfMissing = true)
 public class SimpleLoginController {
+	
+	public static final String URL = "/login";
 
     @RequestMapping("")
     public ModelAndView login() {
