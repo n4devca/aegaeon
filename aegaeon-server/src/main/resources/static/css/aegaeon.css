@@ -6,6 +6,7 @@ html, body, * {
 
 body {
 	/*background-color: #444;*/
+	margin:0;
 }
 
 a, span, p, input, button {
@@ -17,30 +18,45 @@ h1, h2, h3, h4, h5 {
 }
 
 .main-content {
-   
+   padding: 10px;
 }
 
 .login-form {
 	
 }
 
+.site-header {
+	background-color: #313131;
+	padding: 10px 5px;
+}
+
+.site-header > .site-header-brand > h1 {
+	font-size: 1.1em;
+	margin: 0;
+	color: #b73535;
+    font-weight: bold;
+    text-transform: uppercase;
+}
 
 @media (min-width: 800px) {
 	
     .main-content {
 	    margin: 0 auto;
-	    width: 800px;
+	    width: 1024px;
 	}
 		
 	.login-form {
 	    margin-top: 100px;
 	}
+	
+	.user-profile  {
+    	border: 1px solid #ccc;
+    	padding: 10px;
+	}
+	
 }
 
 /* page */
-.user-profile  {
-    
-}
 
 .user-profile .user-profile-info {
 	
@@ -119,6 +135,14 @@ h1, h2, h3, h4, h5 {
 
 .link:hover {
     text-decoration: underline;
+}
+
+.form-group {
+	margin: 3px 0;	
+}
+
+.form-group > label {
+	display: block;
 }
 
 .form-input {

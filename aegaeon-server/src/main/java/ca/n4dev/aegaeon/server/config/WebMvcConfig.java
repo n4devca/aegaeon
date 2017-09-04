@@ -51,6 +51,9 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
     @Value("${aegaeon.info.issuer}")
     private String issuer;
     
+    @Value("${aegaeon.info.serverName:Aegaeon Server}")
+    private String serverName;
+    
     @Value("${aegaeon.info.logoUrl:#{null}}")
     private String logoUrl;
     
@@ -82,6 +85,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
     @Bean
     public ServerInfo serverInfo() {
         return new ServerInfo(this.issuer, 
+        					  this.serverName,
         					  this.legalEntity, 
         					  this.logoUrl, 
         					  this.privacyPolicy, 

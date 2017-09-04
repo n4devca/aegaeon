@@ -22,13 +22,13 @@
 </head>
 <body>
 
-    <header class="site-header">
+    <header class="site-header" layout:fragment="header">
     
-        <div class="site-header-brand">
-
+        <div class="site-header-brand" layout:fragment="header-brand">
+			<h1 th:text="${serverInfo.serverName}"></h1>
         </div>
         
-        <div class="site-header-nav">
+        <div class="site-header-nav"  layout:fragment="header-nav">
 
         </div>
         

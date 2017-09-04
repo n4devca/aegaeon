@@ -52,8 +52,9 @@ public class User extends BaseEntity implements OAuthUser {
     
     private String passwd;
     
-    private String email;
-
+    @Column(name = "picture_url")
+    private String pictureUrl;
+    
     @Column(name = "uniqueIdentifier")
     private String uniqueIdentifier;
     
@@ -141,21 +142,6 @@ public class User extends BaseEntity implements OAuthUser {
     }
 
     /* (non-Javadoc)
-     * @see ca.n4dev.aegaeon.server.token.OAuthUser#getEmail()
-     */
-    @Override
-    public String getEmail() {
-        return email;
-    }
-
-    /**
-     * @param pEmail the email to set
-     */
-    public void setEmail(String pEmail) {
-        email = pEmail;
-    }
-
-    /* (non-Javadoc)
      * @see ca.n4dev.aegaeon.server.token.OAuthUser#getName()
      */
     @Override
@@ -169,5 +155,19 @@ public class User extends BaseEntity implements OAuthUser {
     public void setName(String pName) {
         name = pName;
     }
+
+	/**
+	 * @return the pictureUrl
+	 */
+	public String getPictureUrl() {
+		return pictureUrl;
+	}
+
+	/**
+	 * @param pictureUrl the pictureUrl to set
+	 */
+	public void setPictureUrl(String pictureUrl) {
+		this.pictureUrl = pictureUrl;
+	}
     
 }

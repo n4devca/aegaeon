@@ -13,11 +13,46 @@
         <div class="normal-content user-profile">
         
             <div class="user-profile-info">
+            
+            	<!-- 
+            	username varchar(100) NOT NULL
+email varchar(100) NOT NULL
+name varchar(100) NULL
+uniqueIdentifier varchar(128) NOT NULL
+passwd char(60) NOT NULL
+enabled
+
+userinfo
+
+id int(11) not null auto_increment,
+    user_id int(11) not null,
+    user_info_type_id int(11) not null,
+    other_name varchar(40),
+    value varchar(1000) not null,
+    note varchar(1000),
+    version int(11) not null default 0,
+    createdat timestamp not null default CURRENT_TIMESTAMP,
+    updatedat timestamp null on update CURRENT_TIMESTAMP,
+    
+            	 -->
 
                 <h1 th:text="#{page.useraccount.title}">Account</h1>
                 <form action="/user-account" th:object="${user}" th:action="@{/user-account}">
-                    <label for="user-account-name" th:text="#{page.useraccount.form.label.name}"></label>
-                    <input type="text" id="user-account-name" th:field="*{name}" />                
+                	<div class="form-group">                	
+	                    <label for="user-account-name" th:text="#{page.useraccount.form.label.name}"></label>
+	                    <input type="text" id="user-account-name" th:field="*{name}" class="form-input" />                
+                	</div>
+                	
+                	<div th:each="ui : ${userinfos}">
+                		<span th:text="${ui.value}"></span>
+                	</div>
+                	
+                	<select>
+                		<option th:each="t : ${types}" th:text="${t.code}" th:value="${t.code}" />
+                	</select>
+                	
+                	
+                	
                 </form>
         
             </div>

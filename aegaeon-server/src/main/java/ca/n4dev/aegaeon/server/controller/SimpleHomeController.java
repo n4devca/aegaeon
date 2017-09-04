@@ -42,7 +42,7 @@ import ca.n4dev.aegaeon.server.utils.Utils;
 //@ConditionalOnProperty(prefix = "aegaeon.modules", name = "home", havingValue = "true", matchIfMissing = false)
 public class SimpleHomeController {
 
-	public static final String URL = "";
+	public static final String URL = "/";
 	
 	private String homeModule;
 	
