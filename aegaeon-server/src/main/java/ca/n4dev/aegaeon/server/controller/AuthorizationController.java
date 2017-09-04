@@ -24,6 +24,7 @@ package ca.n4dev.aegaeon.server.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.LinkedMultiValueMap;
@@ -72,6 +73,7 @@ import ca.n4dev.aegaeon.server.utils.Utils;
  */
 @Controller
 @RequestMapping(value = AuthorizationController.URL)
+@ConditionalOnProperty(prefix = "aegaeon.modules", name = "oauth", havingValue = "true", matchIfMissing = true)
 public class AuthorizationController {
     
     public static final String URL = "/authorize";

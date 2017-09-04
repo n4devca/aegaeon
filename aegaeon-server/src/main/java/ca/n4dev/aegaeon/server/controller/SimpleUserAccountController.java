@@ -41,9 +41,11 @@ import ca.n4dev.aegaeon.server.service.UserService;
  * @since Jun 12, 2017
  */
 @Controller
-@RequestMapping(value = "/user-account")
+@RequestMapping(value = SimpleUserAccountController.URL)
 @ConditionalOnProperty(prefix = "aegaeon.modules", name = "account", havingValue = "true", matchIfMissing = true)
 public class SimpleUserAccountController {
+    
+    public static final String URL = "/user-account";
 
     private UserService userService;
     
