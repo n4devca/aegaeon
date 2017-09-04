@@ -12,22 +12,15 @@
         <div class="normal-content user-profile">
         
             <div class="user-profile-info">
-                <div class="panel">
-                    <div class="panel-heading">
-                        <h1 th:text="#{page.useraccount.title}">Account</h1>
-                    </div>
-                    <div class="panel-body">
-                        <h1 th:text="${user.userName}"></h1>
-                    </div>
-                </div>
-            
+                <h1 th:text="#{page.useraccount.title}">Account</h1>
+                <form action="/user-account" th:object="${user}" th:action="@{/user-account}">
+                    <label for="user-account-name" th:text="#{page.useraccount.form.label.name}"></label>
+                    <input type="text" id="user-account-name" th:field="*{name}" />                
+                </form>
+             
             </div>
             <div class="user-profile-menu">
-                <div class="panel">
-                    <div class="panel-body">
-                        Menu...
-                    </div>
-                </div>            
+                
             </div>
             
         </div>

@@ -51,6 +51,8 @@ import ca.n4dev.aegaeon.server.controller.PublicJwkController;
 import ca.n4dev.aegaeon.server.controller.TokensController;
 import ca.n4dev.aegaeon.server.controller.UserInfoController;
 import ca.n4dev.aegaeon.server.controller.ServerInfoController;
+import ca.n4dev.aegaeon.server.controller.SimpleHomeController;
+import ca.n4dev.aegaeon.server.controller.SimpleUserAccountController;
 import ca.n4dev.aegaeon.server.security.AccessTokenAuthenticationFilter;
 import ca.n4dev.aegaeon.server.security.AccessTokenAuthenticationProvider;
 import ca.n4dev.aegaeon.server.security.PromptAwareAuthenticationFilter;
@@ -192,7 +194,8 @@ public class WebSecurityConfig {
                     .antMatchers("/resources/**").permitAll()
                     .antMatchers(ServerInfoController.URL).permitAll()
                     .antMatchers(PublicJwkController.URL).permitAll()
-                    //.antMatchers("/", "/home").permitAll()
+                    .antMatchers(SimpleHomeController.URL).permitAll()
+                    .antMatchers(SimpleHomeController.URL_HOME).permitAll()
                     .anyRequest().hasAnyAuthority("ROLE_USER")
                     //.antMatchers("/authorize").hasAnyAuthority("ROLE_USER")
                     .and()
@@ -200,7 +203,7 @@ public class WebSecurityConfig {
                 .formLogin()
                     .loginPage("/login")
                     .permitAll()
-                    .defaultSuccessUrl("/user-profile")
+                    .defaultSuccessUrl(SimpleUserAccountController.URL)
                 .and()
                     .userDetailsService(userDetailsService)
                 .logout()

@@ -24,7 +24,7 @@ aegaeon:
     modules:
         oauth: true
         login: true
-        home: true
+        home: false
         account: false
         discovery: false
         admin: false

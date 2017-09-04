@@ -35,10 +35,13 @@ import org.springframework.web.servlet.ModelAndView;
  * @since Jul 14, 2017
  */
 @Controller
-@RequestMapping(value = {"/", "/home"})
-@ConditionalOnProperty(prefix = "aegaeon.modules", name = "home", havingValue = "true", matchIfMissing = true)
+@RequestMapping(value = {SimpleHomeController.URL, SimpleHomeController.URL_HOME})
+@ConditionalOnProperty(prefix = "aegaeon.modules", name = "home", havingValue = "true", matchIfMissing = false)
 public class SimpleHomeController {
 
+    public static final String URL = "/";
+    public static final String URL_HOME = "/home";
+    
     /**
      * @return Aegaeon home page.
      */
