@@ -38,6 +38,26 @@ h1, h2, h3, h4, h5 {
     text-transform: uppercase;
 }
 
+.row {
+	box-sizing:border-box
+}
+
+
+/* Page Styles */
+.home-content {
+    padding-top: 50px;
+    text-align: center;
+}
+
+.home-content > img {
+    
+}
+
+.home-content > a {
+    display: block;
+    text-decoration: none;
+}
+
 @media (min-width: 800px) {
 	
     .main-content {
@@ -50,22 +70,9 @@ h1, h2, h3, h4, h5 {
 	}
 	
 	.user-profile  {
-    	border: 1px solid #ccc;
-    	padding: 10px;
-	}
 	
+    }
 }
-
-/* page */
-
-.user-profile .user-profile-info {
-	
-}
-
-.user-profile .user-profile-menu {
-    
-}
-
 
 /* Components */
 .panel {
@@ -137,6 +144,21 @@ h1, h2, h3, h4, h5 {
     text-decoration: underline;
 }
 
+.form-section {
+    margin: 5px 0;
+    border-top: 1px solid #ccc;;
+}
+
+.form-section-heading {
+	margin-bottom: 3px;
+	display: table;
+	width: 100%;
+}
+
+.form-section-heading > .form-section-heading-element {
+    display: table-cell;
+}
+
 .form-group {
 	margin: 3px 0;	
 }
@@ -159,17 +181,9 @@ h1, h2, h3, h4, h5 {
 	box-shadow: 1px 1px 1px #b5cede;
 }
 
-/* Page Styles */
-.home-content {
-	padding-top: 50px;
-	text-align: center;
-}
-
-.home-content > img {
-	
-}
-
-.home-content > a {
-	display: block;
-	text-decoration: none;
+.form-section-heading > .form-section-heading-element .inline-input {
+	display: inline;
+	margin-left: 0;
+	margin-right: 0;
+	width: auto;
 }

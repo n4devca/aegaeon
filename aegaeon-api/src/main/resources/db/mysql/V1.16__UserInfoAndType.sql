@@ -76,7 +76,7 @@ create table user_info (
     user_id int(11) not null,
     user_info_type_id int(11) not null,
     other_name varchar(40),
-    » varchar(1000) not null,
+    value varchar(1000) not null,
     note varchar(1000),
     version int(11) not null default 0,
     createdat timestamp not null default CURRENT_TIMESTAMP,

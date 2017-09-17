@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{basepage}">
+<head>
+
+</head>
+<body>
+    <section layout:fragment="content">
+        <div class="normal-content">
+            <div class="panel">
+                
+                <div class="panel-body">
+                    <h1>:( Not Found...</h1>
+                    <span th:text="${requestUrl}"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

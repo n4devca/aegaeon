@@ -12,55 +12,79 @@
     
         <div class="normal-content user-profile">
         
-            <div class="user-profile-info">
+            <div class="box">
+                <div class="heading">
+                    <h1 th:text="#{page.useraccount.title}">Account</h1>                
+                </div>
+                <div class="body">
+
+                    <form action="/user-account" th:object="${user}" th:action="@{/user-account}" class="frm">
+                    
+                        <div class="grid">
+                        
+                            <div class="row"> 
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label for="user-account-picture" th:text="#{page.useraccount.form.label.picture}"></label>
+                                        <img alt="user-picture" th:src="${user.pictureUrl}" th:if="${user.pictureUrl}" />
+                                        <input type="text" id="user-account-name" th:field="*{pictureUrl}" class="form-input" />
+                                    </div>                        
+                                </div>
+                                <div class="col-9">
+                                	
+                                    <div class="form-group">                	
+                	                    <label for="user-account-name" th:text="#{page.useraccount.form.label.name}"></label>
+                	                    <input type="text" id="user-account-name" th:field="*{name}" class="form-input" />                
+                                	</div>      
+                                    
+                                    <div class="form-group" 
+                                         th:each="ui : ${userinfos}">
+                                        <label th:text="#{${'entity.userinfotype.' + #strings.toLowerCase(ui.type.code)}}"></label>
+                                        <input type="text" th:id="'user-account-ui-' + ${ui.id}" th:value="${ui.value}" class="form-input" />
+                                        <div class="right">
+                                            <a href="#">Remove</a>
+                                        </div>
+                                    </div>  
+                                    
+                                    <div th:each="t : ${types}" class="form-section">
+                                        <div class="form-section-heading">
+                                            <div class="form-section-heading-element">
+                                                <h4 th:text="${t.labelName}">Group</h4>
+                                            </div>
+                                            <div class="form-section-heading-element right">
+                                                <select name="user-type" class="inline-input">
+                                                    <option th:each="c : ${t.children}" th:text="${c.labelName}" th:value="${c.code}"></option>
+                                                </select>
+                                                <button class="btn">
+                                                    <span th:text="#{action.add}"></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="form-section-body">
+                                            <div class="form-group" 
+                                                 th:each="v : ${t.userValues}">
+                                                
+                                                <label th:text="${v.labelName}"></label>
+                                                <input type="text" class="form-input" th:value="${v.value}" />        
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        
+                    
+                    	
+                    	
+                    	
+                    	
+                    	
+                    	
+                    </form>
             
-            	<!-- 
-            	username varchar(100) NOT NULL
-email varchar(100) NOT NULL
-name varchar(100) NULL
-uniqueIdentifier varchar(128) NOT NULL
-passwd char(60) NOT NULL
-enabled
-
-userinfo
-
-id int(11) not null auto_increment,
-    user_id int(11) not null,
-    user_info_type_id int(11) not null,
-    other_name varchar(40),
-    value varchar(1000) not null,
-    note varchar(1000),
-    version int(11) not null default 0,
-    createdat timestamp not null default CURRENT_TIMESTAMP,
-    updatedat timestamp null on update CURRENT_TIMESTAMP,
-    
-            	 -->
-
-                <h1 th:text="#{page.useraccount.title}">Account</h1>
-                <form action="/user-account" th:object="${user}" th:action="@{/user-account}">
-                	<div class="form-group">                	
-	                    <label for="user-account-name" th:text="#{page.useraccount.form.label.name}"></label>
-	                    <input type="text" id="user-account-name" th:field="*{name}" class="form-input" />                
-                	</div>
-                	
-                	<div th:each="ui : ${userinfos}">
-                		<span th:text="${ui.value}"></span>
-                	</div>
-                	
-                	<select>
-                		<option th:each="t : ${types}" th:text="${t.code}" th:value="${t.code}" />
-                	</select>
-                	
-                	
-                	
-                </form>
-        
+                </div>
             </div>
-            
-            <div class="user-profile-menu">
-                
-            </div>
-            
         </div>
     </section>
 </body>
