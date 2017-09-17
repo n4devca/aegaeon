@@ -1,91 +1,93 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{basepage}">
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{basepage}">
 <head>
 
 </head>
 <body>
-    <section layout:fragment="content">
-    
-        <div class="normal-content user-profile">
-        
-            <div class="box">
-                <div class="heading">
-                    <h1 th:text="#{page.useraccount.title}">Account</h1>                
-                </div>
-                <div class="body">
+	<section layout:fragment="content">
 
-                    <form action="/user-account" th:object="${user}" th:action="@{/user-account}" class="frm">
-                    
-                        <div class="grid">
-                        
-                            <div class="row"> 
-                                <div class="col-3">
-                                    <div class="form-group">
-                                        <label for="user-account-picture" th:text="#{page.useraccount.form.label.picture}"></label>
-                                        <img alt="user-picture" th:src="${user.pictureUrl}" th:if="${user.pictureUrl}" />
-                                        <input type="text" id="user-account-name" th:field="*{pictureUrl}" class="form-input" />
-                                    </div>                        
-                                </div>
-                                <div class="col-9">
-                                	
-                                    <div class="form-group">                	
-                	                    <label for="user-account-name" th:text="#{page.useraccount.form.label.name}"></label>
-                	                    <input type="text" id="user-account-name" th:field="*{name}" class="form-input" />                
-                                	</div>      
-                                    
-                                    <div class="form-group" 
-                                         th:each="ui : ${userinfos}">
-                                        <label th:text="#{${'entity.userinfotype.' + #strings.toLowerCase(ui.type.code)}}"></label>
-                                        <input type="text" th:id="'user-account-ui-' + ${ui.id}" th:value="${ui.value}" class="form-input" />
-                                        <div class="right">
-                                            <a href="#">Remove</a>
-                                        </div>
-                                    </div>  
-                                    
-                                    <div th:each="t : ${types}" class="form-section">
-                                        <div class="form-section-heading">
-                                            <div class="form-section-heading-element">
-                                                <h4 th:text="${t.labelName}">Group</h4>
-                                            </div>
-                                            <div class="form-section-heading-element right">
-                                                <select name="user-type" class="inline-input">
-                                                    <option th:each="c : ${t.children}" th:text="${c.labelName}" th:value="${c.code}"></option>
-                                                </select>
-                                                <button class="btn">
-                                                    <span th:text="#{action.add}"></span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="form-section-body">
-                                            <div class="form-group" 
-                                                 th:each="v : ${t.userValues}">
-                                                
-                                                <label th:text="${v.labelName}"></label>
-                                                <input type="text" class="form-input" th:value="${v.value}" />        
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-                        </div>
-                        
-                    
-                    	
-                    	
-                    	
-                    	
-                    	
-                    	
-                    </form>
-            
-                </div>
-            </div>
-        </div>
-    </section>
+		<div class="normal-content user-profile">
+
+			<form action="/user-account" th:object="${user}"
+				  th:action="@{/user-account}" class="frm">
+				  
+				<div class="box">
+					<div class="heading">
+						<h1 th:text="#{page.useraccount.title}">Account</h1>
+					</div>
+					<div class="body">
+						<div class="grid">
+
+							<div class="row">
+								<div class="col-3">
+									<div class="form-group">
+										<label for="user-account-picture"
+											th:text="#{page.useraccount.form.label.picture}"></label> <img
+											alt="user-picture" th:src="${user.pictureUrl}"
+											th:if="${user.pictureUrl}" /> <input type="text"
+											id="user-account-name" th:field="*{pictureUrl}"
+											class="form-input" />
+									</div>
+								</div>
+								<div class="col-9">
+
+									<div class="form-group">
+										<label for="user-account-name"
+											th:text="#{page.useraccount.form.label.name}"></label> <input
+											type="text" id="user-account-name" th:field="*{name}"
+											class="form-input" />
+									</div>
+
+									<div th:each="t,tstats : *{infos}" class="form-section">
+										<div class="form-section-heading">
+											<div class="form-section-heading-element">
+												<h4 th:text="${t.labelName}">Group</h4>
+											</div>
+											<div class="form-section-heading-element right">
+												<select name="user-type" class="inline-input">
+													<option th:each="c : ${t.children}"
+														th:text="${c.labelName}" th:value="${c.code}"></option>
+												</select>
+												<button class="btn" name="action" type="submit" th:value="'add_' + ${t.code}">
+													<span th:text="#{action.add}"></span>
+												</button>
+											</div>
+										</div>
+										<div class="form-section-body">
+											<div class="form-group" th:each="v,vstats : ${t.userValues}">
+
+												<label th:text="${v.labelName}"></label>
+												<input type="text" class="form-input" 
+													   th:field="*{infos[__${tstats.index}__].userValues[__${vstats.index}__].value}" />
+											</div>
+										</div>
+									</div>
+
+								</div>
+							</div>
+						</div>
+
+
+
+
+
+
+
+
+
+					</div>
+					<div class="footer right">
+						<button type="submit" class="btn" name="action" value="save">
+							<span>Save</span>
+						</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</section>
 </body>
 </html>

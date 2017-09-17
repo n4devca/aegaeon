@@ -45,11 +45,13 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.model.UserInfo;
 import ca.n4dev.aegaeon.api.model.UserInfoType;
+import ca.n4dev.aegaeon.server.controller.dto.UserFormDto;
 import ca.n4dev.aegaeon.server.controller.dto.UserInfoDto;
 import ca.n4dev.aegaeon.server.controller.dto.UserInfoGroupDto;
 import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
@@ -102,24 +104,28 @@ public class SimpleUserAccountController extends BaseUiController {
         
         // user
         User u = this.userService.findById(pUser.getId());
-        mv.addObject("user", u);
         
         // User Info
         List<UserInfo> infos = this.userInfoService.findByUserId(pUser.getId());
-        mv.addObject("userinfos", infos);
         
         // UserInfoType
         List<UserInfoType> types = this.userInfoTypeService.findAll();
         Map<Long, UserInfoGroupDto> uitGrpDtos = createUserInfoTypeGroupDto(types, pLocale);
         
-        mv.addObject("types", combine(uitGrpDtos, infos, pLocale));
+        UserFormDto userDto = new UserFormDto();
+        userDto.setName(u.getName());
+        userDto.setPictureUrl(u.getPictureUrl());
+        userDto.setInfos(combine(uitGrpDtos, infos, pLocale));
         
+        mv.addObject("userinfos", infos);
+        mv.addObject("user", userDto);
         
         return mv;
     }
     
     @PostMapping("")
-    public ModelAndView saveAccount(@ModelAttribute UserInfoGroupDto pModel, 
+    public ModelAndView saveAccount(@RequestParam("action") String pAction,
+    								@ModelAttribute("user") UserInfoGroupDto pModel, 
                                     @AuthenticationPrincipal SpringAuthUserDetails pUser) {
         
         return new ModelAndView("user-account");
