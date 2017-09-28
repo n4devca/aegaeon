@@ -39,16 +39,21 @@ public class UserInfoDto {
     
     private Long refId;
     
+    private String parentCode;
+    
+    public UserInfoDto() {}
+    
     /**
      * 
      * @param pCode
      * @param pLabelName
      */
-    public UserInfoDto(String pCode, String pLabelName) {
-        this(pCode, pLabelName, null);
+    public UserInfoDto(Long pRefId, String pCode, String pLabelName) {
+        this(pRefId, pCode, pLabelName, null);
     }
 
-    public UserInfoDto(String pCode, String pLabelName, String pValue) {
+    public UserInfoDto(Long pRefId, String pCode, String pLabelName, String pValue) {
+        this.refId = pRefId;
         this.code = pCode;
         this.labelName = pLabelName;
         this.value = pValue;
@@ -108,6 +113,20 @@ public class UserInfoDto {
      */
     public void setRefId(Long pRefId) {
         refId = pRefId;
+    }
+
+    /**
+     * @return the parentCode
+     */
+    public String getParentCode() {
+        return parentCode;
+    }
+
+    /**
+     * @param pParentCode the parentCode to set
+     */
+    public void setParentCode(String pParentCode) {
+        parentCode = pParentCode;
     }
     
 }

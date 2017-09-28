@@ -21,29 +21,20 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorSupport;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.propertyeditors.CustomCollectionEditor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.MessageSource;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.ServletRequestDataBinder;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
@@ -74,6 +65,14 @@ import ca.n4dev.aegaeon.server.utils.Utils;
 public class SimpleUserAccountController extends BaseUiController {
     
     public static final String URL = "/user-account";
+    public static final String VIEW = "user-account";
+    
+    private static final String CODE_SAVESTATE_NORMAL = "normal";
+    private static final String CODE_SAVESTATE_MODIFIED = "modified";
+    private static final String CODE_SAVESTATE_SAVED = "saved";
+    
+    private static final String ACTION_ADD = "add_";
+    private static final String ACTION_REMOVE = "remove_";
 
     private UserService userService;
     private UserInfoService userInfoService;
@@ -100,58 +99,184 @@ public class SimpleUserAccountController extends BaseUiController {
     
     @RequestMapping("")
     public ModelAndView account(@AuthenticationPrincipal SpringAuthUserDetails pUser, Locale pLocale) {
-        ModelAndView mv = new ModelAndView("user-account");
+        return createUserView(pUser.getId(), pLocale);
+    }
+    
+    @PostMapping("")
+    public ModelAndView changeOrSaveAccount(@RequestParam("action") String pAction,
+                                    @RequestParam(value = "selecttype", required = false) String[] pUserType,
+    								@ModelAttribute("user") UserFormDto pModel, 
+                                    @AuthenticationPrincipal SpringAuthUserDetails pUser, 
+                                    Locale pLocale) {
         
-        // user
-        User u = this.userService.findById(pUser.getId());
+        if ("save".equalsIgnoreCase(pAction)) {
+            return save(pUser, pModel, pLocale);
+        } else {
+            return addOrRemoveInfo(pAction, pUserType, pModel, pLocale);
+        }
+    }
+
+    private ModelAndView addOrRemoveInfo(String pAction, String[] pUserType, UserFormDto pModel, Locale pLocale) {
+        ModelAndView mv = new ModelAndView(VIEW);
+        mv.addObject("saveState", getLabel("page.useraccount.form.savestate." + CODE_SAVESTATE_MODIFIED, pLocale));
         
-        // User Info
-        List<UserInfo> infos = this.userInfoService.findByUserId(pUser.getId());
+        // Add other from the model
         
-        // UserInfoType
         List<UserInfoType> types = this.userInfoTypeService.findAll();
         Map<Long, UserInfoGroupDto> uitGrpDtos = createUserInfoTypeGroupDto(types, pLocale);
         
-        UserFormDto userDto = new UserFormDto();
-        userDto.setName(u.getName());
-        userDto.setPictureUrl(u.getPictureUrl());
-        userDto.setInfos(combine(uitGrpDtos, infos, pLocale));
+        UserFormDto newDto = new UserFormDto(pModel.getName(), pModel.getPictureUrl(), uitGrpDtos, new ArrayList<>());
+        newDto.setUserValues(pModel.getUserValues());
         
-        mv.addObject("userinfos", infos);
+        // Selection ?
+        String codeToAdd = null;
+        
+        if (pAction.contains(ACTION_ADD)) {
+            pAction = pAction.replace(ACTION_ADD, "");
+            for (String s : pUserType) {
+                if (s.startsWith(pAction)) {
+                    codeToAdd = s.replace(pAction + "-", "");
+                    break;
+                }
+            }
+            
+            if (Utils.isNotEmpty(codeToAdd)) {
+                
+                for (UserInfoType t : types) {
+                    if (t.getCode().equalsIgnoreCase(codeToAdd)) {
+                        UserInfoDto uiDto = new UserInfoDto(Utils.nextNegativeId(),
+                                t.getCode(), 
+                                getLabel("entity.userinfotype." + t.getCode(), pLocale));
+                        uiDto.setParentCode(t.getParent().getCode());
+                        newDto.addUserValue(uiDto);
+                        break;
+                    }
+                }
+            }            
+        } else if (pAction.contains(ACTION_REMOVE)) {
+            pAction = pAction.replace(ACTION_REMOVE, "");
+            
+            if (Utils.isNotEmpty(pAction)) {
+                
+                Iterator<UserInfoDto> it = newDto.getUserValues().iterator();
+                boolean found = false;
+                UserInfoDto dto = null;
+                while (it.hasNext() && !found) {
+                    dto = it.next();
+                    
+                    if (pAction.equals(Utils.asString(dto.getRefId()))) {
+                        it.remove();
+                        found = true;
+                    }
+                }
+            }
+        }
+        
+        mv.addObject("user", newDto);
+        
+        return mv;
+    }
+    
+    private ModelAndView save(SpringAuthUserDetails pUser, UserFormDto pDto, Locale pLocale) {
+        
+        User u = this.userService.findById(pUser.getId());
+        List<UserInfo> infos = this.userInfoService.findByUserId(pUser.getId());
+        List<UserInfoType> types = this.userInfoTypeService.findAll();
+        UserInfo ui;
+        
+        u.setName(pDto.getName());
+        u.setPictureUrl(pDto.getPictureUrl());
+        
+        // Save user
+        this.userService.save(u);
+        
+        // user info
+        List<Long> infoToSave = new ArrayList<>();
+        
+        // Set
+        for (UserInfoDto v : pDto.getUserValues()) {
+            if (v.getRefId() != null) {
+                ui = Utils.find(infos, i -> i.getId().equals(v.getRefId()));
+                infoToSave.add(ui.getId());
+            } else {
+                
+                UserInfoType type = Utils.find(types, t -> t.getCode().equals(v.getParentCode()));
+                ui = new UserInfo();
+                ui.setUser(u);
+                ui.setType(type);
+                infos.add(ui);
+            }
+            
+            ui.setValue(v.getValue());
+            
+        }
+        
+        // Delete
+        Iterator<UserInfo> it = infos.iterator();
+        UserInfo i = null;
+        while (it.hasNext()) {
+            i = it.next();
+            if (i.getId() != null && !infoToSave.contains(i.getId())) {
+                this.userInfoService.delete(i);
+                it.remove();
+            }
+        }
+        
+        // Save
+        this.userInfoService.save(infos);
+        
+        return createUserView(u, infos, types, pLocale, CODE_SAVESTATE_SAVED);
+    }
+    
+    private ModelAndView createUserView(Long pUserId, Locale pLocale) {
+        User u = this.userService.findById(pUserId);
+        List<UserInfo> infos = this.userInfoService.findByUserId(pUserId);
+        List<UserInfoType> types = this.userInfoTypeService.findAll();
+        return createUserView(u, infos, types, pLocale, CODE_SAVESTATE_NORMAL);
+    }
+    
+    private ModelAndView createUserView(User u, List<UserInfo> pUserInfos, List<UserInfoType> pTypes, Locale pLocale, String pSaveState) {
+        ModelAndView mv = new ModelAndView(VIEW);
+        
+        Map<Long, UserInfoGroupDto> uitGrpDtos = createUserInfoTypeGroupDto(pTypes, pLocale);
+        
+        UserFormDto userDto = new UserFormDto(u.getName(), 
+                                              u.getPictureUrl(), 
+                                              uitGrpDtos, 
+                                              createUserValues(uitGrpDtos, pUserInfos, pLocale));
+       
+        mv.addObject("saveState", getLabel("page.useraccount.form.savestate." + pSaveState, pLocale));
         mv.addObject("user", userDto);
         
         return mv;
     }
     
-    @PostMapping("")
-    public ModelAndView saveAccount(@RequestParam("action") String pAction,
-    								@ModelAttribute("user") UserInfoGroupDto pModel, 
-                                    @AuthenticationPrincipal SpringAuthUserDetails pUser) {
+    private List<UserInfoDto> createUserValues(Map<Long, UserInfoGroupDto> pAllUserInfoGroupDto, List<UserInfo> pUserInfos, Locale pLocale) {
         
-        return new ModelAndView("user-account");
-    }
-    
-    private List<UserInfoGroupDto> combine(Map<Long, UserInfoGroupDto> pAllUserInfoGroupDto, List<UserInfo> pUserInfos, Locale pLocale) {
+        List<UserInfoDto> userValues = new ArrayList<>();
         
         if (pUserInfos != null) {
             for (UserInfo ui : pUserInfos) {
                 UserInfoType type = ui.getType();
-                Long typeId = Utils.coalesce(type.getParentId(), type.getId());
-                UserInfoGroupDto g = pAllUserInfoGroupDto.get(typeId);
                 String userInfoTypeCode = type.getCode();
+                Long typeId = Utils.coalesce(type.getParentId(), type.getId());
+
+                UserInfoGroupDto g = pAllUserInfoGroupDto.get(typeId);
                 
-                UserInfoDto uiDto = new UserInfoDto(userInfoTypeCode, 
+                UserInfoDto uiDto = new UserInfoDto(ui.getId(),
+                                                    userInfoTypeCode, 
                                                     Utils.coalesce(ui.getOtherName(), 
                                                                    getLabel("entity.userinfotype." + userInfoTypeCode, pLocale)),
                                                                    ui.getValue());
-                uiDto.setRefId(ui.getId());
+                uiDto.setParentCode(g.getCode());
                 
-                g.addUserValue(uiDto);
+                userValues.add(uiDto);
             }            
         }
         
-        return new ArrayList<>(pAllUserInfoGroupDto.values());
+        return userValues;
     }
+    
     
     private Map<Long, UserInfoGroupDto> createUserInfoTypeGroupDto(List<UserInfoType> pUserInfoType, Locale pLocale) {
         
@@ -174,7 +299,7 @@ public class SimpleUserAccountController extends BaseUiController {
                 groups.get(uit.getId()).setLabelName(getLabel("entity.userinfotype." + uit.getCode(), pLocale));
             } else {
                 groups.get(uit.getParentId()).addUserInfoTypeDto(
-                        new UserInfoDto(uit.getCode(), getLabel("entity.userinfotype." + uit.getCode(), pLocale)));
+                        new UserInfoDto(uit.getId(), uit.getCode(), getLabel("entity.userinfotype." + uit.getCode(), pLocale)));
             }
         }
         

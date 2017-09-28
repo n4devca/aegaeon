@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<body>
+    <div class="box" th:fragment="user-info(info, allUserValues)">
+        <div class="heading">
+        
+            <div class="form-section-heading">
+                <div class="form-section-heading-element">
+                    <h4 th:text="${info.labelName}">Group</h4>
+                </div>
+                <div class="form-section-heading-element right">
+                    <select name="selecttype" class="inline-input">
+                        <option th:each="c : ${info.children}"
+                            th:text="${c.labelName}" th:value="${info.code + '-' + c.code}"></option>
+                    </select>
+                    <button class="btn btnblue btnag" name="action" type="submit" th:value="'add_' + ${info.code}">
+                        [[#{action.add}]]
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="body">
+        
+            <th:block th:each="v,vstats : ${allUserValues}">
+                <div class="form-group" th:if="${v.parentCode == info.code}">
+    
+                    <label th:text="${v.labelName}"></label>
+                    <input type="text" class="form-input" 
+                           th:field="*{userValues[__${vstats.index}__].value}" />
+                    <div class="right">
+                        <button class="btn btnblue btnag" name="action" type="submit" th:value="'remove_' + ${v.refId}">
+                            [[#{action.remove}]]
+                        </button>
+                    </div>
+                           
+                    <input type="hidden" th:field="*{userValues[__${vstats.index}__].parentCode}" />
+                    <input type="hidden" th:field="*{userValues[__${vstats.index}__].code}" />
+                    <input type="hidden" th:field="*{userValues[__${vstats.index}__].labelName}" />
+                    <input type="hidden" th:field="*{userValues[__${vstats.index}__].refId}" />
+                </div>
+            </th:block>
+             <th:block th:if="${#lists.isEmpty(allUserValues)}">
+                [[#{page.useraccount.info.none}]]
+            </th:block>
+        </div>
+    </div>
+</body>
+</html>

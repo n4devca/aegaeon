@@ -42,7 +42,6 @@ public class UserInfoGroupDto {
     
     private List<UserInfoDto> children = new ArrayList<>();
     
-    private List<UserInfoDto> userValues = new ArrayList<>();
     
     
     /**
@@ -118,24 +117,4 @@ public class UserInfoGroupDto {
         }
     }
 
-    /**
-     * @param pValues the values to add
-     */
-    public void addUserValue(UserInfoDto pValue) {
-        userValues.add(pValue);
-    }
-
-    /**
-     * @return the userValues
-     */
-    public List<UserInfoDto> getUserValues() {
-        return userValues;
-    }
-
-    /**
-     * @param pUserValues the userValues to set
-     */
-    public void setUserValues(List<UserInfoDto> pUserValues) {
-        userValues = pUserValues;
-    }
 }

@@ -21,6 +21,8 @@
  */
 package ca.n4dev.aegaeon.server.service;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +53,11 @@ public abstract class BaseService<E extends BaseEntity, R extends JpaRepository<
     @Transactional
     public E save(E pEntity) {
         return getRepository().save(pEntity);
+    }
+    
+    @Transactional
+    public List<E> save(List<E> pEntities) {
+        return getRepository().save(pEntities);
     }
     
     @Transactional

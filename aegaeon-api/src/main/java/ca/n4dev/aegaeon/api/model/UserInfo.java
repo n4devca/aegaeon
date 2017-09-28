@@ -56,6 +56,14 @@ public class UserInfo extends BaseEntity {
 	
 	@Column(name = "note")
 	private String note;
+	
+	public UserInfo() {}
+	
+	public UserInfo(User pUser, UserInfoType pType, String pValue) {
+	    this.user = pUser;
+	    this.type = pType;
+	    this.value = pValue;
+	}
 
 	/**
 	 * @return the user
