@@ -27,7 +27,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.MessageSource;
@@ -64,6 +67,8 @@ import ca.n4dev.aegaeon.server.utils.Utils;
 @ConditionalOnProperty(prefix = "aegaeon.modules", name = "account", havingValue = "true", matchIfMissing = true)
 public class SimpleUserAccountController extends BaseUiController {
     
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleUserAccountController.class);
+    
     public static final String URL = "/user-account";
     public static final String VIEW = "user-account";
     
@@ -73,7 +78,8 @@ public class SimpleUserAccountController extends BaseUiController {
     
     private static final String ACTION_ADD = "add_";
     private static final String ACTION_REMOVE = "remove_";
-
+    private static final String ACTION_SAVE = "save";
+    
     private UserService userService;
     private UserInfoService userInfoService;
     private UserInfoTypeService userInfoTypeService;
@@ -104,78 +110,26 @@ public class SimpleUserAccountController extends BaseUiController {
     
     @PostMapping("")
     public ModelAndView changeOrSaveAccount(@RequestParam("action") String pAction,
-                                    @RequestParam(value = "selecttype", required = false) String[] pUserType,
+                                    @RequestParam(value = "selecttype", required = false) String[] pSelectOptions,
     								@ModelAttribute("user") UserFormDto pModel, 
                                     @AuthenticationPrincipal SpringAuthUserDetails pUser, 
                                     Locale pLocale) {
         
-        if ("save".equalsIgnoreCase(pAction)) {
+        if (ACTION_SAVE.equalsIgnoreCase(pAction)) {
             return save(pUser, pModel, pLocale);
-        } else {
-            return addOrRemoveInfo(pAction, pUserType, pModel, pLocale);
-        }
-    }
-
-    private ModelAndView addOrRemoveInfo(String pAction, String[] pUserType, UserFormDto pModel, Locale pLocale) {
-        ModelAndView mv = new ModelAndView(VIEW);
-        mv.addObject("saveState", getLabel("page.useraccount.form.savestate." + CODE_SAVESTATE_MODIFIED, pLocale));
-        
-        // Add other from the model
-        
-        List<UserInfoType> types = this.userInfoTypeService.findAll();
-        Map<Long, UserInfoGroupDto> uitGrpDtos = createUserInfoTypeGroupDto(types, pLocale);
-        
-        UserFormDto newDto = new UserFormDto(pModel.getName(), pModel.getPictureUrl(), uitGrpDtos, new ArrayList<>());
-        newDto.setUserValues(pModel.getUserValues());
-        
-        // Selection ?
-        String codeToAdd = null;
-        
-        if (pAction.contains(ACTION_ADD)) {
+        } else if (pAction.contains(ACTION_ADD)) {
             pAction = pAction.replace(ACTION_ADD, "");
-            for (String s : pUserType) {
-                if (s.startsWith(pAction)) {
-                    codeToAdd = s.replace(pAction + "-", "");
-                    break;
-                }
-            }
-            
-            if (Utils.isNotEmpty(codeToAdd)) {
-                
-                for (UserInfoType t : types) {
-                    if (t.getCode().equalsIgnoreCase(codeToAdd)) {
-                        UserInfoDto uiDto = new UserInfoDto(Utils.nextNegativeId(),
-                                t.getCode(), 
-                                getLabel("entity.userinfotype." + t.getCode(), pLocale));
-                        uiDto.setParentCode(t.getParent().getCode());
-                        newDto.addUserValue(uiDto);
-                        break;
-                    }
-                }
-            }            
+            return addInfo(pUser, pAction, pSelectOptions, pModel, pLocale);
         } else if (pAction.contains(ACTION_REMOVE)) {
             pAction = pAction.replace(ACTION_REMOVE, "");
-            
-            if (Utils.isNotEmpty(pAction)) {
-                
-                Iterator<UserInfoDto> it = newDto.getUserValues().iterator();
-                boolean found = false;
-                UserInfoDto dto = null;
-                while (it.hasNext() && !found) {
-                    dto = it.next();
-                    
-                    if (pAction.equals(Utils.asString(dto.getRefId()))) {
-                        it.remove();
-                        found = true;
-                    }
-                }
-            }
-        }
+            return removeInfo(pUser, pAction, pSelectOptions, pModel, pLocale);
+        }   
         
-        mv.addObject("user", newDto);
         
-        return mv;
-    }
+        
+        // If unknown, return the same page
+        return account(pUser, pLocale);
+    }    
     
     private ModelAndView save(SpringAuthUserDetails pUser, UserFormDto pDto, Locale pLocale) {
         
@@ -193,22 +147,31 @@ public class SimpleUserAccountController extends BaseUiController {
         // user info
         List<Long> infoToSave = new ArrayList<>();
         
-        // Set
-        for (UserInfoDto v : pDto.getUserValues()) {
-            if (v.getRefId() != null) {
-                ui = Utils.find(infos, i -> i.getId().equals(v.getRefId()));
-                infoToSave.add(ui.getId());
-            } else {
+        // Loop on groups
+        for (Entry<String, UserInfoGroupDto> ge : pDto.getGroups().entrySet()) {
+            // Loop on values
+            for (UserInfoDto v : ge.getValue().getValues()) {
                 
-                UserInfoType type = Utils.find(types, t -> t.getCode().equals(v.getParentCode()));
-                ui = new UserInfo();
-                ui.setUser(u);
-                ui.setType(type);
-                infos.add(ui);
+                if (v != null) { // LazyList can be null
+                  if (v.getRefId() != null && v.getRefId() > 0) {
+                      ui = Utils.find(infos, i -> i.getId().equals(v.getRefId()));
+                      
+                  } else {
+                      
+                      UserInfoType type = Utils.find(types, t -> t.getCode().equals(v.getCode()));
+                      ui = new UserInfo();
+                      ui.setUser(u);
+                      ui.setType(type);
+                      infos.add(ui);
+                  }
+                  
+                  if (ui != null) {
+                      infoToSave.add(ui.getId());
+                      ui.setValue(v.getValue());
+                  }
+                }
+                
             }
-            
-            ui.setValue(v.getValue());
-            
         }
         
         // Delete
@@ -228,6 +191,75 @@ public class SimpleUserAccountController extends BaseUiController {
         return createUserView(u, infos, types, pLocale, CODE_SAVESTATE_SAVED);
     }
     
+    private ModelAndView addInfo(SpringAuthUserDetails pUser, String pAction, String[] pSelectOptions, UserFormDto pModel, Locale pLocale) {
+        
+        User u = this.userService.findById(pUser.getId());
+        List<UserInfo> infos = this.userInfoService.findByUserId(pUser.getId());
+        List<UserInfoType> types = this.userInfoTypeService.findAll();
+        ModelAndView mv = createUserView(u, infos, types, pLocale, CODE_SAVESTATE_MODIFIED, pModel.getGroups());
+        UserFormDto newDto = (UserFormDto) mv.getModel().get("user");
+        
+        String codeToAdd = null;
+        // Search what need to be added
+        for (String s : pSelectOptions) {
+            if (s.startsWith(pAction)) {
+                codeToAdd = s.replace(pAction + "-", "");
+                break;
+            }
+        }
+        
+        if (Utils.isNotEmpty(codeToAdd)) {
+            for (UserInfoType t : types) {
+                if (t.getCode().equalsIgnoreCase(codeToAdd)) {
+                    UserInfoDto uiDto = new UserInfoDto(Utils.nextNegativeId(),
+                            t.getCode(), 
+                            getLabel("entity.userinfotype." + t.getCode(), pLocale));
+                    uiDto.setParentCode(t.getParent().getCode());
+                    newDto.getGroups().get(t.getParent().getCode()).addValue(uiDto);
+                    break;
+                }
+            }
+        }   
+        
+        
+        
+        return mv;
+    }
+    
+    private ModelAndView removeInfo(SpringAuthUserDetails pUser, String pAction, String[] pSelectOptions, UserFormDto pModel, Locale pLocale) {
+        User u = this.userService.findById(pUser.getId());
+        List<UserInfo> infos = this.userInfoService.findByUserId(pUser.getId());
+        List<UserInfoType> types = this.userInfoTypeService.findAll();
+        ModelAndView mv = createUserView(u, infos, types, pLocale, CODE_SAVESTATE_MODIFIED, pModel.getGroups());
+        UserFormDto newDto = (UserFormDto) mv.getModel().get("user");
+        
+        try {
+            // Convert action to refid
+            Long refId = Long.parseLong(pAction);
+            
+            for (Entry<String, UserInfoGroupDto> en : newDto.getGroups().entrySet()) {
+                Iterator<UserInfoDto> it = en.getValue().getValues().iterator();
+                boolean found = false;
+                
+                while (it.hasNext() && !found) {
+                    if (Utils.equals(refId, it.next().getRefId())) {
+                        it.remove();
+                        found = true;
+                    }
+                }
+                
+                if (found) {
+                    break;
+                }
+            }
+            
+        } catch (Exception e) {
+            LOGGER.error("Error removing user info value: " + e.getMessage(), e);
+        }
+        
+        return mv;
+    }
+
     private ModelAndView createUserView(Long pUserId, Locale pLocale) {
         User u = this.userService.findById(pUserId);
         List<UserInfo> infos = this.userInfoService.findByUserId(pUserId);
@@ -235,16 +267,56 @@ public class SimpleUserAccountController extends BaseUiController {
         return createUserView(u, infos, types, pLocale, CODE_SAVESTATE_NORMAL);
     }
     
-    private ModelAndView createUserView(User u, List<UserInfo> pUserInfos, List<UserInfoType> pTypes, Locale pLocale, String pSaveState) {
+    private ModelAndView createUserView(User pUser, List<UserInfo> pUserInfos, List<UserInfoType> pTypes, Locale pLocale, String pSaveState) {
+        return createUserView(pUser, pUserInfos, pTypes, pLocale, pSaveState, null);
+    }
+    
+    private ModelAndView createUserView(User pUser, 
+                                        List<UserInfo> pUserInfos, 
+                                        List<UserInfoType> pTypes, 
+                                        Locale pLocale, 
+                                        String pSaveState, 
+                                        Map<String, UserInfoGroupDto> pUnsavedValues) {
         ModelAndView mv = new ModelAndView(VIEW);
         
         Map<Long, UserInfoGroupDto> uitGrpDtos = createUserInfoTypeGroupDto(pTypes, pLocale);
         
-        UserFormDto userDto = new UserFormDto(u.getName(), 
-                                              u.getPictureUrl(), 
+        UserFormDto userDto = new UserFormDto(pUser.getName(), 
+                                              pUser.getPictureUrl(), 
                                               uitGrpDtos, 
                                               createUserValues(uitGrpDtos, pUserInfos, pLocale));
        
+
+        // Re-add value not saved yet
+        if (pUnsavedValues != null) {
+            
+            // Add
+            for (Entry<String, UserInfoGroupDto> en : pUnsavedValues.entrySet()) {
+                for (UserInfoDto val : en.getValue().getValues()) {
+                    if (val.getRefId() < 0) {
+                        userDto.getGroups().get(en.getKey()).addValue(val);
+                    }
+                }
+            }
+            
+            // Remove
+            for (Entry<String, UserInfoGroupDto> en : userDto.getGroups().entrySet()) {
+                Iterator<UserInfoDto> it = en.getValue().getValues().iterator();
+                UserInfoGroupDto g = pUnsavedValues.get(en.getKey());
+                
+                if (g != null) {
+                
+                    while (it.hasNext()) {
+                        UserInfoDto d = it.next();
+                        
+                        if (Utils.find(g.getValues(), v -> Utils.equals(d.getRefId(), d.getRefId())) == null) {
+                            it.remove();
+                        }
+                    }
+                }
+            }
+        }
+        
         mv.addObject("saveState", getLabel("page.useraccount.form.savestate." + pSaveState, pLocale));
         mv.addObject("user", userDto);
         

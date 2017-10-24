@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import ca.n4dev.aegaeon.api.utils.LazyList;
+
 /**
  * UserInfoTypeGroupDto.java
  * 
@@ -42,7 +44,7 @@ public class UserInfoGroupDto {
     
     private List<UserInfoDto> children = new ArrayList<>();
     
-    
+    private List<UserInfoDto> values = new LazyList<>();
     
     /**
      * Default / no-arg constructor.
@@ -117,4 +119,25 @@ public class UserInfoGroupDto {
         }
     }
 
+    /**
+     * @return the values
+     */
+    public List<UserInfoDto> getValues() {
+        return values;
+    }
+
+    /**
+     * @param pValues the values to set
+     */
+    public void setValues(List<UserInfoDto> pValues) {
+        values = pValues;
+    }
+    
+    /**
+     * @param pValue the value to add
+     */
+    public void addValue(UserInfoDto pValue) {
+        values.add(pValue);
+    }
+    
 }

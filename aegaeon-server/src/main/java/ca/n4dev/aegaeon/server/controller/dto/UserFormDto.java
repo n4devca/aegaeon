@@ -23,6 +23,7 @@
 package ca.n4dev.aegaeon.server.controller.dto;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -40,41 +41,25 @@ public class UserFormDto {
 	
 	private String name;
 	
-    private List<UserInfoDto> userValues = new ArrayList<>();
-	
-	private UserInfoGroupDto phones;
-
-	private UserInfoGroupDto emails;
-	
-	private UserInfoGroupDto socialMedias;
-	
-	private UserInfoGroupDto addresses;
-	
-	private UserInfoGroupDto personals;
+	private Map<String, UserInfoGroupDto> groups = new LinkedHashMap<>();
 	
 	public UserFormDto() {
+	    
 	}
 	
 	public UserFormDto(String pName, String pPictureUrl, Map<Long, UserInfoGroupDto> pGroups, List<UserInfoDto> pUserValues) {
 	    this.name = pName;
 	    this.pictureUrl = pPictureUrl;
-	    this.userValues = pUserValues;
-	    
+
+	    // Set Groups
 	    for (Entry<Long, UserInfoGroupDto> en : pGroups.entrySet()) {
-	        
 	        UserInfoGroupDto g = en.getValue();
-	        
-	        if ("PHONE".equals(g.getCode())) {
-	            this.phones = g;
-	        } else if ("SOCIALMEDIA".equals(g.getCode())) {
-                this.socialMedias = g;
-            } else if ("ADDRESS".equals(g.getCode())) {
-                this.addresses = g;
-            } else if ("PERSONAL".equals(g.getCode())) {
-                this.personals = g;
-            } else if ("EMAIL".equals(g.getCode())) {
-                this.emails = g;
-            }
+	        groups.put(g.getCode(), g);
+	    }
+	    
+	    // Distribute values
+	    for (UserInfoDto udto : pUserValues) {
+	        groups.get(udto.getParentCode()).addValue(udto);
 	    }
 	}
 
@@ -107,94 +92,17 @@ public class UserFormDto {
 	}
 
     /**
-     * @return the phones
+     * @return the groups
      */
-    public UserInfoGroupDto getPhones() {
-        return phones;
+    public Map<String, UserInfoGroupDto> getGroups() {
+        return groups;
     }
 
     /**
-     * @param pPhones the phones to set
+     * @param pGroups the groups to set
      */
-    public void setPhones(UserInfoGroupDto pPhones) {
-        phones = pPhones;
+    public void setGroups(Map<String, UserInfoGroupDto> pGroups) {
+        groups = pGroups;
     }
 
-    /**
-     * @return the socialMedias
-     */
-    public UserInfoGroupDto getSocialMedias() {
-        return socialMedias;
-    }
-
-    /**
-     * @param pSocialMedias the socialMedias to set
-     */
-    public void setSocialMedias(UserInfoGroupDto pSocialMedias) {
-        socialMedias = pSocialMedias;
-    }
-
-    /**
-     * @return the addresses
-     */
-    public UserInfoGroupDto getAddresses() {
-        return addresses;
-    }
-
-    /**
-     * @param pAddresses the addresses to set
-     */
-    public void setAddresses(UserInfoGroupDto pAddresses) {
-        addresses = pAddresses;
-    }
-
-    /**
-     * @return the emails
-     */
-    public UserInfoGroupDto getEmails() {
-        return emails;
-    }
-
-    /**
-     * @param pEmails the emails to set
-     */
-    public void setEmails(UserInfoGroupDto pEmails) {
-        emails = pEmails;
-    }
-
-    /**
-     * @return the personals
-     */
-    public UserInfoGroupDto getPersonals() {
-        return personals;
-    }
-
-    /**
-     * @param pPersonals the personals to set
-     */
-    public void setPersonals(UserInfoGroupDto pPersonals) {
-        personals = pPersonals;
-    }
-
-
-    /**
-     * @param pValues the values to add
-     */
-    public void addUserValue(UserInfoDto pValue) {
-        userValues.add(pValue);
-    }
-
-    /**
-     * @return the userValues
-     */
-    public List<UserInfoDto> getUserValues() {
-        return userValues;
-    }
-
-    /**
-     * @param pUserValues the userValues to set
-     */
-    public void setUserValues(List<UserInfoDto> pUserValues) {
-        userValues = pUserValues;
-    }
 }

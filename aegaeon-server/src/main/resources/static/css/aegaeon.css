@@ -174,3 +174,22 @@ h1, h2, h3, h4, h5 {
     padding: 3px 10px;
 }
 
+div.input-group {
+	display: table;
+	width: 100%;
+}
+
+div.input-group-element {
+	display: table-cell;
+	padding: 0;
+	vertical-align: top;
+}
+
+div.input-group-element > input, div.input-group-element > button {
+	margin: 0;
+}
+
+div.input-group-element.btnop {
+    width:40px;
+}
+

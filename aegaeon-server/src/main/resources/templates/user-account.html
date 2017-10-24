@@ -22,7 +22,9 @@
                                 <div class="col-10">
             						<h1 th:text="#{page.useraccount.title}">Account</h1>                            
                                 </div>
-                                <div class="col-2">
+                                
+                                <div class="col-2 right">
+                                    <span th:if="${!#strings.isEmpty(saveState)}" th:text="${saveState}"></span>
                                     <button type="submit" class="btn btnblue btnag" name="action" value="save">
                                         [[#{action.save}]]
                                     </button>
@@ -56,11 +58,9 @@
                                                 <input type="text" id="user-account-name" th:field="*{name}" class="form-input" />
         									</div>
                                             
-                                            <div th:replace="components/user-info :: user-info(${user.phones}, ${user.userValues})"></div>
-                                            <div th:replace="components/user-info :: user-info(${user.emails}, ${user.userValues})"></div>
-                                            <div th:replace="components/user-info :: user-info(${user.socialMedias}, ${user.userValues})"></div>
-                                            <div th:replace="components/user-info :: user-info(${user.addresses}, ${user.userValues})"></div>
-                                            <div th:replace="components/user-info :: user-info(${user.personals}, ${user.userValues})"></div>
+                                            <th:block th:each="g : ${user.groups}">
+                                                <div th:replace="components/user-info :: user-info(${g.value}, 'groups[\'' + ${g.key} + '\']')"></div>
+                                            </th:block>
                                         </div>
                                     </div>
 								</div>

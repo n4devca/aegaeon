@@ -4,7 +4,7 @@
     xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <body>
-    <div class="box" th:fragment="user-info(info, allUserValues)">
+    <div class="box" th:fragment="user-info(info, key)">
         <div class="heading">
         
             <div class="form-section-heading">
@@ -17,32 +17,41 @@
                             th:text="${c.labelName}" th:value="${info.code + '-' + c.code}"></option>
                     </select>
                     <button class="btn btnblue btnag" name="action" type="submit" th:value="'add_' + ${info.code}">
-                        [[#{action.add}]]
+                        +
                     </button>
                 </div>
             </div>
         </div>
         <div class="body">
         
-            <th:block th:each="v,vstats : ${allUserValues}">
+            <input type="hidden" th:field="*{__${key}__.code}" />
+                    
+            <th:block th:each="v,vstats : ${info.values}">
                 <div class="form-group" th:if="${v.parentCode == info.code}">
     
                     <label th:text="${v.labelName}"></label>
-                    <input type="text" class="form-input" 
-                           th:field="*{userValues[__${vstats.index}__].value}" />
-                    <div class="right">
-                        <button class="btn btnblue btnag" name="action" type="submit" th:value="'remove_' + ${v.refId}">
-                            [[#{action.remove}]]
-                        </button>
+                    <div class="input-group">
+                        <div class="input-group-element">
+                            <input type="text" class="form-input" required="required"
+                                   th:field="*{__${key}__.values[__${vstats.index}__].value}" />
+                        
+                        </div>
+                        <div class="input-group-element btnop">
+                            <button class="btn btnag" name="action" type="submit" th:value="'remove_' + ${v.refId}">
+                                X
+                            </button>
+                        </div>
+                    
                     </div>
-                           
-                    <input type="hidden" th:field="*{userValues[__${vstats.index}__].parentCode}" />
-                    <input type="hidden" th:field="*{userValues[__${vstats.index}__].code}" />
-                    <input type="hidden" th:field="*{userValues[__${vstats.index}__].labelName}" />
-                    <input type="hidden" th:field="*{userValues[__${vstats.index}__].refId}" />
+                   
+                    <input type="hidden" th:field="*{__${key}__.values[__${vstats.index}__].parentCode}" />
+                    <input type="hidden" th:field="*{__${key}__.values[__${vstats.index}__].code}" />
+                    <input type="hidden" th:field="*{__${key}__.values[__${vstats.index}__].labelName}" />
+                    <input type="hidden" th:field="*{__${key}__.values[__${vstats.index}__].refId}" />
+                    
                 </div>
             </th:block>
-             <th:block th:if="${#lists.isEmpty(allUserValues)}">
+             <th:block th:if="${#lists.isEmpty(info.values)}">
                 [[#{page.useraccount.info.none}]]
             </th:block>
         </div>
