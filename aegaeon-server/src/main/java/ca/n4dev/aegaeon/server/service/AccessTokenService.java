@@ -197,15 +197,6 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
         }
 
         /* (non-Javadoc)
-         * @see ca.n4dev.aegaeon.api.token.OAuthUser#getEmail()
-         */
-        @Override
-        public String getEmail() {
-            // TODO Auto-generated method stub
-            return this.client.getPublicId();
-        }
-
-        /* (non-Javadoc)
          * @see ca.n4dev.aegaeon.api.token.OAuthUser#getName()
          */
         @Override

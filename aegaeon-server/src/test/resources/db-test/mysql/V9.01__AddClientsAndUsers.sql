@@ -20,13 +20,16 @@
  *
  */
  
-insert into users(username, email, name, uniqueIdentifier, passwd, enabled) 
-values('admin@localhost', 'admin@localhost', 'Remi Guillemette', uuid(), '$2a$10$cyonNff/DPqlt8y.mFOowOkv3k3I5Iygrtqfw2jiUYTEEfhFPla2C', 1);
+insert into users(username, name, uniqueIdentifier, passwd, enabled) 
+values('admin@localhost', 'Remi Guillemette', uuid(), '$2a$10$z5Mxvmr82Oaodfgz2EWZ9uNsX/Xtvo7GrrP8LI6Ra1LezlbA5g02K', 1);
 select last_insert_id() into @uid;
 
 insert into user_authority(user_id, authority_id)
 select @uid, id
 from authority;
+
+-- A user info
+insert into user_info()
 
 select id into @gt_auth from grant_type where code = 'authorization_code';
 select id into @gt_implicit from grant_type where code = 'implicit';

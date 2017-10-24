@@ -25,6 +25,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 import org.springframework.util.LinkedMultiValueMap;
@@ -42,8 +44,12 @@ import ca.n4dev.aegaeon.api.exception.ServerException;
  */
 public class Utils {
     
-    private static final String SPACE = " ";
+    public static final String SPACE = " ";
+    public static final String TRUE = "true";
+    public static final String FALSE = "false";
 
+    private static final AtomicLong counter = new AtomicLong(System.currentTimeMillis());
+    
     public static boolean isEmpty(String pValue) {
         return pValue == null || pValue.isEmpty();
     }
@@ -194,5 +200,47 @@ public class Utils {
         }
           
         return p;
+    }
+    
+    /**
+     * return a String from the input.
+     * If the object is not null, it will be convert to string, else an empty string is returned.
+     * @param pObject The object to convert.
+     * @return A String.
+     */
+    public static String asString(Object pObject) {
+        if (pObject != null) {
+            return pObject.toString();
+        }
+        return "";
+    }
+    
+    public static <E> E find(List<E> pEntities, Function<E, Boolean> pFunc) {
+        if (pEntities != null) {
+            
+            for (E e : pEntities) {
+                if (pFunc.apply(e)) {
+                    return e;
+                }
+            }
+        }
+        return null;
+    }
+    
+
+    /**
+     * Get a positive id.
+     * @return next positive id.
+     */
+    public static Long nextPositiveId() {
+        return counter.incrementAndGet();
+    }
+    
+    /**
+     * Get a negative id.
+     * @return next negative id.
+     */
+    public static Long nextNegativeId() {
+        return -nextPositiveId();
     }
 }

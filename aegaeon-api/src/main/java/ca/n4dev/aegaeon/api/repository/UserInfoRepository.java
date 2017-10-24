@@ -8,9 +8,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * 
  *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -19,16 +19,30 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.controller;
+
+package ca.n4dev.aegaeon.api.repository;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import ca.n4dev.aegaeon.api.model.UserInfo;
 
 /**
- * BaseController.java
+ * UserInfoRepository
  * 
- * TODO(rguillemette) Add description
- *
+ * Repository managing UserInfo entities.
+ * 
  * @author by rguillemette
- * @since May 22, 2017
+ * @since Sep 4, 2017
+ *
  */
-public abstract class BaseController {
-    
+public interface UserInfoRepository extends JpaRepository<UserInfo, Long> {
+
+	/**
+	 * Find all user info by user id.
+	 * @param pUserId the user's id.
+	 * @return A list of user info.
+	 */
+	List<UserInfo> findByUserId(Long pUserId);
 }

@@ -34,6 +34,8 @@ public class ServerInfo {
     
     private String issuer;
     
+    private String serverName;
+    
     private String logoUrl;
     
     private String legalEntity;
@@ -45,16 +47,17 @@ public class ServerInfo {
 	public ServerInfo() {}
     
     public ServerInfo(String pIssuer) {
-        this(pIssuer, null, null, null, null);
+        this(pIssuer, null, null, null, null, null);
     }
     
-    public ServerInfo(String pIssuer, String pLegalEntity, String pLogoUrl, String pPrivacyPolicy, String pCustomStyleSheet) {
+    public ServerInfo(String pIssuer, String pServerName, String pLegalEntity, String pLogoUrl, String pPrivacyPolicy, String pCustomStyleSheet) {
         
         if (pIssuer == null || pIssuer.isEmpty()) {
             throw new RuntimeException("Issuer is mandatory");
         }
         
         this.issuer = pIssuer;
+        this.serverName = pServerName;
         this.logoUrl = pLogoUrl;
         this.legalEntity = pLegalEntity;
         this.privacyPolicy = pPrivacyPolicy;
@@ -131,5 +134,19 @@ public class ServerInfo {
 	 */
 	public void setCustomStyleSheet(String customStyleSheet) {
 		this.customStyleSheet = customStyleSheet;
+	}
+
+	/**
+	 * @return the serverName
+	 */
+	public String getServerName() {
+		return serverName;
+	}
+
+	/**
+	 * @param serverName the serverName to set
+	 */
+	public void setServerName(String serverName) {
+		this.serverName = serverName;
 	}
 }

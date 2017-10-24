@@ -73,7 +73,7 @@ import ca.n4dev.aegaeon.server.utils.Utils;
 @Controller
 @RequestMapping(value = TokensController.URL)
 @ConditionalOnProperty(prefix = "aegaeon.modules", name = "oauth", havingValue = "true", matchIfMissing = true)
-public class TokensController extends BaseController {
+public class TokensController {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(TokensController.class);
     

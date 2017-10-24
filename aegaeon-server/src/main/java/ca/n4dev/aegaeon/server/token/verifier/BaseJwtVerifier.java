@@ -124,7 +124,6 @@ public abstract class BaseJwtVerifier {
             
             final String sub = claims.getSubject();
             final String name = claims.getStringClaim(Claims.NAME);
-            final String email = claims.getStringClaim(Claims.EMAIL);
             
             return new OAuthUser() {
                 
@@ -141,11 +140,6 @@ public abstract class BaseJwtVerifier {
                 @Override
                 public Long getId() {
                     return null;
-                }
-                
-                @Override
-                public String getEmail() {
-                    return email;
                 }
             };
             

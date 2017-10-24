@@ -8,9 +8,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * 
  *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -19,30 +19,38 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.controller;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
+package ca.n4dev.aegaeon.api.repository;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import ca.n4dev.aegaeon.api.model.UserInfoType;
 
 /**
- * SimpleLoginController.java
+ * UserInfoTypeRepository
  * 
- * TODO(rguillemette) Add description
- *
+ * Repository managing UserInfoType.
+ * 
  * @author by rguillemette
- * @since Jul 14, 2017
+ * @since Sep 4, 2017
+ *
  */
-@Controller
-@RequestMapping(SimpleLoginController.URL)
-@ConditionalOnProperty(prefix = "aegaeon.modules", name = "login", havingValue = "true", matchIfMissing = true)
-public class SimpleLoginController {
-	
-	public static final String URL = "/login";
+public interface UserInfoTypeRepository extends JpaRepository<UserInfoType, Long> {
 
-    @RequestMapping("")
-    public ModelAndView login() {
-        return new ModelAndView("signinpage");
-    }
+	/**
+	 * Find user info type by code.
+	 * @param pCode The code to search.
+	 * @return A userinfotype or null.
+	 */
+	UserInfoType findByCode(String pCode);
+	
+	/**
+	 * Find all user info type having a prent.
+	 * @param pParentId The parent's id.
+	 * @return A list of user info type.
+	 */
+	List<UserInfoType> findByParentId(Long pParentId);
+	
 }

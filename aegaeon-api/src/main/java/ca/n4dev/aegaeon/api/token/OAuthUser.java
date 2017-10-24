@@ -36,8 +36,6 @@ public interface OAuthUser {
 
     String getUniqueIdentifier();
     
-    String getEmail();
-    
     String getName();
     
     default String getRole() {

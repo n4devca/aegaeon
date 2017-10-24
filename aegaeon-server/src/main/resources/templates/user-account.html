@@ -1,29 +1,78 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{basepage}">
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{basepage}">
 <head>
 
 </head>
 <body>
-    <section layout:fragment="content">
-        <div class="normal-content user-profile">
-        
-            <div class="user-profile-info">
-                <h1 th:text="#{page.useraccount.title}">Account</h1>
-                <form action="/user-account" th:object="${user}" th:action="@{/user-account}">
-                    <label for="user-account-name" th:text="#{page.useraccount.form.label.name}"></label>
-                    <input type="text" id="user-account-name" th:field="*{name}" />                
-                </form>
-             
-            </div>
-            <div class="user-profile-menu">
-                
-            </div>
-            
-        </div>
-    </section>
+	<section layout:fragment="content">
+
+		<div class="normal-content user-profile">
+
+			<form action="/user-account" class="frm" th:object="${user}"
+				  th:action="@{/user-account}" th:method="post">
+				  
+				<div class="page">
+					<div class="page-title">
+                        <div class="grid">
+                            <div class="row">
+                                <div class="col-10">
+            						<h1 th:text="#{page.useraccount.title}">Account</h1>                            
+                                </div>
+                                
+                                <div class="col-2 right">
+                                    <span th:if="${!#strings.isEmpty(saveState)}" th:text="${saveState}"></span>
+                                    <button type="submit" class="btn btnblue btnag" name="action" value="save">
+                                        [[#{action.save}]]
+                                    </button>
+                                </div>
+                            </div>
+                        
+                        </div>
+					</div>
+					<div class="page-content">
+						<div class="grid">
+
+							<div class="row">
+								<div class="col-3">
+                                    <div class="box">
+                                        <div class="body">
+                                        
+        									<div class="form-group">
+        										<label for="user-account-picture" th:text="#{page.useraccount.form.label.picture}"></label> 
+                                                <img alt="user-picture" th:src="${user.pictureUrl}" th:if="${user.pictureUrl}" /> 
+                                                <input type="text" id="user-account-name" th:field="*{pictureUrl}" class="form-input" />
+        									</div>
+                                        </div>
+                                    
+                                    </div>
+								</div>
+								<div class="col-9">
+                                    <div class="box">
+                                        <div class="body">
+        									<div class="form-group">
+        										<label for="user-account-name" th:text="#{page.useraccount.form.label.name}"></label> 
+                                                <input type="text" id="user-account-name" th:field="*{name}" class="form-input" />
+        									</div>
+                                            
+                                            <th:block th:each="g : ${user.groups}">
+                                                <div th:replace="components/user-info :: user-info(${g.value}, 'groups[\'' + ${g.key} + '\']')"></div>
+                                            </th:block>
+                                        </div>
+                                    </div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="footer right">
+						
+					</div>
+				</div>
+			</form>
+		</div>
+	</section>
 </body>
 </html>

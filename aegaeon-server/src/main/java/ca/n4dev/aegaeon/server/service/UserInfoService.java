@@ -8,9 +8,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * 
  *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -19,53 +19,44 @@
  * under the License.
  *
  */
+
 package ca.n4dev.aegaeon.server.service;
 
 import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ca.n4dev.aegaeon.api.model.BaseEntity;
+import ca.n4dev.aegaeon.api.model.UserInfo;
+import ca.n4dev.aegaeon.api.repository.UserInfoRepository;
 
 /**
- * BaseService.java
- * 
- * Basic service with common functions.
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since Sep 4, 2017
+ *
  */
-@Transactional
-public abstract class BaseService<E extends BaseEntity, R extends JpaRepository<E, Long>> {
+@Service
+public class UserInfoService extends BaseService<UserInfo, UserInfoRepository> {
 
-    private R repository;
-    
-    protected BaseService(R pRepository) {
-        this.repository = pRepository;
-    }
-    
-    @Transactional(readOnly = true)
-    public E findById(Long pId) {
-        return getRepository().findOne(pId);
-    }
-    
-    @Transactional
-    public E save(E pEntity) {
-        return getRepository().save(pEntity);
-    }
-    
-    @Transactional
-    public List<E> save(List<E> pEntities) {
-        return getRepository().save(pEntities);
-    }
-    
-    @Transactional
-    public void delete(E pEntity) {
-        getRepository().delete(pEntity);
-    }
-    
-    protected R getRepository() {
-        return this.repository;
-    }
+	/**
+	 * @param pRepository
+	 */
+	@Autowired
+	public UserInfoService(UserInfoRepository pRepository) {
+		super(pRepository);
+	}
+
+	/**
+	 * Find all user info by user id.
+	 * @param pUserId A user's id.
+	 * @return A list of user info.
+	 */
+	@Transactional(readOnly = true)
+    @PreAuthorize("hasRole('CLIENT') or principal.id == #pUserId")
+	public List<UserInfo> findByUserId(Long pUserId) {
+		return getRepository().findByUserId(pUserId);
+	}
 }

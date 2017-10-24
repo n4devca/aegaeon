@@ -195,7 +195,6 @@ public class WebSecurityConfig {
                     .antMatchers(ServerInfoController.URL).permitAll()
                     .antMatchers(PublicJwkController.URL).permitAll()
                     .antMatchers(SimpleHomeController.URL).permitAll()
-                    .antMatchers(SimpleHomeController.URL_HOME).permitAll()
                     .anyRequest().hasAnyAuthority("ROLE_USER")
                     //.antMatchers("/authorize").hasAnyAuthority("ROLE_USER")
                     .and()
@@ -229,6 +228,11 @@ public class WebSecurityConfig {
                 pResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             }
         };
+    }
+    
+    public static void main(String[] args) {
+    	BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    	System.out.println(encoder.encode("admin@localhost"));
     }
     
 }

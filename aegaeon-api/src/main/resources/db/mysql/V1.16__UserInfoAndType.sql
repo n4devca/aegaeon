@@ -40,36 +40,35 @@ insert into user_info_type(code) values('SOCIALMEDIA');
 insert into user_info_type(code) values('ADDRESS');
 insert into user_info_type(code) values('PERSONAL');
 
-
 -- Some types
 select id into @phoneid from user_info_type where code = 'PHONE';
-insert into user_info_type(code, parent_id) values('HOME_PHONE', @phoneid);
-insert into user_info_type(code, parent_id) values('WORK_PHONE', @phoneid);
-insert into user_info_type(code, parent_id) values('MOBILE_PHONE', @phoneid);
-insert into user_info_type(code, parent_id) values('OTHER_PHONE', @phoneid);
+insert into user_info_type(code, parent_id) values('PHONE_HOME', @phoneid);
+insert into user_info_type(code, parent_id) values('PHONE_WORK', @phoneid);
+insert into user_info_type(code, parent_id) values('PHONE_MOBILE', @phoneid);
+insert into user_info_type(code, parent_id) values('PHONE_OTHER', @phoneid);
 
 select id into @socialid from user_info_type where code = 'SOCIALMEDIA';
-insert into user_info_type(code, parent_id) values('FACEBOOK_SOCIALMEDIA', @socialid);
-insert into user_info_type(code, parent_id) values('LINKEDIN_SOCIALMEDIA', @socialid);
-insert into user_info_type(code, parent_id) values('WHATSAPP_SOCIALMEDIA', @socialid);
-insert into user_info_type(code, parent_id) values('WECHAT_SOCIALMEDIA', @socialid);
-insert into user_info_type(code, parent_id) values('SNAPCHAT_SOCIALMEDIA', @socialid);
-insert into user_info_type(code, parent_id) values('TWITTER_SOCIALMEDIA', @socialid);
-insert into user_info_type(code, parent_id) values('INSTAGRAM_SOCIALMEDIA', @socialid);
-insert into user_info_type(code, parent_id) values('PINTEREST_SOCIALMEDIA', @socialid);
-insert into user_info_type(code, parent_id) values('GOOGLEPLUS_SOCIALMEDIA', @socialid);
-insert into user_info_type(code, parent_id) values('OTHER_SOCIALMEDIA', @socialid);
+insert into user_info_type(code, parent_id) values('SOCIALMEDIA_FACEBOOK', @socialid);
+insert into user_info_type(code, parent_id) values('SOCIALMEDIA_LINKEDIN', @socialid);
+insert into user_info_type(code, parent_id) values('SOCIALMEDIA_WHATSAPP', @socialid);
+insert into user_info_type(code, parent_id) values('SOCIALMEDIA_WECHAT', @socialid);
+insert into user_info_type(code, parent_id) values('SOCIALMEDIA_SNAPCHAT', @socialid);
+insert into user_info_type(code, parent_id) values('SOCIALMEDIA_TWITTER', @socialid);
+insert into user_info_type(code, parent_id) values('SOCIALMEDIA_INSTAGRAM', @socialid);
+insert into user_info_type(code, parent_id) values('SOCIALMEDIA_PINTEREST', @socialid);
+insert into user_info_type(code, parent_id) values('SOCIALMEDIA_GOOGLEPLUS', @socialid);
+insert into user_info_type(code, parent_id) values('SOCIALMEDIA_OTHER', @socialid);
 
 select id into @addrid from user_info_type where code = 'ADDRESS';
-insert into user_info_type(code, parent_id) values('HOME_ADDRESS', @addid);
-insert into user_info_type(code, parent_id) values('WORK_ADDRESS', @addid);
-insert into user_info_type(code, parent_id) values('OTHER_ADDRESS', @addid);
+insert into user_info_type(code, parent_id) values('ADDRESS_HOME', @addid);
+insert into user_info_type(code, parent_id) values('ADDRESS_WORK', @addid);
+insert into user_info_type(code, parent_id) values('ADDRESS_OTHER', @addid);
 
 select id into @persid from user_info_type where code = 'PERSONAL';
-insert into user_info_type(code, parent_id) values('GENDER_PERSONAL', @persid);
-insert into user_info_type(code, parent_id) values('BIRTHDAY_PERSONAL', @persid);
-insert into user_info_type(code, parent_id) values('MARITALSTATUS_PERSONAL', @persid);
-insert into user_info_type(code, parent_id) values('OTHER_PERSONAL', @persid);
+insert into user_info_type(code, parent_id) values('PERSONAL_GENDER', @persid);
+insert into user_info_type(code, parent_id) values('PERSONAL_BIRTHDAY', @persid);
+insert into user_info_type(code, parent_id) values('PERSONAL_MARITALSTATUS', @persid);
+insert into user_info_type(code, parent_id) values('PERSONAL_OTHER', @persid);
 
 drop table if exists user_info;
 create table user_info (

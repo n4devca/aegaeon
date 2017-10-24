@@ -22,7 +22,6 @@
 package ca.n4dev.aegaeon.server.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
@@ -60,7 +59,6 @@ public abstract class BaseTokenServiceTest extends BaseServiceTest {
         
         u.setId(userDetails.getId());
         u.setUserName(pUsername);
-        u.setEmail(pUsername);
         u.setEnabled(userDetails.isEnabled());
         
         return u;

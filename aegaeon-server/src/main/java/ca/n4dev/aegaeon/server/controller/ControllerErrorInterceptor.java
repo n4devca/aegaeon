@@ -29,15 +29,16 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.view.RedirectView;
 
 import ca.n4dev.aegaeon.api.exception.OAuthPublicJsonException;
 import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
-import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
 import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
 import ca.n4dev.aegaeon.api.protocol.RequestedGrant;
+import ca.n4dev.aegaeon.server.config.ServerInfo;
 import ca.n4dev.aegaeon.server.utils.UriBuilder;
 import ca.n4dev.aegaeon.server.utils.Utils;
 
@@ -58,11 +59,21 @@ public class ControllerErrorInterceptor {
     private static final String QUESTIONMARK = "?";
     
     private OpenIdEventLogger openIdEventLogger;
+    private ServerInfo serverInfo;
     
-    public ControllerErrorInterceptor(OpenIdEventLogger pOpenIdEventLogger) {
+    public ControllerErrorInterceptor(OpenIdEventLogger pOpenIdEventLogger, ServerInfo pServerInfo) {
         this.openIdEventLogger = pOpenIdEventLogger;
+        this.serverInfo = pServerInfo;
     }
     
+    private ModelAndView getBasicPage(String pViewName, Throwable pThrowable) {
+        ModelAndView mv = new ModelAndView(pViewName);
+        
+        mv.addObject("error", pThrowable);
+        mv.addObject("serverInfo", this.serverInfo);
+        
+        return mv;
+    }
     /**
      * 
      * @param pOAuthPublicException
@@ -99,10 +110,9 @@ public class ControllerErrorInterceptor {
     public ModelAndView oauthRestrictedException(final OauthRestrictedException pOauthRestrictedException) {
         this.openIdEventLogger.log(OpenIdEvent.RESTRICTED_ERROR, pOauthRestrictedException.getSource(), null, pOauthRestrictedException);
         
-        ModelAndView mv = new ModelAndView("error");
+        ModelAndView mv = getBasicPage("error", pOauthRestrictedException);
         
         mv.addObject("type", "OauthRestrictedException");
-        mv.addObject("error", pOauthRestrictedException);
         
         return mv;
     }
@@ -119,15 +129,25 @@ public class ControllerErrorInterceptor {
     }
         
     
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ModelAndView notFoundException(final NoHandlerFoundException pNoHandlerFoundException) {
+        LOGGER.error("Not found");
+        
+        ModelAndView mv = getBasicPage("error-not-found", pNoHandlerFoundException);
+        mv.addObject("requestUrl", pNoHandlerFoundException.getRequestURL());
+        mv.addObject("serverInfo", this.serverInfo);
+        
+        return mv;
+    }
+    
     @ExceptionHandler(Throwable.class)
     public ModelAndView exception(final Throwable pThrowable) {
         LOGGER.error("Generic Exception", pThrowable);
         
-        ModelAndView mv = new ModelAndView("error");
+        ModelAndView mv = getBasicPage("error", pThrowable);
         String errorMessage = (pThrowable != null ? pThrowable.getMessage() : "Unknown error");
         
         mv.addObject("type", "Throwable");
-        mv.addObject("error", pThrowable);
         mv.addObject("errorMessage", errorMessage);
         
         return mv;

@@ -90,7 +90,6 @@ public class SimplePayloadProvider implements PayloadProvider {
         if (Utils.contains(pRequestedScopes, "profile")) {
             
             User user = this.userService.findById(pOAuthUser.getId());
-            payload.put(Claims.EMAIL, user.getEmail());
             payload.put(Claims.NAME, user.getName());
             payload.put(Claims.USERNAME, user.getUserName());
         }
