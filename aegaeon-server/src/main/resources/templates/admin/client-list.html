@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{basepage}">
+<head>
+
+</head>
+<body>
+    <section layout:fragment="content">
+
+        <div class="normal-content admin-client">
+            <div class="page">
+                <div class="page-title">
+                    <div class="grid">
+                        <div class="row">
+                            <div class="col-10">
+                                <h1 th:text="#{page.adminclients.title}">Clients</h1>                            
+                            </div>
+                            
+                            <div class="col-2 right">
+                                <a th:href="@{/admin/clients/}" class="btn btnblue btnag">
+                                    [[#{action.create}]]
+                                </a>
+                            </div>
+                        </div>
+                    
+                    </div>
+                </div>
+                <div class="page-content">
+                
+                    <table class="table">
+                        <tbody>
+                            <tr th:each="c : ${pageList.elements}">
+                                <td><span th:text="${c.publicId}"></span></td>
+                                <td><span th:text="${c.name}"></span></td>
+                                <td class="right"><a th:href="@{/admin/clients/} + ${c.id}" class="btn btnag">Edit</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                
+                </div>
+                <div class="footer right">
+                    
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

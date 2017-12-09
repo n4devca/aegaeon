@@ -19,26 +19,42 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.exception;
+package ca.n4dev.aegaeon.server.controller.dto;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+
+import org.springframework.data.domain.Page;
 
 /**
- * ServerExceptionCode.java
+ * PageListDto.java
  * 
- * A code describing every ServerException.
- *
+ * A simple dto to hold a list of elements.
+ * 
  * @author by rguillemette
- * @since Jun 4, 2017
+ * @since Oct 25, 2017
  */
-public enum ServerExceptionCode {
-    UNEXPECTED_ERROR,
-    USER_EMPTY,
-    CLIENT_UNAUTHORIZED,
-    CLIENT_EMPTY,
-    CLIENT_REDIRECTURL_EMPTY,
-    SCOPE_INVALID,
-    SCOPE_UNAUTHORIZED,
-    SCOPE_UNAUTHORIZED_OFFLINE,
+public class PageListDto<E, T> {
     
-    INVALID_PARAMETER
-    ;
+    protected List<T> elements = new ArrayList<>();
+    
+    public PageListDto(Page<E> pPage, Function<E, T> pConverter) {
+        if (pPage != null && pPage.getContent() != null) {
+            pPage.getContent().forEach(e -> {
+                this.elements.add(pConverter.apply(e));
+            });
+        }
+    }
+
+    public PageListDto(List<T> pElements) {
+        this.elements = pElements;
+    }
+
+    /**
+     * @return the elements
+     */
+    public List<T> getElements() {
+        return elements;
+    }
 }

@@ -19,26 +19,30 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.exception;
+package ca.n4dev.aegaeon.server.view;
 
 /**
- * ServerExceptionCode.java
+ * ClientDtoAction.java
  * 
- * A code describing every ServerException.
+ * TODO(rguillemette) Add description
  *
  * @author by rguillemette
- * @since Jun 4, 2017
+ * @since Nov 30, 2017
  */
-public enum ServerExceptionCode {
-    UNEXPECTED_ERROR,
-    USER_EMPTY,
-    CLIENT_UNAUTHORIZED,
-    CLIENT_EMPTY,
-    CLIENT_REDIRECTURL_EMPTY,
-    SCOPE_INVALID,
-    SCOPE_UNAUTHORIZED,
-    SCOPE_UNAUTHORIZED_OFFLINE,
+public enum ClientDtoAction {
+    action_add_contact,
+    action_add_redirect_url,
     
-    INVALID_PARAMETER
+    action_remove_contact,
+    action_remove_redirect_url,
     ;
+    
+    public static ClientDtoAction from(String pAction) {
+        for (ClientDtoAction cda : ClientDtoAction.values()) {
+            if (cda.toString().equalsIgnoreCase(pAction)) {
+                return cda;
+            }
+        }
+        return null;
+    }
 }

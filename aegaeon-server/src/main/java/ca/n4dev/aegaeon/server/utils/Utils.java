@@ -24,9 +24,10 @@ package ca.n4dev.aegaeon.server.utils;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.springframework.util.LinkedMultiValueMap;
@@ -100,6 +101,19 @@ public class Utils {
         if (pElements != null) {
             for (E e : pElements) {
                 l.add(pFunc.apply(e));
+            }
+        }
+        
+        return l;
+    }
+    
+    public static <E, M, T> List<T> convert(List<E> pElements, M pModel, BiFunction<E, M, T> pFunc) {
+        
+        List<T> l = new ArrayList<>();
+        
+        if (pElements != null) {
+            for (E e : pElements) {
+                l.add(pFunc.apply(e, pModel));
             }
         }
         
@@ -227,6 +241,23 @@ public class Utils {
         return null;
     }
     
+    public static <E> void remove(List<E> pEntities, Function<E, Boolean> pFindFunc) {
+        
+        if (pEntities != null) {
+            
+            Iterator<E> it = pEntities.iterator();
+            boolean hasfind = false;
+            
+            while (it.hasNext() && !hasfind) {
+                E entity = it.next();
+                
+                if (pFindFunc.apply(entity)) {
+                    hasfind = true;
+                    it.remove();
+                }
+            }
+        }
+    }
 
     /**
      * Get a positive id.

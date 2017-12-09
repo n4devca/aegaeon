@@ -74,6 +74,12 @@ public class Client extends BaseEntity implements OAuthClient {
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     private List<ClientRedirection> redirections;
     
+    @OneToMany(mappedBy = "client")
+    private List<ClientContact> contacts;
+    
+    @OneToMany(mappedBy = "client")
+    private List<ClientRequestedUri> requestedUris;
+    
     @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
     private List<ClientScope> scopes;
     
@@ -82,12 +88,6 @@ public class Client extends BaseEntity implements OAuthClient {
                joinColumns = @JoinColumn(name = "client_id", referencedColumnName = "id"),
                inverseJoinColumns = @JoinColumn(name = "grant_type_id", referencedColumnName = "id"))
     private List<GrantType> grantTypes;
-    
-    @OneToMany(mappedBy = "client")
-    private List<ClientContact> contacts;
-    
-    @OneToMany(mappedBy = "client")
-    private List<ClientRequestedUri> requestedUris;
     
     
     public Client() {}
