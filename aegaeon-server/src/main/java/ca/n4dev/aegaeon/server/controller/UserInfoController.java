@@ -21,8 +21,7 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
-import java.util.Map;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -30,13 +29,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
-import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
-import ca.n4dev.aegaeon.api.model.User;
-import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
-import ca.n4dev.aegaeon.server.controller.dto.UserInfoResponse;
 import ca.n4dev.aegaeon.server.security.AccessTokenAuthentication;
 import ca.n4dev.aegaeon.server.service.UserService;
+import ca.n4dev.aegaeon.server.view.UserInfoResponseView;
 
 /**
  * UserInfoController.java
@@ -55,36 +50,22 @@ public class UserInfoController {
     public static final String URL = "/userinfo";
     
     private UserService userService;
-    private PayloadProvider payloadProvider;
-    private OpenIdEventLogger openIdEventLogger;
     
     /**
      * Default Constructor.
-     * @param pUserService The user's service.
-     * @param pPayloadProvider A payload provider.
-     * @param pOpenIdEventLogger The logger service.
+     * @param pUserService the user service to get the user's info.
      */
-    public UserInfoController(UserService pUserService, PayloadProvider pPayloadProvider, OpenIdEventLogger pOpenIdEventLogger) {
+    @Autowired
+    public UserInfoController(UserService pUserService) {
         this.userService = pUserService;
-        this.payloadProvider = pPayloadProvider;
-        this.openIdEventLogger = pOpenIdEventLogger;
     }
     
     @RequestMapping(value = "", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
-    public UserInfoResponse userInfo(Authentication pAuthentication) {
+    public UserInfoResponseView userInfo(Authentication pAuthentication) {
         
         if (pAuthentication != null && pAuthentication instanceof AccessTokenAuthentication) {
-            
-            AccessTokenAuthentication auth = (AccessTokenAuthentication) pAuthentication;
-            User u = this.userService.findById(auth.getUserId());
-            Map<String, String> payload = this.payloadProvider.createPayload(u, null, auth.getScopes());
-
-            UserInfoResponse response = new UserInfoResponse(auth.getUniqueIdentifier(), payload);
-            
-            openIdEventLogger.log(OpenIdEvent.REQUEST_INFO, getClass(), u.getUserName(), null);
-            
-            return response;
+            return this.userService.info((AccessTokenAuthentication) pAuthentication);
         }
         
         return null;

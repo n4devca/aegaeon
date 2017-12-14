@@ -26,11 +26,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ca.n4dev.aegaeon.api.exception.ServerException;
-import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.model.AccessToken;
 import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.Scope;
@@ -42,9 +41,11 @@ import ca.n4dev.aegaeon.api.token.OAuthUser;
 import ca.n4dev.aegaeon.api.token.Token;
 import ca.n4dev.aegaeon.api.token.TokenType;
 import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
+import ca.n4dev.aegaeon.server.security.AccessTokenAuthenticationException;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
-import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
+import ca.n4dev.aegaeon.server.view.TokenView;
+import ca.n4dev.aegaeon.server.view.mapper.TokenMapper;
 
 /**
  * AccessTokenService.java
@@ -73,9 +74,10 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
                               UserService pUserService,
                               ClientService pClientService,
                               UserAuthorizationService pUserAuthorizationService,
-                              PayloadProvider pPayloadProvider) {
+                              PayloadProvider pPayloadProvider,
+                              TokenMapper pTokenMapper) {
         
-        super(pRepository, pTokenFactory, pUserService, pClientService, pUserAuthorizationService, pPayloadProvider);
+        super(pRepository, pTokenFactory, pUserService, pClientService, pUserAuthorizationService, pPayloadProvider, pTokenMapper);
     }
 
     /* (non-Javadoc)
@@ -102,6 +104,32 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
         }
         
         return this.save(at);
+    }
+    
+    @Transactional(readOnly = true)
+    public void authenticateAccessToken(String pToken) {
+        AccessToken accessToken = null;
+        String tokenStr = pToken == null ? "-" : pToken;
+        
+        // Get it
+        if (Utils.isNotEmpty(pToken)) {
+            accessToken = this.findByToken(pToken);
+        }
+        
+        // Exists ?
+        if (accessToken == null) {
+            throw new AuthenticationCredentialsNotFoundException(tokenStr + " is invalid or has been revoked.");
+        }
+        
+        // Still Valid ?
+        if (!Utils.isAfterNow(accessToken.getValidUntil())) {
+            throw new AuthenticationCredentialsNotFoundException(tokenStr + " is expired.");
+        }
+        
+        // Validate
+        if (!this.tokenFactory.validate(accessToken.getClient(), pToken)) {
+            throw new AccessTokenAuthenticationException("The JWT is not valid");
+        }
     }
 
     /* (non-Javadoc)
@@ -133,41 +161,56 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
         
         return true;
     }
+//    
+//    @Transactional
+//    public AccessToken createClientAccessToken(Client pClient, List<Scope> pScopes) {
+//        Assert.notNull(pClient, ServerExceptionCode.CLIENT_EMPTY);
+//        
+//        // Compare authorized and requested scopes
+//        Assert.isTrue(isAuthorized(pClient.getScopesAsNameList(), pScopes), 
+//                ServerExceptionCode.SCOPE_UNAUTHORIZED);
+//        
+//        try {
+//            Token token = this.tokenFactory.createToken(new ClientOAuthUser(pClient), pClient, 
+//                                                        pClient.getAccessTokenSeconds(), ChronoUnit.SECONDS,
+//                                                        Collections.emptyMap());
+//            
+//            AccessToken at = new AccessToken();
+//            at.setClient(pClient);
+//            //at.setUser(pUser);
+//            
+//            at.setToken(token.getValue());
+//            at.setValidUntil(token.getValidUntil());
+//            
+//            if (pScopes != null) {
+//                at.setScopes(Utils.join(" ", pScopes, s -> s.getName()));
+//            }
+//            
+//            return this.save(at);
+//        } catch (Exception e) {
+//            // TODO(RG) : throw something meaningful
+//            throw new ServerException(e);
+//        }
+//    }
     
-    @Transactional
-    public AccessToken createClientAccessToken(Client pClient, List<Scope> pScopes) {
-        Assert.notNull(pClient, ServerExceptionCode.CLIENT_EMPTY);
+    AccessToken findByToken(String pTokenValue) {
         
-        // Compare authorized and requested scopes
-        Assert.isTrue(isAuthorized(pClient.getScopesAsNameList(), pScopes), 
-                ServerExceptionCode.SCOPE_UNAUTHORIZED);
-        
-        try {
-            Token token = this.tokenFactory.createToken(new ClientOAuthUser(pClient), pClient, 
-                                                        pClient.getAccessTokenSeconds(), ChronoUnit.SECONDS,
-                                                        Collections.emptyMap());
-            
-            AccessToken at = new AccessToken();
-            at.setClient(pClient);
-            //at.setUser(pUser);
-            
-            at.setToken(token.getValue());
-            at.setValidUntil(token.getValidUntil());
-            
-            if (pScopes != null) {
-                at.setScopes(Utils.join(" ", pScopes, s -> s.getName()));
-            }
-            
-            return this.save(at);
-        } catch (Exception e) {
-            // TODO(RG) : throw something meaningful
-            throw new ServerException(e);
+        if (Utils.isNotEmpty(pTokenValue)) {
+            return this.getRepository().findByToken(pTokenValue);
         }
+        
+        return null;
     }
     
-    
-    public AccessToken findByTokenValue(String pTokenValue) {
-        return this.getRepository().findByToken(pTokenValue);
+    public TokenView findByTokenValue(String pTokenValue) {
+        
+        AccessToken token = null;
+        
+        if (Utils.isNotEmpty(pTokenValue)) {
+            token = this.getRepository().findByToken(pTokenValue);
+        }
+        
+        return this.tokenMapper.toView(token);
     }
     
     

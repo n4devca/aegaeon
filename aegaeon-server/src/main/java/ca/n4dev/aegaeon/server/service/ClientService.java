@@ -32,9 +32,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ca.n4dev.aegaeon.api.model.Client;
+import ca.n4dev.aegaeon.api.model.ClientContact;
+import ca.n4dev.aegaeon.api.model.ClientGrantType;
+import ca.n4dev.aegaeon.api.model.ClientRedirection;
+import ca.n4dev.aegaeon.api.model.ClientScope;
+import ca.n4dev.aegaeon.api.model.GrantType;
+import ca.n4dev.aegaeon.api.repository.ClientContactRepository;
+import ca.n4dev.aegaeon.api.repository.ClientGrantTypeRepository;
+import ca.n4dev.aegaeon.api.repository.ClientRedirectionRepository;
 import ca.n4dev.aegaeon.api.repository.ClientRepository;
+import ca.n4dev.aegaeon.api.repository.ClientRequestUriRepository;
+import ca.n4dev.aegaeon.api.repository.ClientScopeRepository;
 import ca.n4dev.aegaeon.server.controller.dto.PageDto;
-import ca.n4dev.aegaeon.server.view.ClientDto;
+import ca.n4dev.aegaeon.server.utils.Utils;
+import ca.n4dev.aegaeon.server.view.ClientView;
 import ca.n4dev.aegaeon.server.view.mapper.ClientMapper;
 
 /**
@@ -46,9 +57,14 @@ import ca.n4dev.aegaeon.server.view.mapper.ClientMapper;
  * @since May 9, 2017
  */
 @Service
-public class ClientService extends SecuredBaseService<Client, ClientRepository> {
+public class ClientService extends BaseSecuredService<Client, ClientRepository> {
 
     private ClientMapper clientMapper;
+    private ClientGrantTypeRepository clientGrantTypeRepository;
+    private ClientScopeRepository clientScopeRepository;
+    private ClientRedirectionRepository clientRedirectionRepository; 
+    private ClientRequestUriRepository clientRequestUriRepository;
+    private ClientContactRepository clientContactRepository;
     
     /**
      * Default Constructor.
@@ -56,9 +72,21 @@ public class ClientService extends SecuredBaseService<Client, ClientRepository> 
      */
     @Autowired
     public ClientService(ClientRepository pRepository, 
+                         ClientGrantTypeRepository pClientGrantTypeRepository,
+                         ClientScopeRepository pClientScopeRepository,
+                         ClientRedirectionRepository pClientRedirectionRepository, 
+                         ClientRequestUriRepository pClientRequestUriRepository,
+                         ClientContactRepository pClientContactRepository,
                          ClientMapper pClientMapper) {
         super(pRepository);
+
+        this.clientGrantTypeRepository = pClientGrantTypeRepository;
+        this.clientScopeRepository = pClientScopeRepository;
+        this.clientRedirectionRepository = pClientRedirectionRepository;
+        this.clientRequestUriRepository = pClientRequestUriRepository;
+        this.clientContactRepository = pClientContactRepository;
         this.clientMapper = pClientMapper;
+        
     }
 
     /**
@@ -68,76 +96,119 @@ public class ClientService extends SecuredBaseService<Client, ClientRepository> 
      */
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('ADMIN')")
-    public PageDto<ClientDto> findByPage(Pageable pPageable) {
+    public PageDto<ClientView> findByPage(Pageable pPageable) {
         Page<Client> page = getRepository().findAll(pPageable);
         
-        List<ClientDto> dtos = page.getContent().stream()
-                                        .map(c -> clientMapper.clientToClientDto(c))
+        List<ClientView> dtos = page.getContent().stream()
+                                        .map(c -> clientMapper.clientToClientDto(c, null, null, null, null))
                                         .collect(Collectors.toList());
         
         return new PageDto<>(dtos, pPageable, page.getTotalElements());
     }
-    
-    /**
-     * Find a client by its public id. Usually, the public id 
-     * is what is used duriong authorization.
-     * @param pPublicId The client's public id.
-     * @return A client or null.
-     */
-    @Transactional(readOnly = true)
-    public Client findByPublicId(String pPublicId) {
+
+    Client findByPublicId(String pPublicId) {
         return this.getRepository().findByPublicId(pPublicId);
     }
     
-    /**
-     * Find a client by its public id. Usually, the public id 
-     * is what is used duriong authorization.
-     * @param pPublicId The client's public id.
-     * @return A client or null.
-     */
-    @Transactional(readOnly = true)
-    public Client findByPublicIdWithRedirections(String pPublicId) {
-        return this.getRepository().findByPublicIdWithRedirections(pPublicId);
+    List<ClientRedirection> findRedirectionsByclientId(Long pClientId) {
+        return this.clientRedirectionRepository.findByClientId(pClientId);
+    }
+    
+    List<ClientGrantType> findGrantTypesByclientId(Long pClientId) {
+        return this.clientGrantTypeRepository.findByClientId(pClientId);
     }
 
+    List<ClientScope> findScopeByClientId(Long pClientId) {
+        return this.clientScopeRepository.findByClientId(pClientId);
+    }
+    
+    List<ClientContact> findContactByClientId(Long pClientId) {
+        return this.clientContactRepository.findByClientId(pClientId);
+    }
+    
+    @Transactional(readOnly = true)
+    public boolean hasScope(Long pClientId, String pScope) {
+        
+        if (pClientId != null && Utils.isNotEmpty(pScope)) {
+            List<ClientScope> clientScopes = this.findScopeByClientId(pClientId);
+            
+            return Utils.isOneTrue(clientScopes, cs -> cs.getScope().getName().equals(pScope));
+        }
+        
+        return false;
+    }
+    
+    @Transactional(readOnly = true)
+    public boolean hasGrantType(Long pClientId, String pGrantType) {
+        
+        if (pClientId != null && Utils.isNotEmpty(pGrantType)) {
+            List<ClientGrantType> clientGrants = this.findGrantTypesByclientId(pClientId);
+            
+            return Utils.isOneTrue(clientGrants, cg -> cg.getGrantType().getCode().equals(pGrantType));
+        }
+        
+        return false;
+    }
+
+    @Transactional(readOnly = true)
+    public boolean hasRedirectionUri(Long pClientId, String pRedirectionUri) {
+        
+        if (pClientId != null && Utils.isNotEmpty(pRedirectionUri)) {
+            List<ClientRedirection> clientGrants = this.findRedirectionsByclientId(pClientId);
+            
+            return Utils.isOneTrue(clientGrants, r -> r.getUrl().equals(pRedirectionUri));
+        }
+        return false;
+    }
+    
     /* (non-Javadoc)
      * @see ca.n4dev.aegaeon.server.service.BaseService#findById(java.lang.Long)
      */
     @PreAuthorize("hasRole('ADMIN')")
-    public ClientDto findOne(Long pId) {
-        Client client = super.findById(pId);
+    public ClientView findOne(Long pId) {
         
-        ClientDto clientDto = this.clientMapper.clientToClientDto(client);
+        if (pId != null) {
+            Client client = super.findById(pId);
+            
+            if (client != null) {
+                
+                List<ClientScope> clientScopes = this.findScopeByClientId(pId);
+                List<ClientRedirection> clientRedirections = this.findRedirectionsByclientId(pId);
+                List<ClientContact> contacts = this.findContactByClientId(pId);
+                List<ClientGrantType> clientGrantTypes = this.findGrantTypesByclientId(pId);
+                ClientView clientView = this.clientMapper.clientToClientDto(client, 
+                                                                            clientScopes, 
+                                                                            clientRedirections, 
+                                                                            contacts, 
+                                                                            clientGrantTypes);
+                
+                //clientView.setGrants(clientMapper.);
+                
+                return clientView;
+            }
+        }
         
-        return clientDto;
+        return null;
     }
 
     /* (non-Javadoc)
      * @see ca.n4dev.aegaeon.server.service.BaseService#save(ca.n4dev.aegaeon.api.model.BaseEntity)
      */
     @PreAuthorize("hasRole('ADMIN')")
-    public ClientDto save(ClientDto pEntity) {
+    public ClientView save(ClientView pEntity) {
         return pEntity;
 //        Client client = this.clientDtoConverter.toEntity(pEntity);
 //        return this.clientDtoConverter.toDto(super.save(client));
     }
 
-    /* (non-Javadoc)
-     * @see ca.n4dev.aegaeon.server.service.BaseService#save(java.util.List)
-     */
-    @Override
-    @PreAuthorize("hasRole('ADMIN')")
-    public List<Client> save(List<Client> pEntities) {
-        return super.save(pEntities);
-    }
 
     /* (non-Javadoc)
      * @see ca.n4dev.aegaeon.server.service.BaseService#delete(ca.n4dev.aegaeon.api.model.BaseEntity)
      */
     @Override
     @PreAuthorize("hasRole('ADMIN')")
-    public void delete(Client pEntity) {
-        super.delete(pEntity);
+    public void delete(Long pClientId) {
+        super.delete(pClientId);
     }
     
 }

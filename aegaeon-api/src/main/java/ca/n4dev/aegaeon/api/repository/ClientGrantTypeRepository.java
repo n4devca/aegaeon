@@ -19,47 +19,28 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.service;
+package ca.n4dev.aegaeon.api.repository;
 
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import ca.n4dev.aegaeon.api.model.BaseEntity;
+import ca.n4dev.aegaeon.api.model.ClientGrantType;
 
 /**
- * SecuredBaseService.java
+ * ClientGrantTypeRepository.java
  * 
- * TODO(rguillemette) Add description
+ * ClientGrantType repository.
  *
  * @author by rguillemette
- * @since Dec 7, 2017
+ * @since Dec 9, 2017
  */
-public abstract class SecuredBaseService<E extends BaseEntity, R extends JpaRepository<E, Long>> {
+public interface ClientGrantTypeRepository extends JpaRepository<ClientGrantType, Long> {
 
-    private R repository;
-    
-    protected SecuredBaseService(R pRepository) {
-        this.repository = pRepository;
-    }
-    
-    protected E findById(Long pId) {
-        return getRepository().findOne(pId);
-    }
-    
-    protected E save(E pEntity) {
-        return getRepository().save(pEntity);
-    }
-    
-    protected List<E> save(List<E> pEntities) {
-        return getRepository().save(pEntities);
-    }
-    
-    protected void delete(E pEntity) {
-        getRepository().delete(pEntity);
-    }
-    
-    protected R getRepository() {
-        return this.repository;
-    }
+    /**
+     * Find client's grant.
+     * @param pClientId The client's id.
+     * @return A list of grants.
+     */
+    List<ClientGrantType> findByClientId(Long pClientId);
 }

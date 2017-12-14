@@ -19,7 +19,7 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.controller.dto;
+package ca.n4dev.aegaeon.server.view;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

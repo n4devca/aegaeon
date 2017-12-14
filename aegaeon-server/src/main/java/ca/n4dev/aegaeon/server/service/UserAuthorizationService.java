@@ -24,15 +24,20 @@ package ca.n4dev.aegaeon.server.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
+import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
 import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.model.UserAuthorization;
 import ca.n4dev.aegaeon.api.repository.UserAuthorizationRepository;
+import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
 
@@ -45,25 +50,45 @@ import ca.n4dev.aegaeon.server.utils.Utils;
  * @since May 13, 2017
  */
 @Service
-public class UserAuthorizationService extends BaseService<UserAuthorization, UserAuthorizationRepository> {
+public class UserAuthorizationService extends BaseSecuredService<UserAuthorization, UserAuthorizationRepository> {
 
     private UserService userService;
     private ClientService clientService;
     private ScopeService scopeService;
+    private OpenIdEventLogger openIdEventLogger;
     
     /**
      * @param pRepository
      */
     @Autowired
-    public UserAuthorizationService(UserAuthorizationRepository pRepository, UserService pUserService, ClientService pClientService, ScopeService pScopeService) {
+    public UserAuthorizationService(UserAuthorizationRepository pRepository, 
+                                    UserService pUserService, 
+                                    ClientService pClientService, 
+                                    ScopeService pScopeService,
+                                    OpenIdEventLogger pOpenIdEventLogger) {
         super(pRepository);
         this.userService = pUserService;
         this.clientService = pClientService;
         this.scopeService = pScopeService;
+        this.openIdEventLogger = pOpenIdEventLogger;
     }
 
     @Transactional
-    public UserAuthorization createUserAuthorization(Long pUserId, String pClientPublicId, String pScopes) {
+    @PreAuthorize("#pUserDetails.id == principal.id")
+    public void createOneUserAuthorization(SpringAuthUserDetails pUserDetails, String pClientPublicId, String pScopes) {
+        
+        Assert.notNull(pUserDetails, ServerExceptionCode.USER_EMPTY);
+        
+        UserAuthorization ua = this.createUserAuthorization(pUserDetails.getId(), pClientPublicId, pScopes);
+        
+        if (ua == null) {
+            throw new ServerException(ServerExceptionCode.UNEXPECTED_ERROR, "Unable to create UserAuthorization.");
+        }
+        
+        this.openIdEventLogger.log(OpenIdEvent.AUTHORIZATION, getClass(), pUserDetails.getUsername(), ua);
+    }
+    
+    UserAuthorization createUserAuthorization(Long pUserId, String pClientPublicId, String pScopes) {
         
         Assert.notNull(pUserId, ServerExceptionCode.USER_EMPTY);
         Assert.notEmpty(pClientPublicId, ServerExceptionCode.CLIENT_EMPTY);
@@ -92,8 +117,7 @@ public class UserAuthorizationService extends BaseService<UserAuthorization, Use
      * @param pClientId The client's id.
      * @return A UserAuthorization or null.
      */
-    @Transactional(readOnly = true)
-    public UserAuthorization findByUserIdAndClientId(Long pUserId, Long pClientId) {
+    UserAuthorization findByUserIdAndClientId(Long pUserId, Long pClientId) {
         return this.getRepository().findByUserIdAndClientId(pUserId, pClientId);
     }
     

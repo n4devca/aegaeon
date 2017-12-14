@@ -2,95 +2,86 @@ package ca.n4dev.aegaeon.server.view.mapper;
 
 import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.ClientContact;
+import ca.n4dev.aegaeon.api.model.ClientGrantType;
 import ca.n4dev.aegaeon.api.model.ClientRedirection;
 import ca.n4dev.aegaeon.api.model.ClientScope;
-import ca.n4dev.aegaeon.api.model.GrantType;
-import ca.n4dev.aegaeon.api.model.Scope;
-import ca.n4dev.aegaeon.server.controller.dto.SelectableItemDto;
-import ca.n4dev.aegaeon.server.view.ClientDto;
+import ca.n4dev.aegaeon.server.view.ClientView;
+import ca.n4dev.aegaeon.server.view.SelectableItemView;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Generated;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2017-12-09T14:40:46-0500",
+    date = "2017-12-14T06:40:28-0500",
     comments = "version: 1.2.0.Final, compiler: Eclipse JDT (IDE) 3.12.2.v20161117-1814, environment: Java 1.8.0_92 (Oracle Corporation)"
 )
 @Component
 public class ClientMapperImpl implements ClientMapper {
 
+    @Autowired
+    private ScopeMapper scopeMapper;
+    @Autowired
+    private GrantTypeMapper grantTypeMapper;
+
     @Override
-    public ClientDto clientToClientDto(Client pClient) {
-        if ( pClient == null ) {
+    public ClientView clientToClientDto(Client pClient, List<ClientScope> pClientScopes, List<ClientRedirection> pClientRedirections, List<ClientContact> pClientContacts, List<ClientGrantType> pClientGrantTypes) {
+        if ( pClient == null && pClientScopes == null && pClientRedirections == null && pClientContacts == null && pClientGrantTypes == null ) {
             return null;
         }
 
-        ClientDto clientDto = new ClientDto();
+        ClientView clientView = new ClientView();
 
-        clientDto.setProviderType( pClient.getProviderName() );
-        clientDto.setAccessTokenSeconds( pClient.getAccessTokenSeconds() );
-        clientDto.setContacts( clientContactListToStringList( pClient.getContacts() ) );
-        clientDto.setDescription( pClient.getDescription() );
-        clientDto.setId( pClient.getId() );
-        clientDto.setIdTokenSeconds( pClient.getIdTokenSeconds() );
-        clientDto.setLogoUrl( pClient.getLogoUrl() );
-        clientDto.setName( pClient.getName() );
-        clientDto.setPublicId( pClient.getPublicId() );
-        clientDto.setRedirections( clientRedirectionListToStringList( pClient.getRedirections() ) );
-        clientDto.setRefreshTokenSeconds( pClient.getRefreshTokenSeconds() );
-        clientDto.setScopes( clientScopeListToSelectableItemDtoList( pClient.getScopes() ) );
-        clientDto.setSecret( pClient.getSecret() );
+        if ( pClient != null ) {
+            clientView.setProviderType( pClient.getProviderName() );
+            clientView.setAccessTokenSeconds( pClient.getAccessTokenSeconds() );
+            clientView.setDescription( pClient.getDescription() );
+            clientView.setId( pClient.getId() );
+            clientView.setIdTokenSeconds( pClient.getIdTokenSeconds() );
+            clientView.setLogoUrl( pClient.getLogoUrl() );
+            clientView.setName( pClient.getName() );
+            clientView.setPublicId( pClient.getPublicId() );
+            clientView.setRefreshTokenSeconds( pClient.getRefreshTokenSeconds() );
+            clientView.setSecret( pClient.getSecret() );
+        }
+        if ( pClientScopes != null ) {
+            clientView.setScopes( clientScopeListToSelectableItemViewList( pClientScopes ) );
+        }
+        if ( pClientRedirections != null ) {
+            clientView.setRedirections( clientRedirectionListToStringList( pClientRedirections ) );
+        }
+        if ( pClientContacts != null ) {
+            clientView.setContacts( clientContactListToStringList( pClientContacts ) );
+        }
+        if ( pClientGrantTypes != null ) {
+            clientView.setGrants( clientGrantTypeListToSelectableItemViewList( pClientGrantTypes ) );
+        }
 
-        return clientDto;
+        return clientView;
     }
 
     @Override
-    public SelectableItemDto grantTypesToGrants(GrantType pGrantType) {
-        if ( pGrantType == null ) {
+    public Client clientViewToclient(ClientView pClientView) {
+        if ( pClientView == null ) {
             return null;
         }
 
-        SelectableItemDto selectableItemDto = new SelectableItemDto();
+        Client client = new Client();
 
-        selectableItemDto.setName( pGrantType.getCode() );
-        selectableItemDto.setId( pGrantType.getId() );
+        client.setProviderName( pClientView.getProviderType() );
+        client.setId( pClientView.getId() );
+        client.setAccessTokenSeconds( pClientView.getAccessTokenSeconds() );
+        client.setDescription( pClientView.getDescription() );
+        client.setIdTokenSeconds( pClientView.getIdTokenSeconds() );
+        client.setLogoUrl( pClientView.getLogoUrl() );
+        client.setName( pClientView.getName() );
+        client.setPublicId( pClientView.getPublicId() );
+        client.setRefreshTokenSeconds( pClientView.getRefreshTokenSeconds() );
+        client.setSecret( pClientView.getSecret() );
 
-        return selectableItemDto;
-    }
-
-    @Override
-    public SelectableItemDto clientScopeToSelectableItem(ClientScope pClientScope) {
-        if ( pClientScope == null ) {
-            return null;
-        }
-
-        SelectableItemDto selectableItemDto = new SelectableItemDto();
-
-        String name = pClientScopeScopeName( pClientScope );
-        if ( name != null ) {
-            selectableItemDto.setName( name );
-        }
-        Long id = pClientScopeScopeId( pClientScope );
-        if ( id != null ) {
-            selectableItemDto.setId( id );
-        }
-
-        return selectableItemDto;
-    }
-
-    protected List<String> clientContactListToStringList(List<ClientContact> list) {
-        if ( list == null ) {
-            return null;
-        }
-
-        List<String> list1 = new ArrayList<String>( list.size() );
-        for ( ClientContact clientContact : list ) {
-            list1.add( contactEmailToString( clientContact ) );
-        }
-
-        return list1;
+        return client;
     }
 
     protected List<String> clientRedirectionListToStringList(List<ClientRedirection> list) {
@@ -100,52 +91,48 @@ public class ClientMapperImpl implements ClientMapper {
 
         List<String> list1 = new ArrayList<String>( list.size() );
         for ( ClientRedirection clientRedirection : list ) {
-            list1.add( redirectionsUrlToString( clientRedirection ) );
+            list1.add( redirectionToString( clientRedirection ) );
         }
 
         return list1;
     }
 
-    protected List<SelectableItemDto> clientScopeListToSelectableItemDtoList(List<ClientScope> list) {
+    protected List<SelectableItemView> clientGrantTypeListToSelectableItemViewList(List<ClientGrantType> list) {
         if ( list == null ) {
             return null;
         }
 
-        List<SelectableItemDto> list1 = new ArrayList<SelectableItemDto>( list.size() );
-        for ( ClientScope clientScope : list ) {
-            list1.add( clientScopeToSelectableItem( clientScope ) );
+        List<SelectableItemView> list1 = new ArrayList<SelectableItemView>( list.size() );
+        for ( ClientGrantType clientGrantType : list ) {
+            list1.add( grantTypeMapper.clientGrantTypeToSelectableItemView( clientGrantType ) );
         }
 
         return list1;
     }
 
-    private String pClientScopeScopeName(ClientScope clientScope) {
-        if ( clientScope == null ) {
+    protected List<SelectableItemView> clientScopeListToSelectableItemViewList(List<ClientScope> list) {
+        if ( list == null ) {
             return null;
         }
-        Scope scope = clientScope.getScope();
-        if ( scope == null ) {
-            return null;
+
+        List<SelectableItemView> list1 = new ArrayList<SelectableItemView>( list.size() );
+        for ( ClientScope clientScope : list ) {
+            list1.add( scopeMapper.scopeToScopeView( clientScope ) );
         }
-        String name = scope.getName();
-        if ( name == null ) {
-            return null;
-        }
-        return name;
+
+        return list1;
     }
 
-    private Long pClientScopeScopeId(ClientScope clientScope) {
-        if ( clientScope == null ) {
+    protected List<String> clientContactListToStringList(List<ClientContact> list) {
+        if ( list == null ) {
             return null;
         }
-        Scope scope = clientScope.getScope();
-        if ( scope == null ) {
-            return null;
+
+        List<String> list1 = new ArrayList<String>( list.size() );
+        for ( ClientContact clientContact : list ) {
+            list1.add( contactToString( clientContact ) );
         }
-        Long id = scope.getId();
-        if ( id == null ) {
-            return null;
-        }
-        return id;
+
+        return list1;
     }
 }

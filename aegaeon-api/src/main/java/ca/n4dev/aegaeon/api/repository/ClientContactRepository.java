@@ -19,31 +19,28 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.model;
+package ca.n4dev.aegaeon.api.repository;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import java.util.List;
 
-import ca.n4dev.aegaeon.api.token.TokenType;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import ca.n4dev.aegaeon.api.model.ClientContact;
 
 /**
- * AccessToken.java
+ * ClientContactRepository.java
  * 
- * Access Token entity.
+ * ClientContact repository.
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since Dec 9, 2017
  */
-@Entity
-@Table(name = "access_token")
-public class AccessToken extends BaseTokenEntity {
+public interface ClientContactRepository  extends JpaRepository<ClientContact, Long> {
 
-    /* (non-Javadoc)
-     * @see ca.n4dev.aegaeon.api.model.BaseTokenEntity#getTokenType()
+    /**
+     * Get client's contact.
+     * @param pClientId The client id.
+     * @return A list of contact.
      */
-    @Override
-    public TokenType getTokenType() {
-        return TokenType.ACCESS_TOKEN;
-    }
-
+    List<ClientContact> findByClientId(Long pClientId);
 }

@@ -21,35 +21,52 @@
  */
 package ca.n4dev.aegaeon.api.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Type;
-
 /**
- * ClientScope.java
+ * ClientGrantType.java
  * 
- * Scopes asked by a client.
+ * A grant (selected or not) by a client.
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since Dec 9, 2017
  */
+
 @Entity
-@Table(name = "client_scope")
-public class ClientScope extends BaseEntity {
+@Table(name = "client_grant_type")
+public class ClientGrantType {
 
     @ManyToOne
     @JoinColumn(name = "client_id")
     private Client client;
     
     @ManyToOne
-    @JoinColumn(name = "scope_id")
-    private Scope scope;
+    @JoinColumn(name = "grant_type_id")
+    private GrantType grantType;
     
-    @Type(type = "boolean")
+    @Column(nullable = false, columnDefinition = "TINYINT(1)")
     private boolean selected;
+    
+    /**
+     * Default Constructor.
+     */
+    public ClientGrantType() {}
+
+    /**
+     * Full Constructor.
+     * @param pClient The associated client.
+     * @param pGrantType The grant.
+     * @param pSelected If this grant has been selected.
+     */
+    public ClientGrantType(Client pClient, GrantType pGrantType, boolean pSelected) {
+        this.client = pClient;
+        this.grantType = pGrantType;
+        this.selected = pSelected;
+    }
 
     /**
      * @return the client
@@ -66,17 +83,17 @@ public class ClientScope extends BaseEntity {
     }
 
     /**
-     * @return the scope
+     * @return the grantType
      */
-    public Scope getScope() {
-        return scope;
+    public GrantType getGrantType() {
+        return grantType;
     }
 
     /**
-     * @param pScope the scope to set
+     * @param pGrantType the grantType to set
      */
-    public void setScope(Scope pScope) {
-        scope = pScope;
+    public void setGrantType(GrantType pGrantType) {
+        grantType = pGrantType;
     }
 
     /**
@@ -92,6 +109,4 @@ public class ClientScope extends BaseEntity {
     public void setSelected(boolean pSelected) {
         selected = pSelected;
     }
-
-    
 }

@@ -19,7 +19,7 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.controller.dto;
+package ca.n4dev.aegaeon.server.view;
 
 /**
  * ScopeDto.java
@@ -29,7 +29,7 @@ package ca.n4dev.aegaeon.server.controller.dto;
  * @author by rguillemette
  * @since Nov 22, 2017
  */
-public class SelectableItemDto {
+public class SelectableItemView {
 
     private Long id;
     
@@ -39,7 +39,7 @@ public class SelectableItemDto {
     
     private boolean selected;
 
-    public SelectableItemDto() {}
+    public SelectableItemView() {}
     
     /**
      * Create a complete scopeDto.
@@ -47,7 +47,7 @@ public class SelectableItemDto {
      * @param pName The scope name
      * @param pDescription A default description
      */
-    public SelectableItemDto(Long pId, String pName, String pDescription, boolean pSelected) {
+    public SelectableItemView(Long pId, String pName, String pDescription, boolean pSelected) {
         this.id= pId;
         this.name = pName;
         this.description = pDescription;

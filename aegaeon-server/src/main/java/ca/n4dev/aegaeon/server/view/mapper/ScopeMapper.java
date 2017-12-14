@@ -19,31 +19,35 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.model;
+package ca.n4dev.aegaeon.server.view.mapper;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 
-import ca.n4dev.aegaeon.api.token.TokenType;
+import ca.n4dev.aegaeon.api.model.ClientScope;
+import ca.n4dev.aegaeon.api.model.Scope;
+import ca.n4dev.aegaeon.server.view.SelectableItemView;
 
 /**
- * AccessToken.java
+ * ScopeMapper.java
  * 
- * Access Token entity.
+ * Scope mapper.
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since Dec 10, 2017
  */
-@Entity
-@Table(name = "access_token")
-public class AccessToken extends BaseTokenEntity {
+@Mapper
+public interface ScopeMapper {
 
-    /* (non-Javadoc)
-     * @see ca.n4dev.aegaeon.api.model.BaseTokenEntity#getTokenType()
-     */
-    @Override
-    public TokenType getTokenType() {
-        return TokenType.ACCESS_TOKEN;
-    }
-
+    @Mappings({
+        @Mapping(target = "selected", ignore = true)
+    })
+    SelectableItemView scopeToScopeView(Scope pScope);
+    
+    @Mappings({
+        @Mapping(target = "id", source = "scope.id"),
+        @Mapping(target = "name", source = "scope.name")
+    })
+    SelectableItemView scopeToScopeView(ClientScope pClientScope);
 }

@@ -33,7 +33,7 @@ import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.protocol.FlowFactory;
-import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
+import ca.n4dev.aegaeon.server.view.TokenResponse;
 
 /**
  * TokenServiceFacadeTest.java

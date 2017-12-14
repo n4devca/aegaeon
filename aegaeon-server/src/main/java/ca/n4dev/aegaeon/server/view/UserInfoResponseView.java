@@ -19,7 +19,7 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.controller.dto;
+package ca.n4dev.aegaeon.server.view;
 
 import java.util.Map;
 
@@ -33,7 +33,7 @@ import ca.n4dev.aegaeon.api.token.payload.Claims;
  * @author by rguillemette
  * @since Jul 31, 2017
  */
-public class UserInfoResponse {
+public class UserInfoResponseView {
    
     private String sub;
     
@@ -48,7 +48,7 @@ public class UserInfoResponse {
     private String locale;
     
     
-    public UserInfoResponse(String pSub, Map<String, String> pPayload) {
+    public UserInfoResponseView(String pSub, Map<String, String> pPayload) {
         this.sub = pSub;
         
         this.name = pPayload.get(Claims.NAME);

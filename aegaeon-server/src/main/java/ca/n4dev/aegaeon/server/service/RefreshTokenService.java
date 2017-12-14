@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
@@ -37,14 +36,15 @@ import ca.n4dev.aegaeon.api.model.RefreshToken;
 import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.protocol.Flow;
+import ca.n4dev.aegaeon.api.protocol.FlowFactory;
 import ca.n4dev.aegaeon.api.repository.RefreshTokenRepository;
 import ca.n4dev.aegaeon.api.token.Token;
 import ca.n4dev.aegaeon.api.token.TokenProviderType;
 import ca.n4dev.aegaeon.api.token.TokenType;
 import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
-import ca.n4dev.aegaeon.server.utils.ClientUtils;
 import ca.n4dev.aegaeon.server.utils.Utils;
+import ca.n4dev.aegaeon.server.view.mapper.TokenMapper;
 
 /**
  * RefreshTokenService.java
@@ -68,8 +68,9 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
                                 UserService pUserService,
                                 ClientService pClientService,
                                 UserAuthorizationService pUserAuthorizationService,
-                                PayloadProvider pPayloadProvider) {
-        super(pRepository, pTokenFactory, pUserService, pClientService, pUserAuthorizationService, pPayloadProvider);
+                                PayloadProvider pPayloadProvider,
+                                TokenMapper pTokenMapper) {
+        super(pRepository, pTokenFactory, pUserService, pClientService, pUserAuthorizationService, pPayloadProvider, pTokenMapper);
     }
 
     /**
@@ -78,8 +79,7 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
      * @param pClientId The client primary key.
      * @return A RefreshToken or null.
      */
-    @Transactional(readOnly = true)
-    public RefreshToken findByTokenValueAndClientId(String pTokenValue, Long pClientId) {
+    RefreshToken findByTokenValueAndClientId(String pTokenValue, Long pClientId) {
         return this.getRepository().findByTokenAndClientId(pTokenValue, pClientId);
     }
 
@@ -113,8 +113,10 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
      */
     @Override
     void validate(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
-        if (!ClientUtils.hasClientScope(pClient, OFFLINE_SCOPE) || !ClientUtils.hasClientGrant(pClient, GrantType.CODE_AUTH_CODE)) {
-            throw new ServerException(ServerExceptionCode.SCOPE_UNAUTHORIZED_OFFLINE);
+        
+        if (!this.clientService.hasScope(pClient.getId(), OFFLINE_SCOPE) 
+                || !this.clientService.hasGrantType(pClient.getId(), GrantType.CODE_AUTH_CODE)) {
+            throw new ServerException(ServerExceptionCode.SCOPE_UNAUTHORIZED_OFFLINE);            
         }
     }
 
@@ -131,9 +133,14 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
      */
     @Override
     boolean isTokenToCreate(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) {
-        if (ClientUtils.hasClientScope(pClient, OFFLINE_SCOPE) && ClientUtils.hasClientGrant(pClient, GrantType.CODE_AUTH_CODE)) {
-            return true;
+        
+        if (Utils.contains(pFlow.getResponseType(), FlowFactory.PARAM_CODE)
+                && this.clientService.hasScope(pClient.getId(), OFFLINE_SCOPE) 
+                && this.clientService.hasGrantType(pClient.getId(), GrantType.CODE_AUTH_CODE)) {
+            
+            return true;            
         }
+        
         return false;
     }
 }

@@ -1,4 +1,4 @@
-/**
+ /**
  * Copyright 2017 Remi Guillemette - n4dev.ca
  *
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,31 +19,28 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.model;
+package ca.n4dev.aegaeon.api.repository;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import java.util.List;
 
-import ca.n4dev.aegaeon.api.token.TokenType;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import ca.n4dev.aegaeon.api.model.ClientScope;
 
 /**
- * AccessToken.java
+ * ClientScopeRepository.java
  * 
- * Access Token entity.
+ * ClientScope repository.
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since Dec 9, 2017
  */
-@Entity
-@Table(name = "access_token")
-public class AccessToken extends BaseTokenEntity {
+public interface ClientScopeRepository extends JpaRepository<ClientScope, Long> {
 
-    /* (non-Javadoc)
-     * @see ca.n4dev.aegaeon.api.model.BaseTokenEntity#getTokenType()
+    /**
+     * Find scope by client's id.
+     * @param pClientId The client's id.
+     * @return A list of scope.
      */
-    @Override
-    public TokenType getTokenType() {
-        return TokenType.ACCESS_TOKEN;
-    }
-
+    List<ClientScope> findByClientId(Long pClientId);
 }

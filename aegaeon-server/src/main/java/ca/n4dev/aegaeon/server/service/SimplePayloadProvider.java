@@ -19,7 +19,7 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.token.payload;
+package ca.n4dev.aegaeon.server.service;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import ca.n4dev.aegaeon.api.model.User;
@@ -34,7 +35,6 @@ import ca.n4dev.aegaeon.api.token.OAuthClient;
 import ca.n4dev.aegaeon.api.token.OAuthUser;
 import ca.n4dev.aegaeon.api.token.payload.Claims;
 import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
-import ca.n4dev.aegaeon.server.service.UserService;
 import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**
@@ -84,6 +84,7 @@ public class SimplePayloadProvider implements PayloadProvider {
      * #createPayload(ca.n4dev.aegaeon.api.token.OAuthUser, ca.n4dev.aegaeon.api.token.OAuthClient, java.util.List)
      */
     @Override
+    @PreAuthorize("hasRole('CLIENT') or principal.id = pOAuthUser.id")
     public Map<String, String> createPayload(OAuthUser pOAuthUser, OAuthClient pOAuthClient, List<String> pRequestedScopes) {
         Map<String, String> payload = new LinkedHashMap<>();
         

@@ -30,17 +30,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.nimbusds.jwt.SignedJWT;
-
-import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
-import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
-import ca.n4dev.aegaeon.api.model.AccessToken;
-import ca.n4dev.aegaeon.api.model.User;
-import ca.n4dev.aegaeon.server.config.ServerInfo;
-import ca.n4dev.aegaeon.server.controller.dto.IntrospectResponse;
-import ca.n4dev.aegaeon.server.service.AccessTokenService;
-import ca.n4dev.aegaeon.server.token.TokenFactory;
-import ca.n4dev.aegaeon.server.utils.Utils;
+import ca.n4dev.aegaeon.server.service.InstrospectService;
+import ca.n4dev.aegaeon.server.view.IntrospectResponseView;
 
 /**
  * IntrospectController.java
@@ -57,10 +48,7 @@ public class IntrospectController {
     
     public static final String URL = "/introspect";
     
-    private AccessTokenService accessTokenService;
-    private TokenFactory tokenFactory;
-    private ServerInfo serverInfo;
-    private OpenIdEventLogger openIdEventLogger;
+    private InstrospectService instrospectService;
     
     /**
      * Default Constructor.
@@ -69,14 +57,8 @@ public class IntrospectController {
      * @param pTokenFactory The token factory to validate token.
      * @param pServerInfo This server info.
      */
-    public IntrospectController(AccessTokenService pAccessTokenService,
-                                TokenFactory pTokenFactory,
-                                ServerInfo pServerInfo,
-                                OpenIdEventLogger pOpenIdEventLogger) {
-        this.accessTokenService = pAccessTokenService;
-        this.tokenFactory = pTokenFactory;
-        this.serverInfo = pServerInfo;
-        this.openIdEventLogger = pOpenIdEventLogger;
+    public IntrospectController(InstrospectService pInstrospectService) {
+        this.instrospectService = pInstrospectService;
     }
     
     /**
@@ -86,64 +68,17 @@ public class IntrospectController {
      */
     @RequestMapping(value = "", method = {RequestMethod.POST})
     @ResponseBody
-    public ResponseEntity<IntrospectResponse> introspect(
+    public ResponseEntity<IntrospectResponseView> introspect(
                                        @RequestParam(value = "token", required = false) String pToken, 
                                        @RequestParam(value = "token_hint", required = false) String pTokenHint, // ignored currently
                                        @RequestParam(value = "agent_of_client_id", required = false) String pAgentOfClientId,
                                        Authentication pAuthentication) {
         
-        IntrospectResponse response = new IntrospectResponse(false);
+        IntrospectResponseView response = this.instrospectService.introspect(pToken, 
+                                                                             pTokenHint, 
+                                                                             pAgentOfClientId, 
+                                                                             pAuthentication);
         
-        if (!Utils.areOneEmpty(pToken, pAgentOfClientId)) {
-            
-            try {
-                
-                // Is it a valid JWT ?
-                SignedJWT.parse(pToken);
-                
-                // Try to get access token
-                AccessToken accessToken = this.accessTokenService.findByTokenValue(pToken);
-                
-                // Exists ?
-                if (accessToken == null) {
-                    return ResponseEntity.ok(response);
-                }
-                
-                // Still Valid ?
-                if (!Utils.isAfterNow(accessToken.getValidUntil())) {
-                    return ResponseEntity.ok(response);
-                }
-                
-                // Validate
-                if (!this.tokenFactory.validate(accessToken.getClient(), pToken)) {
-                    return ResponseEntity.ok(response);
-                }
-                
-                // Check if the introspect client is validating for the right client
-                if (!accessToken.getClient().getPublicId().equals(pAgentOfClientId)) {
-                    return ResponseEntity.ok(response);
-                }
-                
-                // OK, good
-                User u = accessToken.getUser();
-                
-                // Complete response
-                response.setActive(true);
-                response.setUsername(u.getUserName());
-                response.setSub(u.getUniqueIdentifier());
-                response.setClientId(accessToken.getClient().getPublicId());
-                response.setIssuer(this.serverInfo.getIssuer());
-                response.setScope(accessToken.getScopes());
-
-                openIdEventLogger.log(OpenIdEvent.REQUEST_INFO, getClass(), u.getUserName(), null);
-                return ResponseEntity.ok(response);
-
-            } catch (Exception e) {
-                openIdEventLogger.log(OpenIdEvent.OTHERS, getClass(), e.getMessage());
-            }
-            
-        }
-        
-        return ResponseEntity.ok(new IntrospectResponse(false));
+        return ResponseEntity.ok(response);
     }
 }

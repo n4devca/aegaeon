@@ -19,46 +19,39 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.utils;
+package ca.n4dev.aegaeon.server.view.mapper;
 
-import ca.n4dev.aegaeon.api.model.Client;
-import ca.n4dev.aegaeon.api.model.ClientScope;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
+
+import ca.n4dev.aegaeon.api.model.ClientGrantType;
 import ca.n4dev.aegaeon.api.model.GrantType;
+import ca.n4dev.aegaeon.server.view.SelectableItemView;
 
 /**
- * ClientUtils.java
+ * GrantTypeMapper.java
  * 
  * TODO(rguillemette) Add description
  *
  * @author by rguillemette
- * @since Jun 21, 2017
+ * @since Dec 11, 2017
  */
-public class ClientUtils {
+@Mapper
+public interface GrantTypeMapper {
 
-    private ClientUtils() {}
-
-    public static boolean hasClientScope(Client pClient, String pScopeName) {
-        if (pClient != null && Utils.isNotEmpty(pScopeName)) {
-            for (ClientScope sc : pClient.getScopes()) {
-                if (sc.getScope().getName().equals(pScopeName)) {
-                    return true;
-                }
-            }
-        }
-        
-        return false;
-    }
+    @Mappings({
+        @Mapping(target = "name", source = "code"),
+        @Mapping(target = "description", ignore = true),
+        @Mapping(target = "selected", ignore = true),
+    })
+    SelectableItemView grantTypeToSelectableItemView(GrantType pGrantType);
     
-    public static boolean hasClientGrant(Client pClient, String pGrantType) {
-        if (pClient != null && Utils.isNotEmpty(pGrantType)) {
-            for (GrantType g : pClient.getGrantTypes()) {
-                if (g.getCode().equals(pGrantType)) {
-                    return true;
-                }
-            }
-        }
-        
-        return false;
-    }
+    @Mappings({
+        @Mapping(target = "id", source = "grantType.id"),
+        @Mapping(target = "name", source = "grantType.code"),
+        @Mapping(target = "description", ignore = true),
+    })
+    SelectableItemView clientGrantTypeToSelectableItemView(ClientGrantType pClientGrantType);
     
 }

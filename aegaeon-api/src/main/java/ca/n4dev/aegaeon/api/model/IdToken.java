@@ -21,15 +21,10 @@
  */
 package ca.n4dev.aegaeon.api.model;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import ca.n4dev.aegaeon.api.token.TokenType;
 
 /**
  * IdToken.java
@@ -41,100 +36,15 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "id_token")
-public class IdToken extends BaseEntity {
+public class IdToken extends BaseTokenEntity {
 
-private String token;
+    /* (non-Javadoc)
+     * @see ca.n4dev.aegaeon.api.model.BaseTokenEntity#getTokenType()
+     */
+    @Override
+    public TokenType getTokenType() {
+        return TokenType.ID_TOKEN;
+    }
+
     
-    private LocalDateTime validUntil;
-    
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-    
-    @ManyToOne
-    @JoinColumn(name = "client_id")
-    private Client client;
-    
-    private String scopes;
-
-    /**
-     * @return the token
-     */
-    public String getToken() {
-        return token;
-    }
-
-    /**
-     * @param pToken the token to set
-     */
-    public void setToken(String pToken) {
-        token = pToken;
-    }
-
-    /**
-     * @return the validUntil
-     */
-    public LocalDateTime getValidUntil() {
-        return validUntil;
-    }
-
-    /**
-     * @param pValidUntil the validUntil to set
-     */
-    public void setValidUntil(LocalDateTime pValidUntil) {
-        validUntil = pValidUntil;
-    }
-
-    /**
-     * @return the user
-     */
-    public User getUser() {
-        return user;
-    }
-
-    /**
-     * @param pUser the user to set
-     */
-    public void setUser(User pUser) {
-        user = pUser;
-    }
-
-    /**
-     * @return the client
-     */
-    public Client getClient() {
-        return client;
-    }
-
-    /**
-     * @param pClient the client to set
-     */
-    public void setClient(Client pClient) {
-        client = pClient;
-    }
-
-    /**
-     * @return the scopes
-     */
-    public String getScopes() {
-        return scopes;
-    }
-
-    /**
-     * @param pScopes the scopes to set
-     */
-    public void setScopes(String pScopes) {
-        scopes = pScopes;
-    }
-    
-    /**
-     * @return the scopes
-     */
-    public List<String> getScopeList() {
-        if (this.scopes == null || this.scopes.isEmpty()) {
-            return Collections.emptyList();
-        }
-        
-        return Arrays.asList(scopes.split(" "));
-    }
 }

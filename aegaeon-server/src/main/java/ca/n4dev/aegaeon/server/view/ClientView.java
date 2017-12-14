@@ -24,7 +24,6 @@ package ca.n4dev.aegaeon.server.view;
 import java.util.List;
 
 import ca.n4dev.aegaeon.api.utils.LazyList;
-import ca.n4dev.aegaeon.server.controller.dto.SelectableItemDto;
 
 /**
  * ClientDto.java
@@ -34,7 +33,7 @@ import ca.n4dev.aegaeon.server.controller.dto.SelectableItemDto;
  * @author by rguillemette
  * @since Nov 16, 2017
  */
-public class ClientDto {
+public class ClientView {
     
     private Long id;
     
@@ -60,9 +59,9 @@ public class ClientDto {
     
     private List<String> redirections = new LazyList<>();
     
-    private List<SelectableItemDto> grants = new LazyList<>();
+    private List<SelectableItemView> grants = new LazyList<>();
     
-    private List<SelectableItemDto> scopes = new LazyList<>();
+    private List<SelectableItemView> scopes = new LazyList<>();
 
     /**
      * @return the id
@@ -235,28 +234,28 @@ public class ClientDto {
     /**
      * @return the grants
      */
-    public List<SelectableItemDto> getGrants() {
+    public List<SelectableItemView> getGrants() {
         return grants;
     }
 
     /**
      * @param pGrants the grants to set
      */
-    public void setGrants(List<SelectableItemDto> pGrants) {
+    public void setGrants(List<SelectableItemView> pGrants) {
         grants = pGrants;
     }
 
     /**
      * @return the scopes
      */
-    public List<SelectableItemDto> getScopes() {
+    public List<SelectableItemView> getScopes() {
         return scopes;
     }
 
     /**
      * @param pScopes the scopes to set
      */
-    public void setScopes(List<SelectableItemDto> pScopes) {
+    public void setScopes(List<SelectableItemView> pScopes) {
         scopes = pScopes;
     }
     

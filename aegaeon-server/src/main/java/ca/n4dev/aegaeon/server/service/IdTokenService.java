@@ -44,6 +44,7 @@ import ca.n4dev.aegaeon.api.token.payload.Claims;
 import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
 import ca.n4dev.aegaeon.server.utils.Utils;
+import ca.n4dev.aegaeon.server.view.mapper.TokenMapper;
 
 /**
  * IdTokenService.java
@@ -69,8 +70,9 @@ public class IdTokenService extends BaseTokenService<IdToken, IdTokenRepository>
                           UserService pUserService, 
                           ClientService pClientService,
                           UserAuthorizationService pUserAuthorizationService,
-                          PayloadProvider pPayloadProvider) {
-        super(pRepository, pTokenFactory, pUserService, pClientService, pUserAuthorizationService, pPayloadProvider);
+                          PayloadProvider pPayloadProvider,
+                          TokenMapper pTokenMapper) {
+        super(pRepository, pTokenFactory, pUserService, pClientService, pUserAuthorizationService, pPayloadProvider, pTokenMapper);
     }
 
     /* (non-Javadoc)

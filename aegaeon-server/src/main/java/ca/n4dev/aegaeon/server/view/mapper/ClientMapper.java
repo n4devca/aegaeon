@@ -21,17 +21,19 @@
  */
 package ca.n4dev.aegaeon.server.view.mapper;
 
+import java.util.List;
+
+import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 
 import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.ClientContact;
+import ca.n4dev.aegaeon.api.model.ClientGrantType;
 import ca.n4dev.aegaeon.api.model.ClientRedirection;
 import ca.n4dev.aegaeon.api.model.ClientScope;
-import ca.n4dev.aegaeon.api.model.GrantType;
-import ca.n4dev.aegaeon.server.controller.dto.SelectableItemDto;
-import ca.n4dev.aegaeon.server.view.ClientDto;
+import ca.n4dev.aegaeon.server.view.ClientView;
 
 /**
  * ClientMapper.java
@@ -41,31 +43,36 @@ import ca.n4dev.aegaeon.server.view.ClientDto;
  * @author by rguillemette
  * @since Dec 8, 2017
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {ScopeMapper.class, GrantTypeMapper.class})
 public interface ClientMapper {
 
-    @Mappings({
-        @Mapping(target = "providerType", source = "providerName")
-    })
-    ClientDto clientToClientDto(Client pClient);
+    
     
     @Mappings({
-        @Mapping(target = "name", source = "code")
+        @Mapping(target = "providerType", source = "pClient.providerName"),
+        @Mapping(target = "scopes", source = "pClientScopes"),
+        @Mapping(target = "redirections", source = "pClientRedirections"),
+        @Mapping(target = "contacts", source = "pClientContacts"),
+        @Mapping(target = "grants", source = "pClientGrantTypes")
     })
-    SelectableItemDto grantTypesToGrants(GrantType pGrantType);
+    ClientView clientToClientDto(Client pClient, 
+                                 List<ClientScope> pClientScopes, 
+                                 List<ClientRedirection> pClientRedirections, 
+                                 List<ClientContact> pClientContacts,
+                                 List<ClientGrantType> pClientGrantTypes);
     
+    @InheritInverseConfiguration
     @Mappings({
-        @Mapping(target = "id", source = "scope.id"),
-        @Mapping(target = "name", source = "scope.name")
+        @Mapping(target = "providerName", source = "providerType"),
+        @Mapping(target = "version", ignore = true)
     })
-    SelectableItemDto clientScopeToSelectableItem(ClientScope pClientScope);
+    Client clientViewToclient(ClientView pClientView);
     
-    
-    default String redirectionsUrlToString(ClientRedirection pRedirections) {
-        return pRedirections.getUrl();
+    default String redirectionToString(ClientRedirection pClientRedirection) {
+        return pClientRedirection.getUrl();
     }
     
-    default String contactEmailToString(ClientContact pClientContact) {
+    default String contactToString(ClientContact pClientContact) {
         return pClientContact.getEmail();
     }
 }

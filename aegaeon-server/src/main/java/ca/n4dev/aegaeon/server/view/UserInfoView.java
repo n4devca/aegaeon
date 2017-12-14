@@ -22,27 +22,62 @@
 package ca.n4dev.aegaeon.server.view;
 
 /**
- * ClientDtoAction.java
+ * UserInfoView.java
  * 
  * TODO(rguillemette) Add description
  *
  * @author by rguillemette
- * @since Nov 30, 2017
+ * @since Dec 13, 2017
  */
-public enum ClientDtoAction {
-    action_add_contact,
-    action_add_redirect_url,
+public class UserInfoView {
+
+    private String category;
     
-    action_remove_contact,
-    action_remove_redirect_url,
-    ;
+    private String name;
     
-    public static ClientDtoAction from(String pAction) {
-        for (ClientDtoAction cda : ClientDtoAction.values()) {
-            if (cda.toString().equalsIgnoreCase(pAction)) {
-                return cda;
-            }
-        }
-        return null;
+    private String value;
+
+    /**
+     * @return the category
+     */
+    public String getCategory() {
+        return category;
     }
+
+    /**
+     * @param pCategory the category to set
+     */
+    public void setCategory(String pCategory) {
+        category = pCategory;
+    }
+
+    /**
+     * @return the name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * @param pName the name to set
+     */
+    public void setName(String pName) {
+        name = pName;
+    }
+
+    /**
+     * @return the value
+     */
+    public String getValue() {
+        return value;
+    }
+
+    /**
+     * @param pValue the value to set
+     */
+    public void setValue(String pValue) {
+        value = pValue;
+    }
+    
+    
 }

@@ -19,31 +19,29 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.model;
+package ca.n4dev.aegaeon.server.view.mapper;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 
-import ca.n4dev.aegaeon.api.token.TokenType;
+import ca.n4dev.aegaeon.api.model.AuthorizationCode;
+import ca.n4dev.aegaeon.server.view.AuthorizationCodeView;
 
 /**
- * AccessToken.java
+ * AuthorizationCodeViewMapper.java
  * 
- * Access Token entity.
+ * AuthorizationCodeView mapper.
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since Dec 10, 2017
  */
-@Entity
-@Table(name = "access_token")
-public class AccessToken extends BaseTokenEntity {
+@Mapper
+public interface AuthorizationCodeViewMapper {
 
-    /* (non-Javadoc)
-     * @see ca.n4dev.aegaeon.api.model.BaseTokenEntity#getTokenType()
-     */
-    @Override
-    public TokenType getTokenType() {
-        return TokenType.ACCESS_TOKEN;
-    }
-
+    @Mappings({
+        @Mapping(target = "clientId", source = "client.publicId"),
+        @Mapping(target = "userName", source = "user.name")
+    })
+    AuthorizationCodeView toView(AuthorizationCode pAuthorizationCode);
 }

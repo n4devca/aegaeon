@@ -46,13 +46,13 @@ import ca.n4dev.aegaeon.api.model.GrantType;
 import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.server.controller.dto.PageDto;
 import ca.n4dev.aegaeon.server.controller.dto.PageListDto;
-import ca.n4dev.aegaeon.server.controller.dto.SelectableItemDto;
 import ca.n4dev.aegaeon.server.service.ClientService;
 import ca.n4dev.aegaeon.server.service.GrantTypeService;
 import ca.n4dev.aegaeon.server.service.ScopeService;
 import ca.n4dev.aegaeon.server.utils.Utils;
-import ca.n4dev.aegaeon.server.view.ClientDto;
-import ca.n4dev.aegaeon.server.view.ClientDtoAction;
+import ca.n4dev.aegaeon.server.view.ClientView;
+import ca.n4dev.aegaeon.server.view.ClientViewAction;
+import ca.n4dev.aegaeon.server.view.SelectableItemView;
 
 /**
  * SimpleClientAdminController.java
@@ -92,7 +92,7 @@ public class SimpleClientAdminController extends BaseUiController {
         ModelAndView mv = new ModelAndView(VIEW_LIST);
         
         // Get Clients 
-        PageDto<ClientDto> clients = this.clientService.findByPage(pPageable);
+        PageDto<ClientView> clients = this.clientService.findByPage(pPageable);
         mv.addObject("pageList", clients);
         
         return mv;
@@ -102,7 +102,7 @@ public class SimpleClientAdminController extends BaseUiController {
     public ModelAndView getOne(@PathVariable("clientid") Long pId) {
 
         ModelAndView mv = getEditViewAndDependencies();
-        ClientDto dto = this.clientService.findOne(pId);
+        ClientView dto = this.clientService.findOne(pId);
         mv.addObject("client", dto);
         
         return mv;
@@ -111,7 +111,7 @@ public class SimpleClientAdminController extends BaseUiController {
     @PostMapping("/{clientid}")
     public ModelAndView postOne(@PathVariable("clientid") Long pId,
                                 @RequestParam(value = "action", required = false, defaultValue = "save") String pAction,
-                                @ModelAttribute("client") ClientDto pClientDto) {
+                                @ModelAttribute("client") ClientView pClientDto) {
         
         ModelAndView mv = getEditViewAndDependencies();
         
@@ -128,7 +128,7 @@ public class SimpleClientAdminController extends BaseUiController {
         return mv;
     }
     
-    private void doAction(ClientDto pClientDto, String pAction) {
+    private void doAction(ClientView pClientDto, String pAction) {
         String actionStr = pAction;
         Integer idx = null;
         if (pAction.contains(".")) {
@@ -142,7 +142,7 @@ public class SimpleClientAdminController extends BaseUiController {
             idx = Integer.parseInt(actionData[1]);
         }
             
-        ClientDtoAction action = ClientDtoAction.from(actionStr);
+        ClientViewAction action = ClientViewAction.from(actionStr);
         
         
         if (action != null) {
@@ -173,8 +173,8 @@ public class SimpleClientAdminController extends BaseUiController {
         List<GrantType> grants = this.grantTypeService.findAll();
         List<Scope> scopes = this.scopeService.findAll();
         
-        mv.addObject("scopes", Utils.convert(scopes, s -> new SelectableItemDto(s.getId(), s.getName(), null, false)));
-        mv.addObject("grants", Utils.convert(grants, g -> new SelectableItemDto(g.getId(), g.getCode(), null, false)));
+        mv.addObject("scopes", Utils.convert(scopes, s -> new SelectableItemView(s.getId(), s.getName(), null, false)));
+        mv.addObject("grants", Utils.convert(grants, g -> new SelectableItemView(g.getId(), g.getCode(), null, false)));
         
         return mv;
     }

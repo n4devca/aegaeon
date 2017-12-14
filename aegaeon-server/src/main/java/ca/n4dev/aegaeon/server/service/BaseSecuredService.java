@@ -8,9 +8,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -19,44 +19,47 @@
  * under the License.
  *
  */
-
 package ca.n4dev.aegaeon.server.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import ca.n4dev.aegaeon.api.model.UserInfo;
-import ca.n4dev.aegaeon.api.repository.UserInfoRepository;
+import ca.n4dev.aegaeon.api.model.BaseEntity;
 
 /**
+ * SecuredBaseService.java
+ * 
+ * TODO(rguillemette) Add description
  *
  * @author by rguillemette
- * @since Sep 4, 2017
- *
+ * @since Dec 7, 2017
  */
-@Service
-public class UserInfoService extends BaseSecuredService<UserInfo, UserInfoRepository> {
+public abstract class BaseSecuredService<E extends BaseEntity, R extends JpaRepository<E, Long>> {
 
-	/**
-	 * @param pRepository
-	 */
-	@Autowired
-	public UserInfoService(UserInfoRepository pRepository) {
-		super(pRepository);
-	}
-
-	/**
-	 * Find all user info by user id.
-	 * @param pUserId A user's id.
-	 * @return A list of user info.
-	 */
-	@Transactional(readOnly = true)
-    @PreAuthorize("hasRole('CLIENT') or principal.id == #pUserId")
-	public List<UserInfo> findByUserId(Long pUserId) {
-		return getRepository().findByUserId(pUserId);
-	}
+    private R repository;
+    
+    protected BaseSecuredService(R pRepository) {
+        this.repository = pRepository;
+    }
+    
+    protected E findById(Long pId) {
+        return getRepository().findOne(pId);
+    }
+    
+    protected E save(E pEntity) {
+        return getRepository().save(pEntity);
+    }
+    
+    protected List<E> save(List<E> pEntities) {
+        return getRepository().save(pEntities);
+    }
+    
+    protected void delete(Long pEntityId) {
+        getRepository().delete(pEntityId);
+    }
+    
+    protected R getRepository() {
+        return this.repository;
+    }
 }

@@ -45,7 +45,7 @@ import ca.n4dev.aegaeon.server.utils.Utils;
 @Service
 public class ScopeService extends BaseService<Scope, ScopeRepository> {
 
-    private static final String SPACE = " ";
+    public static final String SPACE = " ";
     
     /**
      * Default Constructor.
@@ -61,8 +61,7 @@ public class ScopeService extends BaseService<Scope, ScopeRepository> {
         return this.getRepository().findAll();
     }
 
-    @Transactional(readOnly = true)
-    public List<Scope> findScopeFromString(String pScopeStr) throws InvalidScopeException {
+    List<Scope> findScopeFromString(String pScopeStr) throws InvalidScopeException {
         return findScopeFromString(pScopeStr, null);
     }
     
@@ -76,6 +75,21 @@ public class ScopeService extends BaseService<Scope, ScopeRepository> {
         List<String> scopes = parseScopeArgumentString(SPACE, pScopeStr);
         
         return findScopeFromStringList(scopes, pExcluded);
+    }
+    
+    @Transactional
+    public boolean areValid(String pScopeString) {
+        // Technically, no scope is perfectly valid
+        if (Utils.isEmpty(pScopeString)) {
+            return true;
+        }
+        
+        // Split on space
+        List<String> scopes = parseScopeArgumentString(SPACE, pScopeString);
+        List<Scope> lst = this.getRepository().findByNameIn(scopes);
+        
+        // They all exist in the db.
+        return scopes.size() != lst.size();
     }
     
     @Transactional(readOnly = true)

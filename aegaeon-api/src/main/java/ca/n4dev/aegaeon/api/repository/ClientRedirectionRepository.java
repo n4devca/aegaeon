@@ -19,31 +19,36 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.model;
+package ca.n4dev.aegaeon.api.repository;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import java.util.List;
 
-import ca.n4dev.aegaeon.api.token.TokenType;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import ca.n4dev.aegaeon.api.model.ClientRedirection;
 
 /**
- * AccessToken.java
+ * ClientRedirectionRepository.java
  * 
- * Access Token entity.
+ * ClientRedirection repository.
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since Dec 9, 2017
  */
-@Entity
-@Table(name = "access_token")
-public class AccessToken extends BaseTokenEntity {
+public interface ClientRedirectionRepository extends JpaRepository<ClientRedirection, Long> {
 
-    /* (non-Javadoc)
-     * @see ca.n4dev.aegaeon.api.model.BaseTokenEntity#getTokenType()
+    /**
+     * Get client redirections.
+     * @param pClientId The client id owning this redirection.
+     * @return A list of redirections.
      */
-    @Override
-    public TokenType getTokenType() {
-        return TokenType.ACCESS_TOKEN;
-    }
-
+    List<ClientRedirection> findByClientId(Long pClientId);
+    
+    /**
+     * Get client redirections.
+     * @param pClientPublicId The client public id (string) owning this redirection.
+     * @return A list of redirections.
+     */
+    List<ClientRedirection> findByClientPublicId(String pClientPublicId);
+    
 }

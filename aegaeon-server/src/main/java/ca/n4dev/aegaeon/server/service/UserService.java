@@ -21,13 +21,24 @@
  */
 package ca.n4dev.aegaeon.server.service;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
+import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
 import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.repository.UserRepository;
+import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
+import ca.n4dev.aegaeon.server.security.AccessTokenAuthentication;
+import ca.n4dev.aegaeon.server.utils.Assert;
+import ca.n4dev.aegaeon.server.view.UserInfoResponseView;
+import ca.n4dev.aegaeon.server.view.UserView;
+import ca.n4dev.aegaeon.server.view.mapper.UserMapper;
 
 /**
  * UserService.java
@@ -38,23 +49,56 @@ import ca.n4dev.aegaeon.api.repository.UserRepository;
  * @since May 8, 2017
  */
 @Service
-public class UserService extends BaseService<User, UserRepository> {
+public class UserService extends BaseSecuredService<User, UserRepository> {
 
+    private OpenIdEventLogger openIdEventLogger;
+    private PayloadProvider payloadProvider;
+    private UserMapper userMapper;
+    
     /**
      * Default constructor.
      * @param pRepository The user repo.
      */
     @Autowired
-    public UserService(UserRepository pRepository) {
+    public UserService(UserRepository pRepository, 
+                       OpenIdEventLogger pOpenIdEventLogger, 
+                       PayloadProvider pPayloadProvider,
+                       UserMapper pUserMapper) {
         super(pRepository);
+        this.openIdEventLogger = pOpenIdEventLogger;
+        this.payloadProvider = pPayloadProvider;
+        this.userMapper = pUserMapper;
     }
 
-    /**
-     * Find one user by id.
-     */
+//    /**
+//     * Find one user by id.
+//     */
+//    @Transactional(readOnly = true)
+//    @PreAuthorize("hasRole('CLIENT') or principal.id == #pId")
+//    User findById(Long pId) {
+//        return this.getRepository().findOne(pId);
+//    }
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('CLIENT') or principal.id == #pId")
-    public User findById(Long pId) {
-        return this.getRepository().findOne(pId);
+    @PreAuthorize("hasRole('CLIENT') or principal.id == #pUserId")
+    public UserView findOne(Long pUserId) {
+        User user = super.findById(pUserId);
+        
+        return this.userMapper.toView(user, null);
+    }
+    
+    @Transactional(readOnly = true)
+    public UserInfoResponseView info(AccessTokenAuthentication pAccessTokenAuthentication) {
+        Assert.notNull(pAccessTokenAuthentication, ServerExceptionCode.USER_EMPTY);
+        
+        User u = this.findById(pAccessTokenAuthentication.getUserId());
+        Assert.notNull(u, ServerExceptionCode.USER_EMPTY);
+        
+        Map<String, String> payload = this.payloadProvider.createPayload(u, null, pAccessTokenAuthentication.getScopes());
+
+        UserInfoResponseView response = new UserInfoResponseView(pAccessTokenAuthentication.getUniqueIdentifier(), payload);
+        
+        openIdEventLogger.log(OpenIdEvent.REQUEST_INFO, getClass(), u.getUserName(), null);
+        
+        return response;
     }
 }

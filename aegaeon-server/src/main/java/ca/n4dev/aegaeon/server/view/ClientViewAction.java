@@ -19,31 +19,30 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.model;
-
-import javax.persistence.Entity;
-import javax.persistence.Table;
-
-import ca.n4dev.aegaeon.api.token.TokenType;
+package ca.n4dev.aegaeon.server.view;
 
 /**
- * AccessToken.java
+ * ClientDtoAction.java
  * 
- * Access Token entity.
+ * TODO(rguillemette) Add description
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since Nov 30, 2017
  */
-@Entity
-@Table(name = "access_token")
-public class AccessToken extends BaseTokenEntity {
-
-    /* (non-Javadoc)
-     * @see ca.n4dev.aegaeon.api.model.BaseTokenEntity#getTokenType()
-     */
-    @Override
-    public TokenType getTokenType() {
-        return TokenType.ACCESS_TOKEN;
+public enum ClientViewAction {
+    action_add_contact,
+    action_add_redirect_url,
+    
+    action_remove_contact,
+    action_remove_redirect_url,
+    ;
+    
+    public static ClientViewAction from(String pAction) {
+        for (ClientViewAction cda : ClientViewAction.values()) {
+            if (cda.toString().equalsIgnoreCase(pAction)) {
+                return cda;
+            }
+        }
+        return null;
     }
-
 }

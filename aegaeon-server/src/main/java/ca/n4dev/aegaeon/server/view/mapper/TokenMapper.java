@@ -19,31 +19,38 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.model;
+package ca.n4dev.aegaeon.server.view.mapper;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import org.mapstruct.InheritInverseConfiguration;
+import org.mapstruct.Mapper;
 
-import ca.n4dev.aegaeon.api.token.TokenType;
+import ca.n4dev.aegaeon.api.model.AccessToken;
+import ca.n4dev.aegaeon.api.model.IdToken;
+import ca.n4dev.aegaeon.api.model.RefreshToken;
+import ca.n4dev.aegaeon.server.view.TokenView;
 
 /**
- * AccessToken.java
+ * TokenMapper.java
  * 
- * Access Token entity.
+ * Mapper for tokens.
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since Dec 12, 2017
  */
-@Entity
-@Table(name = "access_token")
-public class AccessToken extends BaseTokenEntity {
+@Mapper
+public interface TokenMapper {
 
-    /* (non-Javadoc)
-     * @see ca.n4dev.aegaeon.api.model.BaseTokenEntity#getTokenType()
-     */
-    @Override
-    public TokenType getTokenType() {
-        return TokenType.ACCESS_TOKEN;
-    }
+    
+    TokenView toView(AccessToken pAccessToken);
+    TokenView toView(IdToken pIdToken);
+    TokenView toView(RefreshToken pRefreshToken);
 
+    @InheritInverseConfiguration
+    AccessToken toAccessToken(TokenView pTokenView);
+    
+    @InheritInverseConfiguration
+    IdToken toIdToken(TokenView pTokenView);
+    
+    @InheritInverseConfiguration
+    RefreshToken toRefreshToken(TokenView pTokenView);
 }

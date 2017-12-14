@@ -199,6 +199,18 @@ public class Utils {
         return false;
     }
     
+    public static <E> boolean isOneTrue(List<E> pEntities, Function<E, Boolean> pSearchFunc) {
+        if (pEntities != null) {
+            for (E e : pEntities) {
+                if (pSearchFunc.apply(e)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
     public static MultiValueMap<String, String> asMap(String... pKeyValues) {
         MultiValueMap<String, String> p = new LinkedMultiValueMap<>();
 

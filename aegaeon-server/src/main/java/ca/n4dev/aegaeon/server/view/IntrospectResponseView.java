@@ -19,7 +19,7 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.controller.dto;
+package ca.n4dev.aegaeon.server.view;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author by rguillemette
  * @since Aug 10, 2017
  */
-public class IntrospectResponse {
+public class IntrospectResponseView {
     
     private boolean active;
     
@@ -63,7 +63,7 @@ public class IntrospectResponse {
      * Basic constructor.
      * @param pActive If the token is actived.
      */
-    public IntrospectResponse(boolean pActive) {
+    public IntrospectResponseView(boolean pActive) {
         this.active = pActive;
     }
 

@@ -26,6 +26,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,21 +41,25 @@ import ca.n4dev.aegaeon.api.repository.UserRepository;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
+import ca.n4dev.aegaeon.server.view.AuthorizationCodeView;
+import ca.n4dev.aegaeon.server.view.mapper.AuthorizationCodeViewMapper;
 
 /**
  * AuthorizationCodeService.java
  * 
- * TODO(rguillemette) Add description
+ * A service managing AuthorizationCode.
  *
  * @author by rguillemette
  * @since May 10, 2017
  */
 @Service
-public class AuthorizationCodeService extends BaseService<AuthorizationCode, AuthorizationCodeRepository> {
+public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCode, AuthorizationCodeRepository> {
 
     private TokenFactory tokenFactory;
     private UserRepository userRepository;
     private ClientRepository clientRepository;
+    private ScopeService scopeService;
+    private AuthorizationCodeViewMapper viewMapper;
     
     /**
      * Default Constructor.
@@ -64,26 +69,43 @@ public class AuthorizationCodeService extends BaseService<AuthorizationCode, Aut
     public AuthorizationCodeService(AuthorizationCodeRepository pRepository, 
                                     TokenFactory pTokenFactory,
                                     UserRepository pUserRepository,
-                                    ClientRepository pClientRepository) {
+                                    ClientRepository pClientRepository,
+                                    ScopeService pScopeService,
+                                    AuthorizationCodeViewMapper pViewMapper) {
         super(pRepository);
         
         this.tokenFactory = pTokenFactory;
         this.userRepository = pUserRepository;
         this.clientRepository = pClientRepository;
+        this.scopeService = pScopeService;
+        this.viewMapper = pViewMapper;
     }
+    
+    @Transactional
+    @PreAuthorize("isAuthenticated() and principal.id == #pUserId")
+    public AuthorizationCodeView createCode(Long pUserId, String pClientPublicId, String pScopes, String pRedirectUrl) {
+        // Get Scopes
+        List<Scope> scopes = this.scopeService.findScopeFromString(pScopes);
+        
+        // Create Code
+        AuthorizationCode code = createCode(pUserId, pClientPublicId, scopes, pRedirectUrl);
+        
+        // Return view
+        return this.viewMapper.toView(code);
+    }
+
 
     /**
      * Find a AuthCode by code (string)
      * @param pCode The code.
      * @return An {@link AuthorizationCode} or null.
      */
-    @Transactional(readOnly = true)
-    public AuthorizationCode findByCode(String pCode) {
+    AuthorizationCode findByCode(String pCode) {
         return this.getRepository().findByCode(pCode);
     }
     
-    @Transactional
-    public AuthorizationCode createCode(Long pUserId, String pClientPublicId, List<Scope> pScopes, String pRedirectUrl) {
+    
+    AuthorizationCode createCode(Long pUserId, String pClientPublicId, List<Scope> pScopes, String pRedirectUrl) {
         
         Assert.notNull(pUserId, ServerExceptionCode.USER_EMPTY);
         Assert.notEmpty(pClientPublicId, ServerExceptionCode.CLIENT_EMPTY);
@@ -101,7 +123,6 @@ public class AuthorizationCodeService extends BaseService<AuthorizationCode, Aut
      * @param pClient The client.
      * @return A code or null.
      */
-    @Transactional
     AuthorizationCode createCode(User pUser, Client pClient, List<Scope> pScopes, String pRedirectUrl) {
         Assert.notNull(pUser, ServerExceptionCode.USER_EMPTY);
         Assert.notNull(pClient, ServerExceptionCode.CLIENT_EMPTY);
@@ -119,5 +140,35 @@ public class AuthorizationCodeService extends BaseService<AuthorizationCode, Aut
         }
 
         return this.getRepository().save(c);
+    }
+    
+    /**
+     * Delete an auth code.
+     * @param pAuthorizationCode 
+     */
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN') or @authorizationCodeService.hasPermissionTo(principal.id, #pAuthorizationCodeId, 'DELETE')")
+    public void delete(Long pAuthorizationCodeId) {
+        this.getRepository().delete(pAuthorizationCodeId);
+    }
+
+    /**
+     * Check if a user is allowed to do an operation.
+     * @param pAuth
+     * @param pId
+     * @param pOperation
+     * @return
+     */
+    @Transactional(readOnly = true)
+    public boolean hasPermissionTo(Long pAuthUserId, Long pId, String pOperation) {
+        if (pId != null && pAuthUserId != null && Utils.isNotEmpty(pOperation)) {
+            AuthorizationCode code = this.findById(pId);
+            
+            if (code != null && code.getUserId().equals(pAuthUserId)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }
