@@ -83,4 +83,7 @@ public class UserInfoType extends BaseEntity {
 		return parentId;
 	}
 	
+	public boolean isOther() {
+	    return this.code.contains("OTHER");
+	}
 }

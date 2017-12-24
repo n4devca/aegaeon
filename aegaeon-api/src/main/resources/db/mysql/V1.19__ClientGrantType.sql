@@ -8,9 +8,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -20,36 +20,6 @@
  *
  */
 
-package ca.n4dev.aegaeon.api.repository;
-
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import ca.n4dev.aegaeon.api.model.UserInfo;
-
-/**
- * UserInfoRepository
- * 
- * Repository managing UserInfo entities.
- * 
- * @author by rguillemette
- * @since Sep 4, 2017
- *
- */
-public interface UserInfoRepository extends JpaRepository<UserInfo, Long> {
-
-	/**
-	 * Find all user info by user id.
-	 * @param pUserId the user's id.
-	 * @return A list of user info.
-	 */
-	List<UserInfo> findByUserId(Long pUserId);
-	
-	/**
-	 * Delete all userInfo by ids
-	 * @param ids The ids.
-	 */
-	void deleteByIdIn(Set<Long> ids);
-}
+alter table client_grant_type add id int(11) not null auto_increment before client_id;
+alter table client_grant_type drop primary key;
+alter table client_grant_type add primary key(id);

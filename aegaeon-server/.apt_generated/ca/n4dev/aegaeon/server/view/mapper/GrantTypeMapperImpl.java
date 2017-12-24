@@ -4,12 +4,14 @@ import ca.n4dev.aegaeon.api.model.ClientGrantType;
 import ca.n4dev.aegaeon.api.model.GrantType;
 import ca.n4dev.aegaeon.server.view.SelectableItemView;
 import javax.annotation.Generated;
+import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2017-12-11T07:24:43-0500",
+    date = "2017-12-21T19:36:42-0500",
     comments = "version: 1.2.0.Final, compiler: Eclipse JDT (IDE) 3.12.2.v20161117-1814, environment: Java 1.8.0_92 (Oracle Corporation)"
 )
+@Component
 public class GrantTypeMapperImpl implements GrantTypeMapper {
 
     @Override

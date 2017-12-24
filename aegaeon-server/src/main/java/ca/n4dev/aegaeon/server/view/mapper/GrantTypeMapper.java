@@ -37,7 +37,7 @@ import ca.n4dev.aegaeon.server.view.SelectableItemView;
  * @author by rguillemette
  * @since Dec 11, 2017
  */
-@Mapper
+@Mapper(componentModel = "spring")
 public interface GrantTypeMapper {
 
     @Mappings({

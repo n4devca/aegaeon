@@ -31,6 +31,7 @@ import org.mapstruct.Mappings;
 import ca.n4dev.aegaeon.api.model.Authority;
 import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.model.UserInfo;
+import ca.n4dev.aegaeon.server.view.UserInfoView;
 import ca.n4dev.aegaeon.server.view.UserView;
 
 /**
@@ -41,7 +42,7 @@ import ca.n4dev.aegaeon.server.view.UserView;
  * @author by rguillemette
  * @since Dec 13, 2017
  */
-@Mapper
+@Mapper(componentModel = "spring")
 public interface UserMapper {
 
     @Mappings({
@@ -58,6 +59,15 @@ public interface UserMapper {
         @Mapping(target = "version", ignore = true)
     })
     User toEntity(UserView pUserView);
+
+    @Mappings({
+        @Mapping(target = "refId", source = "id"),
+        @Mapping(target = "name", source = "otherName"),
+        @Mapping(target = "code", source = "type.code"),
+        @Mapping(target = "category", source = "type.parent.code"),
+        @Mapping(target = "refTypeId", source = "type.id")
+    })
+    UserInfoView userInfoToView(UserInfo pUserInfo);
     
     default String authorityToString(Authority pAuthority) {
         return pAuthority.getCode();

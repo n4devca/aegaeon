@@ -30,6 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ca.n4dev.aegaeon.api.model.UserInfoType;
 import ca.n4dev.aegaeon.api.repository.UserInfoTypeRepository;
+import ca.n4dev.aegaeon.server.utils.Utils;
+import ca.n4dev.aegaeon.server.view.UserInfoView;
 
 /**
  *
@@ -53,7 +55,21 @@ public class UserInfoTypeService extends BaseSecuredService<UserInfoType, UserIn
 	 * @return All entities.
 	 */
 	@Transactional(readOnly = true)
-	public List<UserInfoType> findAll() {
-		return getRepository().findAll();
+	public List<UserInfoView> findAll() {
+	    List<UserInfoType> uit = getRepository().findAll();
+		return Utils.convert(uit, t -> {
+		    UserInfoView userInfoTypeView = new UserInfoView();
+		    
+		    userInfoTypeView.setCode(t.getCode());
+		    userInfoTypeView.setCategory(t.getParent() != null ? t.getParent().getCode() : null);
+		    userInfoTypeView.setRefTypeId(t.getId());
+		    
+		    return userInfoTypeView;
+		});
+	}
+	
+	List<UserInfoType> findAllType() {
+	    List<UserInfoType> uit = getRepository().findAll();
+	    return uit;
 	}
 }

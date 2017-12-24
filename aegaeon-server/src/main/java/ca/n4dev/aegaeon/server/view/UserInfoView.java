@@ -31,11 +31,27 @@ package ca.n4dev.aegaeon.server.view;
  */
 public class UserInfoView {
 
+    private Long refId;
+    
+    private Long refTypeId;
+    
     private String category;
+    
+    private String code;
     
     private String name;
     
     private String value;
+    
+    public UserInfoView(){}
+    
+    public UserInfoView(Long pId, String pCode, String pName, String pCategory, String pValue){
+        this.refId = pId;
+        this.code = pCode;
+        this.name = pName;
+        this.category = pCategory;
+        this.value = pValue;
+    }
 
     /**
      * @return the category
@@ -78,6 +94,63 @@ public class UserInfoView {
     public void setValue(String pValue) {
         value = pValue;
     }
+
+    /**
+     * @return the code
+     */
+    public String getCode() {
+        return code;
+    }
+
+    /**
+     * @param pCode the code to set
+     */
+    public void setCode(String pCode) {
+        code = pCode;
+    }
+
+    /**
+     * @return the refId
+     */
+    public Long getRefId() {
+        return refId;
+    }
+
+    /**
+     * @param pRefId the refId to set
+     */
+    public void setRefId(Long pRefId) {
+        refId = pRefId;
+    }
+
+    /**
+     * @return the otherType
+     */
+    public boolean isOtherType() {
+        return code != null && code.contains("OTHER");
+    }
+
+    /**
+     * @return the refTypeId
+     */
+    public Long getRefTypeId() {
+        return refTypeId;
+    }
+
+    /**
+     * @param pRefTypeId the refTypeId to set
+     */
+    public void setRefTypeId(Long pRefTypeId) {
+        refTypeId = pRefTypeId;
+    }
     
-    
+    public String toString() {
+        return new StringBuilder()
+                    .append(getClass().getSimpleName())
+                    .append("[refId:").append(this.refId)
+                    .append(",code:").append(this.code)
+                    .append(",value:").append(this.value)
+                    .append("]")
+                    .toString();
+    }
 }

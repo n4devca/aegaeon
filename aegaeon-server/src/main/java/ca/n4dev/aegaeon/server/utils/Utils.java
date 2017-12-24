@@ -23,6 +23,7 @@ package ca.n4dev.aegaeon.server.utils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -55,6 +56,18 @@ public class Utils {
         return pValue == null || pValue.isEmpty();
     }
     
+    public static boolean isNotEmpty(String pValue) {
+        return pValue != null && !pValue.isEmpty();
+    }
+    
+    public static boolean isEmpty(Collection<?> pCollection) {
+        return pCollection == null || pCollection.isEmpty();
+    }
+    
+    public static boolean isNotEmpty(Collection<?> pCollection) {
+        return pCollection != null && !pCollection.isEmpty();
+    }
+    
     public static <E> boolean equals(E pEntity1, E pEntity2) {
         if (pEntity1 != null) {
             return pEntity1.equals(pEntity2);
@@ -79,10 +92,6 @@ public class Utils {
         }
         
         return true;
-    }
-    
-    public static boolean isNotEmpty(String pValue) {
-        return pValue != null && !pValue.isEmpty();
     }
     
     public static boolean isAfterNow(LocalDateTime pValidUntil) {

@@ -21,12 +21,10 @@
  */
 package ca.n4dev.aegaeon.server.controller.dto;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import ca.n4dev.aegaeon.api.utils.LazyList;
+import ca.n4dev.aegaeon.server.view.UserInfoView;
 
 /**
  * UserInfoTypeGroupDto.java
@@ -42,31 +40,8 @@ public class UserInfoGroupDto {
     
     private String labelName;
     
-    private List<UserInfoDto> children = new ArrayList<>();
+    private List<UserInfoView> children = new LazyList<>();
     
-    private List<UserInfoDto> values = new LazyList<>();
-    
-    /**
-     * Default / no-arg constructor.
-     */
-    public UserInfoGroupDto() {
-        this(null, null);
-    }
-    
-    /**
-     * Create a group of userinfotype.
-     * @param pCode The parent code.
-     * @param pLabelName The parent name
-     * @param pUserInfoTypeDtos Child infotype.
-     */
-    public UserInfoGroupDto(String pCode, String pLabelName, UserInfoDto... pUserInfoTypeDtos) {
-        this.code = pCode;
-        this.labelName = pLabelName;
-        if (pUserInfoTypeDtos != null && pUserInfoTypeDtos.length > 0) {
-            this.children = Arrays.stream(pUserInfoTypeDtos).collect(Collectors.toList());
-        } 
-    }
-
     /**
      * @return the code
      */
@@ -98,14 +73,14 @@ public class UserInfoGroupDto {
     /**
      * @return the children
      */
-    public List<UserInfoDto> getChildren() {
+    public List<UserInfoView> getChildren() {
         return children;
     }
 
     /**
      * @param pChildren the children to set
      */
-    public void setChildren(List<UserInfoDto> pChildren) {
+    public void setChildren(List<UserInfoView> pChildren) {
         children = pChildren;
     }
     
@@ -113,31 +88,9 @@ public class UserInfoGroupDto {
      * Add one UserInfoTypeDto
      * @param pUserInfoTypeDto to add.
      */
-    public void addUserInfoTypeDto(UserInfoDto pUserInfoTypeDto) {
+    public void addUserInfoTypeDto(UserInfoView pUserInfoTypeDto) {
         if (pUserInfoTypeDto != null) {
             this.children.add(pUserInfoTypeDto);
         }
-    }
-
-    /**
-     * @return the values
-     */
-    public List<UserInfoDto> getValues() {
-        return values;
-    }
-
-    /**
-     * @param pValues the values to set
-     */
-    public void setValues(List<UserInfoDto> pValues) {
-        values = pValues;
-    }
-    
-    /**
-     * @param pValue the value to add
-     */
-    public void addValue(UserInfoDto pValue) {
-        values.add(pValue);
-    }
-    
+    }    
 }

@@ -58,7 +58,6 @@ public abstract class BaseTokenService<T extends BaseEntity, J extends JpaReposi
     protected ClientService clientService;
     protected UserAuthorizationService userAuthorizationService;
     protected TokenFactory tokenFactory;
-    protected PayloadProvider payloadProvider;
     protected TokenMapper tokenMapper;
     
     /**
@@ -69,14 +68,12 @@ public abstract class BaseTokenService<T extends BaseEntity, J extends JpaReposi
                             UserService pUserService,
                             ClientService pClientService,
                             UserAuthorizationService pUserAuthorizationService,
-                            PayloadProvider pPayloadProvider,
                             TokenMapper pTokenMapper) {
         super(pRepository);
         this.tokenFactory = pTokenFactory;
         this.userService = pUserService;
         this.clientService = pClientService;
         this.userAuthorizationService = pUserAuthorizationService;
-        this.payloadProvider = pPayloadProvider;
         this.tokenMapper = pTokenMapper;
     }
 

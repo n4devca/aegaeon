@@ -38,7 +38,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "client_grant_type")
-public class ClientGrantType {
+public class ClientGrantType extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "client_id")

@@ -28,6 +28,7 @@ import java.util.List;
 
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
 
 import ca.n4dev.aegaeon.api.token.TokenType;
 
@@ -39,6 +40,7 @@ import ca.n4dev.aegaeon.api.token.TokenType;
  * @author by rguillemette
  * @since Dec 12, 2017
  */
+@MappedSuperclass
 public abstract class BaseTokenEntity extends BaseEntity {
 
     protected String token;

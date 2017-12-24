@@ -22,12 +22,10 @@
 package ca.n4dev.aegaeon.server.controller;
 
 import java.util.List;
-import java.util.function.BiFunction;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.MessageSource;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,12 +38,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
-import ca.n4dev.aegaeon.api.model.Client;
-import ca.n4dev.aegaeon.api.model.ClientScope;
 import ca.n4dev.aegaeon.api.model.GrantType;
 import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.server.controller.dto.PageDto;
-import ca.n4dev.aegaeon.server.controller.dto.PageListDto;
 import ca.n4dev.aegaeon.server.service.ClientService;
 import ca.n4dev.aegaeon.server.service.GrantTypeService;
 import ca.n4dev.aegaeon.server.service.ScopeService;

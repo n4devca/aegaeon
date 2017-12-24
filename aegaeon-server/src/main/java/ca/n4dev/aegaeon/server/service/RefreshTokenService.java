@@ -68,9 +68,8 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
                                 UserService pUserService,
                                 ClientService pClientService,
                                 UserAuthorizationService pUserAuthorizationService,
-                                PayloadProvider pPayloadProvider,
                                 TokenMapper pTokenMapper) {
-        super(pRepository, pTokenFactory, pUserService, pClientService, pUserAuthorizationService, pPayloadProvider, pTokenMapper);
+        super(pRepository, pTokenFactory, pUserService, pClientService, pUserAuthorizationService, pTokenMapper);
     }
 
     /**

@@ -5,12 +5,14 @@ import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.server.view.AuthorizationCodeView;
 import javax.annotation.Generated;
+import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2017-12-10T14:37:07-0500",
+    date = "2017-12-21T19:36:43-0500",
     comments = "version: 1.2.0.Final, compiler: Eclipse JDT (IDE) 3.12.2.v20161117-1814, environment: Java 1.8.0_92 (Oracle Corporation)"
 )
+@Component
 public class AuthorizationCodeViewMapperImpl implements AuthorizationCodeViewMapper {
 
     @Override

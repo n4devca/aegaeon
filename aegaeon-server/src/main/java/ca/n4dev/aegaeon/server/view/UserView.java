@@ -22,7 +22,6 @@
 package ca.n4dev.aegaeon.server.view;
 
 import java.util.List;
-import java.util.Map;
 
 import ca.n4dev.aegaeon.api.token.OAuthUser;
 
@@ -136,4 +135,15 @@ public class UserView implements OAuthUser  {
         return this.uniqueIdentifier;
     }
     
+    
+    public String toString() {
+        return new StringBuilder()
+                    .append(getClass().getSimpleName())
+                    .append("[")
+                    .append(this.name)
+                    .append(",")
+                    .append(this.uniqueIdentifier)
+                    .append("]")
+                    .toString();
+    }
 }

@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2017-12-14T06:40:28-0500",
+    date = "2017-12-21T19:36:43-0500",
     comments = "version: 1.2.0.Final, compiler: Eclipse JDT (IDE) 3.12.2.v20161117-1814, environment: Java 1.8.0_92 (Oracle Corporation)"
 )
 @Component
@@ -36,15 +36,15 @@ public class ClientMapperImpl implements ClientMapper {
 
         if ( pClient != null ) {
             clientView.setProviderType( pClient.getProviderName() );
-            clientView.setAccessTokenSeconds( pClient.getAccessTokenSeconds() );
-            clientView.setDescription( pClient.getDescription() );
             clientView.setId( pClient.getId() );
-            clientView.setIdTokenSeconds( pClient.getIdTokenSeconds() );
-            clientView.setLogoUrl( pClient.getLogoUrl() );
             clientView.setName( pClient.getName() );
             clientView.setPublicId( pClient.getPublicId() );
-            clientView.setRefreshTokenSeconds( pClient.getRefreshTokenSeconds() );
+            clientView.setDescription( pClient.getDescription() );
             clientView.setSecret( pClient.getSecret() );
+            clientView.setLogoUrl( pClient.getLogoUrl() );
+            clientView.setIdTokenSeconds( pClient.getIdTokenSeconds() );
+            clientView.setAccessTokenSeconds( pClient.getAccessTokenSeconds() );
+            clientView.setRefreshTokenSeconds( pClient.getRefreshTokenSeconds() );
         }
         if ( pClientScopes != null ) {
             clientView.setScopes( clientScopeListToSelectableItemViewList( pClientScopes ) );

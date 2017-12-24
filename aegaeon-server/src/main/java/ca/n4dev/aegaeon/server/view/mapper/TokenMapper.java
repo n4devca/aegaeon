@@ -37,7 +37,7 @@ import ca.n4dev.aegaeon.server.view.TokenView;
  * @author by rguillemette
  * @since Dec 12, 2017
  */
-@Mapper
+@Mapper(componentModel = "spring")
 public interface TokenMapper {
 
     

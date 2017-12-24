@@ -5,12 +5,14 @@ import ca.n4dev.aegaeon.api.model.IdToken;
 import ca.n4dev.aegaeon.api.model.RefreshToken;
 import ca.n4dev.aegaeon.server.view.TokenView;
 import javax.annotation.Generated;
+import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2017-12-12T07:49:00-0500",
+    date = "2017-12-21T19:36:43-0500",
     comments = "version: 1.2.0.Final, compiler: Eclipse JDT (IDE) 3.12.2.v20161117-1814, environment: Java 1.8.0_92 (Oracle Corporation)"
 )
+@Component
 public class TokenMapperImpl implements TokenMapper {
 
     @Override
@@ -21,13 +23,13 @@ public class TokenMapperImpl implements TokenMapper {
 
         TokenView tokenView = new TokenView();
 
-        tokenView.setId( pAccessToken.getId() );
-        tokenView.setScopes( pAccessToken.getScopes() );
         tokenView.setToken( pAccessToken.getToken() );
         if ( pAccessToken.getTokenType() != null ) {
             tokenView.setTokenType( pAccessToken.getTokenType().name() );
         }
+        tokenView.setScopes( pAccessToken.getScopes() );
         tokenView.setValidUntil( pAccessToken.getValidUntil() );
+        tokenView.setId( pAccessToken.getId() );
 
         return tokenView;
     }
@@ -40,13 +42,13 @@ public class TokenMapperImpl implements TokenMapper {
 
         TokenView tokenView = new TokenView();
 
-        tokenView.setId( pIdToken.getId() );
-        tokenView.setScopes( pIdToken.getScopes() );
         tokenView.setToken( pIdToken.getToken() );
         if ( pIdToken.getTokenType() != null ) {
             tokenView.setTokenType( pIdToken.getTokenType().name() );
         }
+        tokenView.setScopes( pIdToken.getScopes() );
         tokenView.setValidUntil( pIdToken.getValidUntil() );
+        tokenView.setId( pIdToken.getId() );
 
         return tokenView;
     }
@@ -59,13 +61,13 @@ public class TokenMapperImpl implements TokenMapper {
 
         TokenView tokenView = new TokenView();
 
-        tokenView.setId( pRefreshToken.getId() );
-        tokenView.setScopes( pRefreshToken.getScopes() );
         tokenView.setToken( pRefreshToken.getToken() );
         if ( pRefreshToken.getTokenType() != null ) {
             tokenView.setTokenType( pRefreshToken.getTokenType().name() );
         }
+        tokenView.setScopes( pRefreshToken.getScopes() );
         tokenView.setValidUntil( pRefreshToken.getValidUntil() );
+        tokenView.setId( pRefreshToken.getId() );
 
         return tokenView;
     }

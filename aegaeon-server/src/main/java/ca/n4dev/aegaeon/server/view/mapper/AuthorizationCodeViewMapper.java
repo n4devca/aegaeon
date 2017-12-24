@@ -36,7 +36,7 @@ import ca.n4dev.aegaeon.server.view.AuthorizationCodeView;
  * @author by rguillemette
  * @since Dec 10, 2017
  */
-@Mapper
+@Mapper(componentModel = "spring")
 public interface AuthorizationCodeViewMapper {
 
     @Mappings({

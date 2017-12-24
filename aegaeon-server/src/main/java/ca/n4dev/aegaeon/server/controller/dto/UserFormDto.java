@@ -22,11 +22,10 @@
 
 package ca.n4dev.aegaeon.server.controller.dto;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+
+import ca.n4dev.aegaeon.api.utils.LazyList;
+import ca.n4dev.aegaeon.server.view.UserView;
 
 /**
  *
@@ -36,73 +35,42 @@ import java.util.Map.Entry;
  */
 public class UserFormDto {
     
-
-	private String pictureUrl;
-	
-	private String name;
-	
-	private Map<String, UserInfoGroupDto> groups = new LinkedHashMap<>();
-	
-	public UserFormDto() {
-	    
-	}
-	
-	public UserFormDto(String pName, String pPictureUrl, Map<Long, UserInfoGroupDto> pGroups, List<UserInfoDto> pUserValues) {
-	    this.name = pName;
-	    this.pictureUrl = pPictureUrl;
-
-	    // Set Groups
-	    for (Entry<Long, UserInfoGroupDto> en : pGroups.entrySet()) {
-	        UserInfoGroupDto g = en.getValue();
-	        groups.put(g.getCode(), g);
-	    }
-	    
-	    // Distribute values
-	    for (UserInfoDto udto : pUserValues) {
-	        groups.get(udto.getParentCode()).addValue(udto);
-	    }
-	}
-
-	/**
-	 * @return the pictureUrl
-	 */
-	public String getPictureUrl() {
-		return pictureUrl;
-	}
-
-	/**
-	 * @param pictureUrl the pictureUrl to set
-	 */
-	public void setPictureUrl(String pictureUrl) {
-		this.pictureUrl = pictureUrl;
-	}
-
-	/**
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * @param name the name to set
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
+    private UserView userView;
+    
+    private List<UserInfoGroupDto> groupInfo = new LazyList<>();
 
     /**
-     * @return the groups
+     * @return the userView
      */
-    public Map<String, UserInfoGroupDto> getGroups() {
-        return groups;
+    public UserView getUserView() {
+        return userView;
     }
 
     /**
-     * @param pGroups the groups to set
+     * @param pUserView the userView to set
      */
-    public void setGroups(Map<String, UserInfoGroupDto> pGroups) {
-        groups = pGroups;
+    public void setUserView(UserView pUserView) {
+        userView = pUserView;
     }
 
+    /**
+     * @return the groupInfo
+     */
+    public List<UserInfoGroupDto> getGroupInfo() {
+        return groupInfo;
+    }
+
+    /**
+     * @param pGroupInfo the groupInfo to set
+     */
+    public void setGroupInfo(List<UserInfoGroupDto> pGroupInfo) {
+        groupInfo = pGroupInfo;
+    }
+
+    /**
+     * @param pGroupInfo the groupInfo to set
+     */
+    public void addGroupInfo(UserInfoGroupDto pGroupInfo) {
+        groupInfo.add(pGroupInfo);
+    }
 }
