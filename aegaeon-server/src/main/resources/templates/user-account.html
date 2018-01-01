@@ -34,27 +34,47 @@
                         </div>
                     </div>
                     <div class="page-content">
-                        
-                        <div class="form-group">
-                            <label for="user-account-name" th:text="#{page.useraccount.form.label.name}"></label> 
-                            <input type="text" id="user-account-name" th:field="*{userView.name}" class="form-input" />
+                        <div class="box">
+                            <div class="body">
+
+                                <div class="form-group">
+                                    <label for="user-account-name" th:text="#{page.useraccount.form.label.name}"></label>
+                                    <input type="text" id="user-account-name" class="form-input"
+                                           maxlength="100" required="required"
+                                           th:field="*{userView.name}"
+                                           th:errorclass="form-error" />
+                                    <div class="error-text" id="user-account-name-error"
+                                         th:classappend="${#fields.hasErrors('userView.name')} ? 'show-error'">Name cannot be empty.</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="user-account-picture" th:text="#{page.useraccount.form.label.picture}"></label>
+                                    <input type="text" id="user-account-picture" maxlength="500" class="form-input" placeholder="https://..."
+                                           th:field="*{userView.picture}" />
+                                    <img id="user-account-picture-display"
+                                         th:src="${user.userView.picture}" th:classappend="${#strings.isEmpty(user.userView.picture)} ? 'hidden'" />
+                                </div>
+
+                            </div>
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="user-account-picture" th:text="#{page.useraccount.form.label.picture}"></label> 
-                            <input type="text" id="user-account-picture" th:field="*{userView.picture}" class="form-input" />
-                            <!-- <img alt="user-picture" th:src="${user.pictureUrl}" th:if="${user.pictureUrl}" />  --> 
-                        </div>
-                        
-                        <div th:each="ui,uix : ${user.groupInfo}">
-                            
+
+                        <div th:each="ui,uix : *{groupInfo}">
                             <h2 th:text="${ui.labelName}"></h2>
-                            
-                            <th:block th:each="uv,uvx : ${ui.children}">
-                                <div th:replace="components/user-info :: user-info(${uv}, 'groupInfo[' + ${uix.index} + '].children[' + ${uvx.index} + ']')"></div>
-                            </th:block>
-                            
-                            
+                            <div class="box">
+                                <div class="body">
+
+                                    <th:block th:each="uv,uvx : ${ui.children}">
+                                        <div th:replace="components/user-info :: user-info(${uv}, 'groupInfo[' + ${uix.index} + '].children[' + ${uvx.index} + ']')"></div>
+                                    </th:block>
+
+                                    <input type="hidden" th:field="*{groupInfo[__${uix.index}__].code}" />
+                                    <input type="hidden" th:field="*{groupInfo[__${uix.index}__].labelName}" />
+
+                                </div>
+
+
+                            </div>
+
                         </div>
                 
                     </div>
@@ -62,6 +82,7 @@
                   
 			</form>
 		</div>
+        <script src="/js/user-account.js" th:src="@{/resources/js/user-account.js}"></script>
 	</section>
 </body>
 </html>

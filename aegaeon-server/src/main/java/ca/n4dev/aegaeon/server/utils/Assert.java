@@ -42,36 +42,31 @@ public class Assert {
     
     public static void notNull(Object pObj, ServerExceptionCode pCode) {
         if (pObj == null) {
-            throw new ServerException(pCode);
+            Utils.raise(pCode);
         }
     }
     
     public static void notNull(Object pObj, ServerExceptionCode pCode, String pLogMsg) {
         if (pObj == null) {
-            
-            if (pLogMsg != null) {
-                LOGGER.warn(pLogMsg);
-            }
-            
-            throw new ServerException(pCode);
+            Utils.raise(pCode, pLogMsg);
         }
     }
     
     public static void notEmpty(String pObj, ServerExceptionCode pCode) {
         if (pObj == null || pObj.isEmpty()) {
-            throw new ServerException(pCode);
+            Utils.raise(pCode);
         }
     }
     
     public static void isTrue(Boolean pValue, ServerExceptionCode pCode) {
         if (pValue == null || !pValue) {
-            throw new ServerException(pCode);
+            Utils.raise(pCode);
         }
     }
     
     public static void isFalse(Boolean pValue, ServerExceptionCode pCode) {
         if (pValue == null || pValue) {
-            throw new ServerException(pCode);
+            Utils.raise(pCode);
         }
     }
 }

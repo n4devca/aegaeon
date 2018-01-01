@@ -21,6 +21,7 @@
  */
 package ca.n4dev.aegaeon.server.view.mapper;
 
+import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -28,6 +29,8 @@ import org.mapstruct.Mappings;
 import ca.n4dev.aegaeon.api.model.ClientGrantType;
 import ca.n4dev.aegaeon.api.model.GrantType;
 import ca.n4dev.aegaeon.server.view.SelectableItemView;
+
+import java.util.List;
 
 /**
  * GrantTypeMapper.java
@@ -53,5 +56,13 @@ public interface GrantTypeMapper {
         @Mapping(target = "description", ignore = true),
     })
     SelectableItemView clientGrantTypeToSelectableItemView(ClientGrantType pClientGrantType);
-    
+
+    @InheritInverseConfiguration
+    @Mappings({
+            @Mapping(target = "client", ignore = true),
+            @Mapping(target = "version", ignore = true)
+    })
+    ClientGrantType selectableItemViewToClientGrantType(SelectableItemView pSelectableItemView);
+
+    List<ClientGrantType> selectableItemViewsToClientGrantTypes(List<SelectableItemView> pSelectableItemViews);
 }

@@ -43,12 +43,11 @@ public interface ClientRepository extends JpaRepository<Client, Long>{
      * @return A client or null.
      */
     Client findByPublicId(String pPublicId);
-    
-//    /**
-//     * Find a client by public id (and load redirection uri).
-//     * @param pPublicId The public id.
-//     * @return A client or null.
-//     */
-//    @Query("from Client c join fetch c.redirections where c.publicId = :publicId ")
-//    Client findByPublicIdWithRedirections(@Param("publicId") String pPublicId);
+
+    /**
+     * Check if this publicid is already in use.
+     * @param pPublicId The public client id to check.
+     * @return true or false.
+     */
+    boolean existsByPublicId(String pPublicId);
 }

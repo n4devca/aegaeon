@@ -164,9 +164,6 @@
                         <compilerArg>
                             -Amapstruct.suppressGeneratorVersionInfoComment=true
                         </compilerArg>
-                        <compilerArg>
-                            -mapstruct.defaultComponentModel=spring
-                        </compilerArg>
                     </compilerArgs>
                 </configuration>
             </plugin>

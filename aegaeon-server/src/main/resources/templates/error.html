@@ -18,7 +18,13 @@
                     <th:block th:if="${#strings.equalsIgnoreCase(type, 'OauthRestrictedException')}">
                         <p th:text="#{${'page.error.list.oauth.errortype.' + error.error}}"></p>
                     </th:block>
-                    
+
+                    <th:block th:if="${#strings.equalsIgnoreCase(type, 'ServerException')}">
+                        <p th:text="#{page.error.list.serverexception}"></p>
+                        <p th:text="${errorCode}"></p>
+                        <p th:text="${errorMessage}"></p>
+                    </th:block>
+
                     <th:block th:if="${#strings.equalsIgnoreCase(type, 'Throwable')}">
                         <p th:text="#{page.error.list.throwable}"></p>
                     </th:block>

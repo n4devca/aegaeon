@@ -105,7 +105,7 @@ public class SimpleClientAdminController extends BaseUiController {
     
     @PostMapping("/{clientid}")
     public ModelAndView postOne(@PathVariable("clientid") Long pId,
-                                @RequestParam(value = "action", required = false, defaultValue = "save") String pAction,
+                                @RequestParam(value = "action", required = false, defaultValue = "update") String pAction,
                                 @ModelAttribute("client") ClientView pClientDto) {
         
         ModelAndView mv = getEditViewAndDependencies();
@@ -115,7 +115,7 @@ public class SimpleClientAdminController extends BaseUiController {
             doAction(pClientDto, pAction);            
         } else {
             // Save
-            
+            pClientDto = this.clientService.update(pId, pClientDto);
         }
         
         mv.addObject("client", pClientDto);

@@ -16,7 +16,7 @@ spring:
     jackson:
         default-property-inclusion: non_null
 flyway:
-    enabled: false
+    enabled: true
     baseline-version: 1
     check-location: false
     locations: classpath:db/mysql
@@ -25,10 +25,10 @@ aegaeon:
     modules:
         oauth: true
         login: true
-        home: false
-        account: false
+        home: true
+        account: true
         discovery: false
-        admin: false
+        admin: true
         introspect: true
         information: true
         

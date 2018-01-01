@@ -21,6 +21,8 @@
  */
 package ca.n4dev.aegaeon.server.utils;
 
+import java.net.URI;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,9 +30,14 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
+import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -50,6 +57,8 @@ public class Utils {
     public static final String TRUE = "true";
     public static final String FALSE = "false";
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Utils.class);
+
     private static final AtomicLong counter = new AtomicLong(System.currentTimeMillis());
     
     public static boolean isEmpty(String pValue) {
@@ -66,6 +75,16 @@ public class Utils {
     
     public static boolean isNotEmpty(Collection<?> pCollection) {
         return pCollection != null && !pCollection.isEmpty();
+    }
+
+    public static <E> boolean isNotEmptyThen(Collection<E> pCollection, Consumer<Collection<E>> pThen) {
+        boolean toConsume = isNotEmpty(pCollection);
+
+        if (toConsume) {
+            pThen.accept(pCollection);
+        }
+
+        return toConsume;
     }
     
     public static <E> boolean equals(E pEntity1, E pEntity2) {
@@ -295,4 +314,125 @@ public class Utils {
     public static Long nextNegativeId() {
         return -nextPositiveId();
     }
+
+    /**
+     * Raise a {@link ServerException}
+     * @param pServerExceptionCode the {@link ServerExceptionCode}
+     */
+    public static void raise(ServerExceptionCode pServerExceptionCode) {
+        raise(pServerExceptionCode, null);
+    }
+
+    /**
+     * Raise a {@link ServerException}
+     * @param pServerExceptionCode the {@link ServerExceptionCode}
+     * @param pMessage A message.
+     */
+    public static void raise(ServerExceptionCode pServerExceptionCode, String pMessage) {
+        if (pServerExceptionCode != null) {
+            throw new ServerException(pServerExceptionCode, pMessage);
+        }
+    }
+
+    public static <E, O> Differentiation<E> differentiate(List<E> pOriginalList, List<O> pOtherList, BiFunction<E, O, Boolean> pFindFunc, BiFunction<E, O, E> pUpdater, Function<O, E> pCreator) {
+        //Pair<List<E>, List<E>> reponse = new Pair<>();
+        List<E> newObjs = new ArrayList<>();
+        List<E> updatedObjs = new ArrayList<>();
+        List<E> removedObjs = new ArrayList<>();
+
+        // Update and entities to remove
+        for (E original : pOriginalList) {
+
+            boolean found = false;
+
+            for (O other : pOtherList) {
+
+                // Found
+                if (pFindFunc.apply(original, other)) {
+                    updatedObjs.add(pUpdater.apply(original, other));
+                    found = true;
+                    break;
+                }
+            }
+
+            // Not found => to remove
+            if (!found) {
+                removedObjs.add(original);
+            }
+        }
+
+        // New entities
+        for (O other : pOtherList) {
+            boolean found = false;
+
+            for (E original : pOriginalList) {
+                if (pFindFunc.apply(original, other)) {
+                    found = true;
+                    break;
+                }
+            }
+
+            // new entities
+            if (!found) {
+                newObjs.add(pCreator.apply(other));
+            }
+        }
+
+        return new Differentiation<>(newObjs, updatedObjs, removedObjs);
+    }
+
+    public static boolean validateRedirectionUri(String pUri) {
+
+        try {
+
+            if (isNotEmpty(pUri)) {
+                URL url = new URL(pUri);
+                URI uri = url.toURI();
+
+                // No param or fragment allowed
+                if (isNotEmpty(uri.getFragment()) || isNotEmpty(uri.getQuery())) {
+                    return false;
+                }
+
+                // Only http(s)
+                if (!uri.getScheme().equals("http") && !uri.getScheme().equals("https")) {
+                    return false;
+                }
+
+                // Empty host ?
+                if (isEmpty(uri.getHost())) {
+                    return false;
+                }
+
+                // http is only allowed with localhost/127.0.0.1
+                boolean isLocalhost = uri.getHost().equals("localhost") || uri.getHost().equals(("127.0.0.1"));
+
+                if (uri.getScheme().equals("http") && !isLocalhost) {
+                    return false;
+                }
+
+                // Make sure we have a tld
+                if (!isLocalhost && uri.getHost().split("\\.").length <= 1) {
+                    return false;
+                }
+
+                // Make sure we don't have /./ and /../
+                if (isNotEmpty(uri.getPath())) {
+                    if (uri.getPath().contains("/.")) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+        } catch (Exception e) {
+            LOGGER.warn("Error validating Url: " + pUri, e);
+        }
+
+        // return false to be sure
+        return false;
+    }
+
+
 }

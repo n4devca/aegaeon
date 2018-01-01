@@ -23,10 +23,7 @@ package ca.n4dev.aegaeon.server.view.mapper;
 
 import java.util.List;
 
-import org.mapstruct.InheritInverseConfiguration;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Mappings;
+import org.mapstruct.*;
 
 import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.ClientContact;
@@ -45,8 +42,6 @@ import ca.n4dev.aegaeon.server.view.ClientView;
  */
 @Mapper(componentModel = "spring", uses = {ScopeMapper.class, GrantTypeMapper.class})
 public interface ClientMapper {
-
-    
     
     @Mappings({
         @Mapping(target = "providerType", source = "pClient.providerName"),
@@ -64,9 +59,10 @@ public interface ClientMapper {
     @InheritInverseConfiguration
     @Mappings({
         @Mapping(target = "providerName", source = "providerType"),
-        @Mapping(target = "version", ignore = true)
+        @Mapping(target = "version", ignore = true),
+        @Mapping(target = "id", ignore = true)
     })
-    Client clientViewToclient(ClientView pClientView);
+    void clientViewToclient(ClientView pClientView, @MappingTarget Client pClient);
     
     default String redirectionToString(ClientRedirection pClientRedirection) {
         return pClientRedirection.getUrl();

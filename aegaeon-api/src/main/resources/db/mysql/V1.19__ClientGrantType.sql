@@ -19,7 +19,15 @@
  * under the License.
  *
  */
-
-alter table client_grant_type add id int(11) not null auto_increment before client_id;
+ 
+-- Drop foreign and primary
+alter table client_grant_type drop foreign key cgt_client_client_id_fk;
+alter table client_grant_type drop foreign key cgt_grant_type_grant_id_fk;
 alter table client_grant_type drop primary key;
-alter table client_grant_type add primary key(id);
+
+-- New primary key
+alter table client_grant_type add id int(11) not null auto_increment PRIMARY KEY;
+
+-- Re-add foreigns
+alter table client_grant_type add constraint cgt_client_client_id_fk foreign key (`client_id`) REFERENCES `client` (`id`) ON DELETE CASCADE;
+alter table client_grant_type add constraint cgt_grant_type_grant_id_fk foreign key (`grant_type_id`) REFERENCES `grant_type` (`id`) ON DELETE CASCADE;

@@ -21,13 +21,13 @@
  */
 package ca.n4dev.aegaeon.server.view.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Mappings;
+import org.mapstruct.*;
 
 import ca.n4dev.aegaeon.api.model.ClientScope;
 import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.server.view.SelectableItemView;
+
+import java.util.List;
 
 /**
  * ScopeMapper.java
@@ -47,7 +47,18 @@ public interface ScopeMapper {
     
     @Mappings({
         @Mapping(target = "id", source = "scope.id"),
-        @Mapping(target = "name", source = "scope.name")
+        @Mapping(target = "name", source = "scope.name"),
+        @Mapping(target = "description", ignore = true)
     })
     SelectableItemView scopeToScopeView(ClientScope pClientScope);
+
+    @InheritInverseConfiguration
+    @Mappings({
+            @Mapping(target = "client", ignore = true),
+            @Mapping(target = "version", ignore = true)
+    })
+    ClientScope scopeViewToClientScope(SelectableItemView pSelectableItemView);
+
+
+    List<ClientScope> scopeViewsToClientScopes(List<SelectableItemView> pSelectableItemViews);
 }

@@ -21,6 +21,7 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
+import ca.n4dev.aegaeon.api.exception.ServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -103,7 +104,7 @@ public class ControllerErrorInterceptor {
     
     /**
      * 
-     * @param pOAuthPublicException
+     * @param pOauthRestrictedException
      * @return
      */
     @ExceptionHandler(OauthRestrictedException.class)
@@ -137,6 +138,20 @@ public class ControllerErrorInterceptor {
         mv.addObject("requestUrl", pNoHandlerFoundException.getRequestURL());
         mv.addObject("serverInfo", this.serverInfo);
         
+        return mv;
+    }
+
+    @ExceptionHandler(ServerException.class)
+    public ModelAndView genericServerException(final ServerException pServerException) {
+        LOGGER.error("Generic ServerException", pServerException);
+
+        ModelAndView mv = getBasicPage("error", pServerException);
+        String errorMessage = (pServerException != null ? pServerException.getMessage() : "Unknown error");
+
+        mv.addObject("type", "ServerException");
+        mv.addObject("errorMessage", errorMessage);
+        mv.addObject("errorCode", pServerException.getCode().toString());
+
         return mv;
     }
     

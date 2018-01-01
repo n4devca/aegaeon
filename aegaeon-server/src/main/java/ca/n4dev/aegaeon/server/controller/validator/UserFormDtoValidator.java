@@ -19,34 +19,29 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.exception;
+
+package ca.n4dev.aegaeon.server.controller.validator;
+
+import ca.n4dev.aegaeon.server.controller.dto.UserFormDto;
+import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+import org.springframework.validation.ValidationUtils;
+import org.springframework.validation.Validator;
 
 /**
- * ServerExceptionCode.java
- * 
- * A code describing every ServerException.
+ * UserFormDtoValidator
  *
- * @author by rguillemette
- * @since Jun 4, 2017
  */
-public enum ServerExceptionCode {
-    USER_EMPTY,
-    CLIENT_UNAUTHORIZED,
-    CLIENT_EMPTY,
-    CLIENT_REDIRECTURL_EMPTY,
-    SCOPE_INVALID,
-    SCOPE_UNAUTHORIZED,
-    SCOPE_UNAUTHORIZED_OFFLINE,
+@Component
+public class UserFormDtoValidator implements Validator {
 
-    INVALID_PARAMETER,
+    @Override
+    public boolean supports(Class<?> aClass) {
+        return UserFormDto.class.equals(aClass);
+    }
 
-    ENTITY_ID_EMPTY,
-    ENTITY_EMPTY,
-
-    CLIENT_ATTR_EMPTY,
-    CLIENT_ATTR_INVALID,
-    CLIENT_DUPLICATE_PUBLICID,
-
-    UNEXPECTED_ERROR,
-    ;
+    @Override
+    public void validate(Object o, Errors errors) {
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "userView.name", "error.name", "Name is required.");
+    }
 }

@@ -51,6 +51,15 @@ public class ClientScope extends BaseEntity {
     @Type(type = "boolean")
     private boolean selected;
 
+    public ClientScope() {}
+
+    public ClientScope(Client pClient, Scope pScope, boolean pSelected) {
+        this.client = pClient;
+        this.scope = pScope;
+        this.selected = pSelected;
+    }
+
+
     /**
      * @return the client
      */

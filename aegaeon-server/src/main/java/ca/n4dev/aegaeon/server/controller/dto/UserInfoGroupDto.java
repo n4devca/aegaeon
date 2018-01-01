@@ -92,5 +92,16 @@ public class UserInfoGroupDto {
         if (pUserInfoTypeDto != null) {
             this.children.add(pUserInfoTypeDto);
         }
-    }    
+    }
+
+
+    public String toString() {
+        return new StringBuilder()
+                    .append("UserInfoGroupDto{")
+                    .append(this.code)
+                    .append(", ").append(this.labelName)
+                    .append(", children[").append(this.children.size())
+                    .append("]}")
+                    .toString();
+    }
 }
