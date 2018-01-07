@@ -22,6 +22,7 @@
 package ca.n4dev.aegaeon.server.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -44,7 +45,8 @@ public abstract class BaseSecuredService<E extends BaseEntity, R extends JpaRepo
     }
     
     protected E findById(Long pId) {
-        return getRepository().findOne(pId);
+        Optional<E> e = getRepository().findById(pId);
+        return e.orElse(null);
     }
     
     protected E save(E pEntity) {
@@ -52,11 +54,11 @@ public abstract class BaseSecuredService<E extends BaseEntity, R extends JpaRepo
     }
     
     protected List<E> save(List<E> pEntities) {
-        return getRepository().save(pEntities);
+        return getRepository().saveAll(pEntities);
     }
     
     protected void delete(Long pEntityId) {
-        getRepository().delete(pEntityId);
+        getRepository().deleteById(pEntityId);
     }
     
     protected R getRepository() {

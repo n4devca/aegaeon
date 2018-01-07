@@ -9,11 +9,11 @@
         <!-- "entity.userinfotype." + type.getName(), pLocale)); -->
         <label th:for="'user-' + ${info.code}" th:text="#{${'entity.userinfotype.' + #strings.toLowerCase(info.code)}}"></label>
          
-        <input type="text" th:if="${info.otherType}" 
+        <input type="text" th:if="${info.otherType}" class="form-input"
                th:name="${key} + '.name'" 
                th:placeholder="#{entity.userinfotype.placeholder.other.desc}" />
         <input type="text" th:id="'user-' + ${info.code}" 
-               th:field="*{__${key}__.value}"
+               th:field="*{__${key}__.value}" class="form-input"
                th:placeholder="#{entity.userinfotype.placeholder.value}"  />
         
         <input type="hidden" th:field="*{__${key}__.refId}" />

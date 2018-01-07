@@ -16,8 +16,9 @@
 
 
 	<properties>
-        <!-- Build -->
+        <!-- Build
         <maven.build.number>${BUILD_NUMBER}</maven.build.number>
+        -->
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
 	</properties>
@@ -50,11 +51,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!--
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-java8</artifactId>
         </dependency>
-
+        -->
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>

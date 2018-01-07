@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2017-12-21T19:36:43-0500",
+    date = "2018-01-03T09:24:39-0500",
     comments = "version: 1.2.0.Final, compiler: Eclipse JDT (IDE) 3.12.2.v20161117-1814, environment: Java 1.8.0_92 (Oracle Corporation)"
 )
 @Component
@@ -63,25 +63,20 @@ public class ClientMapperImpl implements ClientMapper {
     }
 
     @Override
-    public Client clientViewToclient(ClientView pClientView) {
+    public void clientViewToclient(ClientView pClientView, Client pClient) {
         if ( pClientView == null ) {
-            return null;
+            return;
         }
 
-        Client client = new Client();
-
-        client.setProviderName( pClientView.getProviderType() );
-        client.setId( pClientView.getId() );
-        client.setAccessTokenSeconds( pClientView.getAccessTokenSeconds() );
-        client.setDescription( pClientView.getDescription() );
-        client.setIdTokenSeconds( pClientView.getIdTokenSeconds() );
-        client.setLogoUrl( pClientView.getLogoUrl() );
-        client.setName( pClientView.getName() );
-        client.setPublicId( pClientView.getPublicId() );
-        client.setRefreshTokenSeconds( pClientView.getRefreshTokenSeconds() );
-        client.setSecret( pClientView.getSecret() );
-
-        return client;
+        pClient.setProviderName( pClientView.getProviderType() );
+        pClient.setAccessTokenSeconds( pClientView.getAccessTokenSeconds() );
+        pClient.setDescription( pClientView.getDescription() );
+        pClient.setIdTokenSeconds( pClientView.getIdTokenSeconds() );
+        pClient.setLogoUrl( pClientView.getLogoUrl() );
+        pClient.setName( pClientView.getName() );
+        pClient.setPublicId( pClientView.getPublicId() );
+        pClient.setRefreshTokenSeconds( pClientView.getRefreshTokenSeconds() );
+        pClient.setSecret( pClientView.getSecret() );
     }
 
     protected List<String> clientRedirectionListToStringList(List<ClientRedirection> list) {

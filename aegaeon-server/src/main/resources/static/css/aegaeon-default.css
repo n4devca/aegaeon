@@ -1,0 +1,312 @@
+html, body, * {
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    color: #000;
+    font-size: 14px;
+}
+
+body {
+    margin:0;
+    padding: 0;
+    background-color: #f9f9f9;
+}
+
+h1 {
+    font-size: 1.7em;
+    margin: 5px 0 10px 0;
+    font-weight: bold;
+}
+
+h2 {
+    font-size: 1.3em;
+    margin: 3px 0 8px 0;
+    font-weight: bolder;
+}
+
+h3 {
+    font-size: 1.1em;
+    margin: 3px 0 3px 0;
+}
+
+/* Sections and Layout */
+header.site-header {
+    border-bottom: 1px solid #ccc;
+    box-shadow:0px 2px 0px  rgba(225, 225, 225, 0.7);
+    vertical-align: top;
+    background-color: #fff;
+}
+
+header.site-header .site-header-content {
+    display: block;
+    width: 100%;
+}
+
+header.site-header .site-header-content .site-header-brand {
+    padding: 0.5em 1em;
+}
+
+header.site-header .site-header-content .site-header-brand h1 {
+    color: #0d5f94;
+}
+
+header.site-header .site-header-content .site-header-nav {
+    padding: 0.5em 1em;
+    text-align: center;
+}
+
+header.site-header .site-header-content .site-header-nav .link, header.site-header .site-header-content .site-header-nav .btn-link {
+    font-weight: bold;
+    color: #444;
+    margin-left: 2em;
+    text-transform: uppercase;
+}
+
+header.site-header .site-header-content .site-header-nav .link:hover, header.site-header .site-header-content .site-header-nav .btn-link:hover {
+    color: #0d5f94;
+}
+
+div.user-menu a, div.user-menu form {
+    display: inline;
+}
+
+section.main-content {
+    margin-top: 2em;
+}
+
+section.main-content .normal-content {
+    padding: 0 0.5em;
+}
+
+footer {
+    padding: 0.5em 1em;
+    margin-top: 1em;
+}
+
+
+@media (min-width: 800px) {
+    .main-content {
+        margin: 0 auto;
+        width: 776px;
+    }
+
+    header.site-header .site-header-content {
+        display: table;
+        width: 100%;
+    }
+
+    header.site-header .site-header-content .site-header-brand {
+        vertical-align: top;
+        display: table-cell;
+        width: 50%;
+    }
+
+    header.site-header .site-header-content .site-header-nav {
+        display: table-cell;
+        width: 50%;
+        text-align: right
+    }
+
+    div.user-menu {
+        padding: 1em 1em 0 0;
+    }
+
+    div.login-form {
+        margin:0 auto;
+        width: 600px;
+    }
+
+    div.login-form .btn-full {
+        display: inline-block;
+        width: auto;
+    }
+}
+
+@media (min-width: 1024px) {
+    .main-content {
+        margin: 0 auto;
+        width: 1000px;
+    }
+}
+
+/* Components */
+div.page {
+
+}
+
+div.page div.page-header {
+    border-bottom: 1px solid #0d5f94;
+    margin: 0.5em 0;
+    display: table;
+    width: 100%;
+}
+
+div.page div.page-header .page-title {
+    display: table-cell;
+    width: 50%;
+}
+
+div.page div.page-header .page-title-menu {
+    display: table-cell;
+    width: 50%;
+    text-align: right;
+}
+
+div.page div.page-content{
+    padding: 0.5em 0;
+}
+
+div.box {
+    border: 1px solid #ccc;
+    margin: 0.5em 0 0.8em 0;
+    background-color: #fff;
+}
+
+div.box div.heading {
+    padding: 0.5em;
+    background-color: #f6f8fa;
+    border-bottom: 1px solid #ccc;
+}
+
+div.box div.body {
+    padding: 0.8em;
+}
+
+div.box div.footer {
+    border-top: 1px solid #ccc;
+    padding: 0.5em;
+    background-color: #dfdfdf;
+}
+
+.btn {
+    border: 1px solid #777;
+    background-color: #fff;
+    cursor: pointer;
+    padding: 0.3em 1em;
+    text-align: center;
+    display: inline-block;
+    font-size: 1.2em;
+    text-decoration: none;
+}
+
+.btn:hover {
+    border: 1px solid #333;
+    background-color: #fafafa;
+}
+
+.btn.btn-danger {
+    border:1px solid #b52525;
+    background-color: #e02e2e;
+    color: #fff;
+}
+
+.btn.btn-danger:hover {
+    border:1px solid #b51212;
+    background-color: #cc1414;
+    color: #fff;
+}
+
+.btn.btn-ok {
+    background-color: #5296e3;
+    border:1px solid #1b65b7;
+    color:#fff;
+}
+
+.btn.btn-ok:hover {
+    background-color: #3b8ae3;
+    border:1px solid #095bb7;
+}
+
+.btn.btn-full {
+    display: block;
+    width: 100%;
+}
+
+
+.btn-link {
+    border: 0;
+    padding:0;
+    margin: 0;
+    display: inline;
+    background-color: transparent;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.frm {
+
+}
+
+.form-group {
+
+}
+
+.form-group label {
+    display: block;
+}
+
+.form-group input.form-input, .form-group select.form-input, .form-group textarea.form-input {
+    display: block;
+    border: 1px solid #aaa;
+    margin: 5px 0 10px 0;
+    padding: 5px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+input:focus, textarea:focus {
+    border: 1px solid #222;
+    box-shadow: 0 0 1px 0 #1b6ca0;
+}
+
+select {
+    background-color: #aaaaaa;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+.table > tbody > tr {
+    border-top: 1px solid #aaa;
+    border-bottom: 1px solid #aaa;
+}
+
+.table > tbody > tr > td, .table > thead > tr > th {
+    border: 1px solid #ddd;
+    padding: 8px 5px;
+    text-align: center;
+}
+
+.table > tbody tr:nth-child(odd) {
+    background-color: #f7f7f7;
+}
+
+.table > tbody tr:nth-child(even) {
+    background-color: #fdfdfd;
+}
+
+.link {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.link:hover, .btn-link:hover {
+    text-decoration: underline;
+}
+
+/* Utils */
+.center {
+    text-align: center;
+}
+
+.right {
+    text-align: right;
+}
+
+/* Specifics */
+.login-form {
+    margin: 2em 0;
+
+}

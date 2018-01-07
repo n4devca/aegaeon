@@ -15,12 +15,12 @@ spring:
         encoding: UTF-8 
     jackson:
         default-property-inclusion: non_null
-flyway:
-    enabled: true
-    baseline-version: 1
-    check-location: false
-    locations: classpath:db/mysql
-    out-of-order: true
+    flyway:
+        enabled: true
+        baseline-version: 1
+        check-location: false
+        locations: classpath:db/mysql
+        out-of-order: true
 aegaeon:
     modules:
         oauth: true

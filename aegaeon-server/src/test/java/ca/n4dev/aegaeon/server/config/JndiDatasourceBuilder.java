@@ -23,7 +23,7 @@ package ca.n4dev.aegaeon.server.config;
 
 import javax.sql.DataSource;
 
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.mock.jndi.SimpleNamingContextBuilder;
 
 /**

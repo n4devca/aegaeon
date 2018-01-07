@@ -217,7 +217,7 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
         
         // Save Info
         if (Utils.isNotEmpty(uiToSave)) {
-            uiToSave = this.userInfoRepository.save(uiToSave);            
+            uiToSave = this.userInfoRepository.saveAll(uiToSave);            
         }
         
         // Delete Info

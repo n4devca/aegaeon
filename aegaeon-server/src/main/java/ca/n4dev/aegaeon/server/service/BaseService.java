@@ -47,7 +47,7 @@ public abstract class BaseService<E extends BaseEntity, R extends JpaRepository<
     
     @Transactional(readOnly = true)
     public E findById(Long pId) {
-        return getRepository().findOne(pId);
+        return getRepository().findById(pId).orElse(null);
     }
     
     @Transactional
@@ -57,7 +57,7 @@ public abstract class BaseService<E extends BaseEntity, R extends JpaRepository<
     
     @Transactional
     public List<E> save(List<E> pEntities) {
-        return getRepository().save(pEntities);
+        return getRepository().saveAll(pEntities);
     }
     
     @Transactional

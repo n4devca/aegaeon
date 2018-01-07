@@ -10,27 +10,21 @@
 <body>
 	<section layout:fragment="content">
 
-		<div class="normal-content user-profile">
+		<div class="normal-content page-user-account">
 
 			<form action="/user-account" class="frm" th:object="${user}"
 				  th:action="@{/user-account}" th:method="post">
                   
-                  
                 <div class="page">
-                    <div class="page-title">
-                        <div class="grid">
-                            <div class="row">
-                                <div class="col-10">
-                                    <h1 th:text="#{page.useraccount.title}">Account</h1>                            
-                                </div>
-                                
-                                <div class="col-2 right">
-                                    <span th:if="${!#strings.isEmpty(saveState)}" th:text="${saveState}"></span>
-                                    <button type="submit" class="btn btnblue btnag" name="action" value="save">
-                                        [[#{action.save}]]
-                                    </button>
-                                </div>
-                            </div>
+                    <div class="page-header">
+                        <div class="page-title">
+                            <h1 th:text="#{page.useraccount.title}">Account</h1>
+                        </div>
+                        <div class="page-title-menu">
+                            <span th:if="${!#strings.isEmpty(saveState)}" th:text="${saveState}"></span>
+                            <button type="submit" class="btn btn-ok" name="action" value="save">
+                                [[#{action.save}]]
+                            </button>
                         </div>
                     </div>
                     <div class="page-content">
@@ -76,7 +70,7 @@
                             </div>
 
                         </div>
-                
+                        <div class="right"><a href="#ag-site-header" th:text="#{action.gotop}" class="link">Top</a></div>
                     </div>
                 </div>  
                   

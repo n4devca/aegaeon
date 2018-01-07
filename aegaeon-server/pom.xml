@@ -50,11 +50,12 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!--
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-java8</artifactId>
 		</dependency>
-
+		-->
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
@@ -63,6 +64,7 @@
 		<dependency>
 			<groupId>ca.n4dev.aegaeon</groupId>
 			<artifactId>aegaeon-api</artifactId>
+            <version>${aegaeon.version}</version>
 		</dependency>
 
 		<dependency>
@@ -85,9 +87,20 @@
 		<dependency>
 			<groupId>net.minidev</groupId>
 			<artifactId>json-smart</artifactId>
-			<version>2.2.1</version>
+			<version>2.3</version>
 		</dependency>
-        
+
+
+		<dependency>
+			<groupId>nz.net.ultraq.thymeleaf</groupId>
+			<artifactId>thymeleaf-layout-dialect</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.thymeleaf.extras</groupId>
+			<artifactId>thymeleaf-extras-springsecurity4</artifactId>
+		</dependency>
+
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>

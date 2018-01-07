@@ -21,7 +21,6 @@
  */
 package ca.n4dev.aegaeon.server.service;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
@@ -29,19 +28,15 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.ClientRedirection;
 import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.protocol.FlowFactory;
-import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import ca.n4dev.aegaeon.server.view.TokenResponse;
+import org.springframework.security.test.context.support.WithMockUser;
 
 /**
  * TokenServiceFacadeTest.java

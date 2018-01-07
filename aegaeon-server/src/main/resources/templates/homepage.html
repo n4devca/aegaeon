@@ -9,10 +9,32 @@
 </head>
 <body>
     <section layout:fragment="content">
-        <div class="home-content">
-            <img alt="aegaeon" src="/images/n4dev-aegaeon.png" th:src="@{/resources/images/n4dev-aegaeon.png}" />
-            
-            <a href="/login" class="btn" th:href="@{login}">LOGIN</a>
+        <div class="normal-content page-homepage">
+
+
+            <div class="box">
+                <div class="body">
+                    <h1 th:text="#{page.home.welcome}"></h1>
+                    <p th:text="#{page.home.welcome.about.1}"></p>
+                    <p th:text="#{page.home.welcome.about.2}"></p>
+                    <p th:text="#{page.home.welcome.about.3}"></p>
+
+                    <ul>
+                        <li><span th:text="#{page.home.welcome.about.4}"></span></li>
+                        <li><span th:text="#{page.home.welcome.about.5}"></span></li>
+                        <li><span th:text="#{page.home.welcome.about.6}"></span></li>
+                    </ul>
+
+                    <div class="center">
+                        <a href="/login" class="btn" th:href="@{login}" th:text="#{action.login}">Login</a>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!--<img alt="aegaeon" src="/images/n4dev-aegaeon.png" th:src="@{/resources/images/n4dev-aegaeon.png}" />-->
+
         </div>
     </section>
 </body>

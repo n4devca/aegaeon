@@ -24,6 +24,7 @@ package ca.n4dev.aegaeon.server.service;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -110,10 +111,11 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
         Assert.notNull(pUserId, ServerExceptionCode.USER_EMPTY);
         Assert.notEmpty(pClientPublicId, ServerExceptionCode.CLIENT_EMPTY);
         
-        User user = this.userRepository.findOne(pUserId);
+        //User user = this.userRepository.findOne(pUserId);
+        Optional<User> u = this.userRepository.findById(pUserId);
         Client client = this.clientRepository.findByPublicId(pClientPublicId);
         
-        return createCode(user, client, pScopes, pRedirectUrl);
+        return createCode(u.orElse(null), client, pScopes, pRedirectUrl);
     }
     
     
@@ -149,7 +151,7 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
     @Transactional
     @PreAuthorize("hasRole('ADMIN') or @authorizationCodeService.hasPermissionTo(principal.id, #pAuthorizationCodeId, 'DELETE')")
     public void delete(Long pAuthorizationCodeId) {
-        this.getRepository().delete(pAuthorizationCodeId);
+        this.getRepository().deleteById(pAuthorizationCodeId);
     }
 
     /**

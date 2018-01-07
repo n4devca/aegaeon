@@ -248,10 +248,10 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
                 url -> new ClientRedirection(new Client(pClientId), url));
 
         // Create / Update existing
-        Utils.isNotEmptyThen(diff.getNewObjs(), this.clientRedirectionRepository::save);
+        Utils.isNotEmptyThen(diff.getNewObjs(), this.clientRedirectionRepository::saveAll);
 
         // Delete
-        Utils.isNotEmptyThen(diff.getRemovedObjs(), this.clientRedirectionRepository::delete);
+        Utils.isNotEmptyThen(diff.getRemovedObjs(), this.clientRedirectionRepository::deleteAll);
 
     }
 
@@ -264,10 +264,10 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
                 ctString -> new ClientContact(new Client(pClientId), ctString));
 
         // Create / Update existing
-        Utils.isNotEmptyThen(diff.getNewObjs(), this.clientContactRepository::save);
+        Utils.isNotEmptyThen(diff.getNewObjs(), this.clientContactRepository::saveAll);
 
         // Delete
-        Utils.isNotEmptyThen(diff.getRemovedObjs(), this.clientContactRepository::delete);
+        Utils.isNotEmptyThen(diff.getRemovedObjs(), this.clientContactRepository::deleteAll);
     }
 
     private void updateGrantTypes(Long pClientId, List<SelectableItemView> pGrantTypesView) {
@@ -284,11 +284,11 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
                         newGrant -> new ClientGrantType(new Client(pClientId), newGrant.getGrantType(), newGrant.isSelected()));
 
         // Create / Update existing
-        Utils.isNotEmptyThen(diff.getUpdatedObjs(), this.clientGrantTypeRepository::save);
-        Utils.isNotEmptyThen(diff.getNewObjs(), this.clientGrantTypeRepository::save);
+        Utils.isNotEmptyThen(diff.getUpdatedObjs(), this.clientGrantTypeRepository::saveAll);
+        Utils.isNotEmptyThen(diff.getNewObjs(), this.clientGrantTypeRepository::saveAll);
 
         // Delete
-        Utils.isNotEmptyThen(diff.getRemovedObjs(), this.clientGrantTypeRepository::delete);
+        Utils.isNotEmptyThen(diff.getRemovedObjs(), this.clientGrantTypeRepository::deleteAll);
     }
 
     private void updateScope(Long pClientId, List<SelectableItemView> pClientScopesView) {
@@ -304,11 +304,11 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
                 (n) -> new ClientScope(new Client(pClientId), n.getScope(), n.isSelected()));
 
         // Create / Update existing
-        Utils.isNotEmptyThen(diff.getUpdatedObjs(), this.clientScopeRepository::save);
-        Utils.isNotEmptyThen(diff.getNewObjs(), this.clientScopeRepository::save);
+        Utils.isNotEmptyThen(diff.getUpdatedObjs(), this.clientScopeRepository::saveAll);
+        Utils.isNotEmptyThen(diff.getNewObjs(), this.clientScopeRepository::saveAll);
 
         // Delete
-        Utils.isNotEmptyThen(diff.getRemovedObjs(), this.clientScopeRepository::delete);
+        Utils.isNotEmptyThen(diff.getRemovedObjs(), this.clientScopeRepository::deleteAll);
     }
 
     private void validateUpdatedView(Client pClient, ClientView pClientView) {
@@ -319,7 +319,7 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
             Utils.raise(ServerExceptionCode.CLIENT_DUPLICATE_PUBLICID);
         }
 
-
+        // Need id for comparaison
         Utils.isNotEmptyThen(pClientView.getScopes(), scopes -> {
             scopes.forEach(s -> {
                 Assert.notNull(s.getId(), ServerExceptionCode.CLIENT_ATTR_INVALID, "ClientScope (view) without id.");
@@ -332,11 +332,22 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
             });
         });
 
+        
+        
         // For contacts and redirectionUrl, empty are simply removed
         if (Utils.isNotEmpty(pClientView.getContacts())) {
             pClientView.getContacts().removeIf(Utils::isEmpty);
         }
+        
         if (Utils.isNotEmpty(pClientView.getRedirections())) {
+            // Validate Url
+            pClientView.getRedirections().forEach(u -> {
+                if (!Utils.validateRedirectionUri(u)) {
+                    Utils.raise(ServerExceptionCode.CLIENT_REDIRECTIONURL_INVALID, u + " is invalid.");
+                }
+            });
+            
+            // Remove empty
             pClientView.getRedirections().removeIf(Utils::isEmpty);
         }
 

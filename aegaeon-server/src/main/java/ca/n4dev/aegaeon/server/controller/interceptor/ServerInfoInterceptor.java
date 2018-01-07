@@ -53,7 +53,8 @@ public class ServerInfoInterceptor extends HandlerInterceptorAdapter {
 	@Override
 	public void postHandle(HttpServletRequest pRequest, HttpServletResponse pResponse, Object pHandler,
 								ModelAndView pModelAndView) throws Exception {
-
-		pModelAndView.addObject("serverInfo", this.serverInfo);
+		if (pModelAndView != null) {
+			pModelAndView.addObject("serverInfo", this.serverInfo);
+		}
 	}
 }

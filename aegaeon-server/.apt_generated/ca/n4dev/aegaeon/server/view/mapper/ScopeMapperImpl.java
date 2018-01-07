@@ -3,12 +3,14 @@ package ca.n4dev.aegaeon.server.view.mapper;
 import ca.n4dev.aegaeon.api.model.ClientScope;
 import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.server.view.SelectableItemView;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Generated;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2017-12-21T19:36:43-0500",
+    date = "2018-01-03T09:24:39-0500",
     comments = "version: 1.2.0.Final, compiler: Eclipse JDT (IDE) 3.12.2.v20161117-1814, environment: Java 1.8.0_92 (Oracle Corporation)"
 )
 @Component
@@ -50,6 +52,35 @@ public class ScopeMapperImpl implements ScopeMapper {
         return selectableItemView;
     }
 
+    @Override
+    public ClientScope scopeViewToClientScope(SelectableItemView pSelectableItemView) {
+        if ( pSelectableItemView == null ) {
+            return null;
+        }
+
+        ClientScope clientScope = new ClientScope();
+
+        clientScope.setScope( selectableItemViewToScope( pSelectableItemView ) );
+        clientScope.setId( pSelectableItemView.getId() );
+        clientScope.setSelected( pSelectableItemView.isSelected() );
+
+        return clientScope;
+    }
+
+    @Override
+    public List<ClientScope> scopeViewsToClientScopes(List<SelectableItemView> pSelectableItemViews) {
+        if ( pSelectableItemViews == null ) {
+            return null;
+        }
+
+        List<ClientScope> list = new ArrayList<ClientScope>( pSelectableItemViews.size() );
+        for ( SelectableItemView selectableItemView : pSelectableItemViews ) {
+            list.add( scopeViewToClientScope( selectableItemView ) );
+        }
+
+        return list;
+    }
+
     private String pClientScopeScopeName(ClientScope clientScope) {
         if ( clientScope == null ) {
             return null;
@@ -78,5 +109,18 @@ public class ScopeMapperImpl implements ScopeMapper {
             return null;
         }
         return id;
+    }
+
+    protected Scope selectableItemViewToScope(SelectableItemView selectableItemView) {
+        if ( selectableItemView == null ) {
+            return null;
+        }
+
+        Scope scope = new Scope();
+
+        scope.setName( selectableItemView.getName() );
+        scope.setId( selectableItemView.getId() );
+
+        return scope;
     }
 }
