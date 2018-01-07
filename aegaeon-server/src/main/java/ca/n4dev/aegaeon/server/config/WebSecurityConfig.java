@@ -48,17 +48,16 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import ca.n4dev.aegaeon.server.controller.ControllerErrorInterceptor;
 import ca.n4dev.aegaeon.server.controller.IntrospectController;
 import ca.n4dev.aegaeon.server.controller.PublicJwkController;
-import ca.n4dev.aegaeon.server.controller.TokensController;
-import ca.n4dev.aegaeon.server.controller.UserInfoController;
 import ca.n4dev.aegaeon.server.controller.ServerInfoController;
 import ca.n4dev.aegaeon.server.controller.SimpleHomeController;
 import ca.n4dev.aegaeon.server.controller.SimpleUserAccountController;
+import ca.n4dev.aegaeon.server.controller.TokensController;
+import ca.n4dev.aegaeon.server.controller.UserInfoController;
 import ca.n4dev.aegaeon.server.security.AccessTokenAuthenticationFilter;
 import ca.n4dev.aegaeon.server.security.AccessTokenAuthenticationProvider;
 import ca.n4dev.aegaeon.server.security.PromptAwareAuthenticationFilter;
-import ca.n4dev.aegaeon.server.service.AccessTokenService;
+import ca.n4dev.aegaeon.server.service.AuthenticationService;
 import ca.n4dev.aegaeon.server.service.ClientService;
-import ca.n4dev.aegaeon.server.token.TokenFactory;
 
 /**
  * WebSecurityConfig.java
@@ -117,16 +116,10 @@ public class WebSecurityConfig {
         private AuthenticationEntryPoint authenticationEntryPoint;
         
         @Autowired
-        private ClientService clientService;
-        
-        @Autowired
-        private AccessTokenService accessTokenService;
-        
-        @Autowired
-        private TokenFactory tokenFactory;
-        
-        @Autowired
         private ServerInfo serverInfo;
+        
+        @Autowired
+        private AuthenticationService authenticationService;
         
         /**
          * Remember me config
@@ -143,7 +136,7 @@ public class WebSecurityConfig {
         
         
         public AccessTokenAuthenticationProvider accessTokenAuthenticationProvider() {
-            return new AccessTokenAuthenticationProvider(clientService, accessTokenService, tokenFactory, serverInfo);
+            return new AccessTokenAuthenticationProvider(authenticationService, serverInfo);
         }
         
         @Bean 
@@ -228,11 +221,6 @@ public class WebSecurityConfig {
                 pResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             }
         };
-    }
-    
-    public static void main(String[] args) {
-    	BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-    	System.out.println(encoder.encode("admin@localhost"));
     }
     
 }

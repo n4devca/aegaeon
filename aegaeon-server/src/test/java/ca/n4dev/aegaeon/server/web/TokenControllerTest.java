@@ -21,8 +21,8 @@
  */
 package ca.n4dev.aegaeon.server.web;
 
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.*;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,7 +35,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import ca.n4dev.aegaeon.api.model.RefreshToken;
 import ca.n4dev.aegaeon.api.protocol.FlowFactory;
 import ca.n4dev.aegaeon.server.controller.TokensController;
 import ca.n4dev.aegaeon.server.service.ClientService;
@@ -99,13 +98,13 @@ public class TokenControllerTest extends BaseWebTest {
     public void successGetAccessTokenFromRefresh() throws Exception {
         String auth  = "Basic Y2EubjRkZXYuYXV0aC5jbGllbnQ6a2phc2thczg5OTNqbnNrYWprc2o=";
         
-        RefreshToken token = this.refreshTokenService.findByTokenValueAndClientId("9b65047c-93ce-4934-beb5-9e3239c2981b", 1L);
+        //RefreshToken token = this.refreshTokenService.findByTokenValueAndClientId("9b65047c-93ce-4934-beb5-9e3239c2981b", 1L);
         
         MvcResult result =
                 this.mockMvc.perform(
                         post(TokensController.URL)
                             .accept(MediaType.APPLICATION_JSON)
-                            .param("refresh_token", token.getToken())
+                            .param("refresh_token", "9b65047c-93ce-4934-beb5-9e3239c2981b")
                             .param("grant_type", FlowFactory.PARAM_REFRESH_TOKEN)
                             .param("client_id", "ca.n4dev.auth.client")
                             .param("scope", "openid profile")

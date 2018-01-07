@@ -79,31 +79,39 @@ public class PromptAwareAuthenticationFilter extends GenericFilterBean {
         HttpServletResponse response = (HttpServletResponse) pServletResponse;
         
         
-        String ps = request.getParameter("prompt");
-        String clientId = request.getParameter("client_id");
-        String redirectionUrl = request.getParameter("redirection_url");
-        String responseType = request.getParameter("response_type");
-        String requestedPath = request.getServletPath();
-        String state = request.getParameter("state");
         
         // Only on /authorize
+        String requestedPath = request.getServletPath();
+
         if (AuthorizationController.URL.startsWith(requestedPath)) {
             
-            if (Utils.isNotEmpty(ps) && ps.equals(Prompt.none.toString()) && Utils.isNotEmpty(clientId)) {
+            String ps = request.getParameter("prompt");
+            String clientIdStr = request.getParameter("client_id");
+            String redirectionUrl = request.getParameter("redirection_url");
+            String responseType = request.getParameter("response_type");
+            String state = request.getParameter("state");
+            
+            if (Utils.isNotEmpty(ps) && ps.equals(Prompt.none.toString()) && Utils.isNotEmpty(clientIdStr)) {
                 Authentication existingAuth = SecurityContextHolder.getContext().getAuthentication();
                 
                 if (existingAuth == null) {
                     
                     Flow flow = FlowFactory.of(responseType);
-                    Client client = this.clientService.findByPublicIdWithRedirections(clientId);
+                    Long clientId = null;
                     
-                    if (client == null || !client.hasRedirection(redirectionUrl)) {
+                    try {
+                        clientId = Long.parseLong(clientIdStr);                        
+                    } catch (Exception e) {
+                        LOGGER.warn("The client id cannot be converted: " + clientIdStr);
+                    }
+                    
+                    if (clientId == null || !this.clientService.hasRedirectionUri(clientId, redirectionUrl)) {
                         
                         // Redirect properly
                         throw new OauthRestrictedException(getClass(),
                                 flow, 
                                 OAuthErrorType.invalid_request, 
-                                clientId, 
+                                clientIdStr, 
                                 redirectionUrl,
                                 "Invalid redirect_uri.");
                     }

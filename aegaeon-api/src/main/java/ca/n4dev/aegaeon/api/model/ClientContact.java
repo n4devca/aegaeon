@@ -43,6 +43,21 @@ public class ClientContact extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "client_id")
     private Client client;
+    
+    /**
+     * Default Constructor.
+     */
+    public ClientContact() {}
+    
+    /**
+     * Build a complete ClientContact.
+     * @param pClient The client.
+     * @param pEmail The email.
+     */
+    public ClientContact(Client pClient, String pEmail) {
+        this.client = pClient;
+        this.email = pEmail;
+    }
 
     /**
      * @return the email

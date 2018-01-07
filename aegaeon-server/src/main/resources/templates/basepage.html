@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
       
 <head>
@@ -9,9 +9,9 @@
     <meta charset="utf-8" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="../static/css/aegaeon-default.css" th:href="@{/resources/css/aegaeon-default.css}" rel="stylesheet" />
+    <!--
     <link href="../static/css/n4css.min.css" th:href="@{/resources/css/n4css.min.css}" rel="stylesheet" />
-    <link href="../static/css/aegaeon.css" th:href="@{/resources/css/aegaeon.css}" rel="stylesheet" />
-    <!-- 
     <link href="../../css/bootstrap/bootstrap.min.css" th:href="@{/resources/css/bootstrap.min.css}" rel="stylesheet" />
     <link href="../../css/origin.css" th:href="@{/resources/css/origin.css}" rel="stylesheet" />
     <script src="../../js/bootstrap.min.js" th:src="@{/resources/js/bootstrap.min.js}"></script>
@@ -23,23 +23,39 @@
 </head>
 <body>
 
-    <header class="site-header" layout:fragment="header">
-    
-        <div class="site-header-brand" layout:fragment="header-brand">
-			<h1 th:text="${serverInfo.serverName}"></h1>
-        </div>
-        
-        <div class="site-header-nav"  layout:fragment="header-nav">
+    <header layout:fragment="header" class="site-header" id="ag-site-header">
 
+        <div class="site-header-content">
+            <div class="site-header-brand" layout:fragment="header-brand">
+                <h1 th:text="${serverInfo.serverName}"></h1>
+            </div>
+
+            <div class="site-header-nav"  layout:fragment="header-nav">
+                <th:block sec:authorize="hasRole('ROLE_USER')">
+                    <div id="ag-user-menu" class="user-menu">
+                        <a href="/user-account" th:href="@{/user-account}" class="link">account</a>
+                        <form action="/logout" th:action="@{/logout}" method="post">
+                            <button type="submit" class="btn-link">Logout</button>
+                        </form>
+                    </div>
+
+
+                    <!--<a href="/user-account" th:href="@{/user-account}">-->
+                        <!--<img src="/resources/images/user.png" th:src="@{/resources/images/user.png}" />-->
+                    <!--</a>-->
+
+
+                </th:block>
+            </div>
         </div>
-        
+
     </header>
     
-    <section layout:fragment="content" class="main-content">
+    <section layout:fragment="content" id="ag-main-content" class="main-content">
 
     </section>
     
-    <footer layout:fragment="footer">
+    <footer layout:fragment="footer" id="ag-footer">
 
     </footer>
 </body>

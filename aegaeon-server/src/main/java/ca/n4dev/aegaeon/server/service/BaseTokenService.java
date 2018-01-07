@@ -39,6 +39,7 @@ import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
+import ca.n4dev.aegaeon.server.view.mapper.TokenMapper;
 
 /**
  * BaseTokenService.java
@@ -48,7 +49,7 @@ import ca.n4dev.aegaeon.server.utils.Utils;
  * @author by rguillemette
  * @since Jun 1, 2017
  */
-public abstract class BaseTokenService<T extends BaseEntity, J extends JpaRepository<T, Long>> extends BaseService<T, J> {
+public abstract class BaseTokenService<T extends BaseEntity, J extends JpaRepository<T, Long>> extends BaseSecuredService<T, J> {
 
 
     public static final String OFFLINE_SCOPE = "offline_access";
@@ -57,7 +58,7 @@ public abstract class BaseTokenService<T extends BaseEntity, J extends JpaReposi
     protected ClientService clientService;
     protected UserAuthorizationService userAuthorizationService;
     protected TokenFactory tokenFactory;
-    protected PayloadProvider payloadProvider;
+    protected TokenMapper tokenMapper;
     
     /**
      * @param pRepository
@@ -67,13 +68,13 @@ public abstract class BaseTokenService<T extends BaseEntity, J extends JpaReposi
                             UserService pUserService,
                             ClientService pClientService,
                             UserAuthorizationService pUserAuthorizationService,
-                            PayloadProvider pPayloadProvider) {
+                            TokenMapper pTokenMapper) {
         super(pRepository);
         this.tokenFactory = pTokenFactory;
         this.userService = pUserService;
         this.clientService = pClientService;
         this.userAuthorizationService = pUserAuthorizationService;
-        this.payloadProvider = pPayloadProvider;
+        this.tokenMapper = pTokenMapper;
     }
 
     
@@ -86,7 +87,7 @@ public abstract class BaseTokenService<T extends BaseEntity, J extends JpaReposi
     abstract TokenType getManagedTokenType();
     
     @Transactional
-    public T createToken(Flow pFlow, Long pUserId, String pClientPublicId, List<Scope> pScopes) throws ServerException {
+    T createToken(Flow pFlow, Long pUserId, String pClientPublicId, List<Scope> pScopes) throws ServerException {
         
         Assert.notNull(pUserId, ServerExceptionCode.USER_EMPTY);
         Assert.notEmpty(pClientPublicId, ServerExceptionCode.CLIENT_EMPTY);

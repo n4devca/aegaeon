@@ -49,7 +49,16 @@ public class ClientScope extends BaseEntity {
     private Scope scope;
     
     @Type(type = "boolean")
-    private boolean mandatory;
+    private boolean selected;
+
+    public ClientScope() {}
+
+    public ClientScope(Client pClient, Scope pScope, boolean pSelected) {
+        this.client = pClient;
+        this.scope = pScope;
+        this.selected = pSelected;
+    }
+
 
     /**
      * @return the client
@@ -80,17 +89,18 @@ public class ClientScope extends BaseEntity {
     }
 
     /**
-     * @return the mandatory
+     * @return the selected
      */
-    public boolean isMandatory() {
-        return mandatory;
+    public boolean isSelected() {
+        return selected;
     }
 
     /**
-     * @param pMandatory the mandatory to set
+     * @param pSelected the selected to set
      */
-    public void setMandatory(boolean pMandatory) {
-        mandatory = pMandatory;
+    public void setSelected(boolean pSelected) {
+        selected = pSelected;
     }
+
     
 }

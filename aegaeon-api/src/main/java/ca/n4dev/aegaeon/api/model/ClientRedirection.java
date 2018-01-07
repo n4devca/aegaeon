@@ -44,6 +44,21 @@ public class ClientRedirection extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "client_id")
     private Client client;
+    
+    /**
+     * Default Constructor.
+     */
+    public ClientRedirection() {}
+    
+    /**
+     * Build a complete ClientRedirection.
+     * @param pClient The client
+     * @param pUrl The redirect url.
+     */
+    public ClientRedirection(Client pClient, String pUrl) {
+        this.client = pClient;
+        this.url = pUrl;
+    }
 
     /**
      * @return the url

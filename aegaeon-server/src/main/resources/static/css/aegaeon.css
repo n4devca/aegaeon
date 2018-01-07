@@ -5,7 +5,7 @@ html, body, * {
 }
 
 body {
-	/*background-color: #444;*/
+	background-color: #fbfbfb;
 	margin:0;
 }
 
@@ -14,7 +14,7 @@ a, span, p, input, button {
 }
 
 h1, h2, h3, h4, h5 {
-	margin: 3px 0;
+	margin: 10px 0;
 }
 
 .main-content {
@@ -33,7 +33,7 @@ h1, h2, h3, h4, h5 {
 .site-header > .site-header-brand > h1 {
 	font-size: 1.1em;
 	margin: 0;
-	color: #b73535;
+	color: #f0f0f0;
     font-weight: bold;
     text-transform: uppercase;
 }
@@ -42,6 +42,29 @@ h1, h2, h3, h4, h5 {
 	box-sizing:border-box
 }
 
+.table {
+	width: 100%;
+	border-collapse: collapse;
+	text-align: center;
+}
+
+.table > tbody > tr {
+    border-top: 1px solid #aaa;
+    border-bottom: 1px solid #aaa;
+}
+
+.table > tbody > tr > td {
+	border: 1px solid #ddd;
+    padding: 8px 5px;
+}
+
+.table > tbody tr:nth-child(odd) {
+  background-color: #f7f7f7;
+}
+
+.table > tbody tr:nth-child(even) {
+  background-color: #fdfdfd;
+}
 
 /* Page Styles */
 .home-content {
@@ -128,7 +151,7 @@ h1, h2, h3, h4, h5 {
 }
 
 .form-group {
-	margin: 3px 0;	
+	margin: 8px 0;
 }
 
 .form-group > label {
@@ -147,6 +170,10 @@ h1, h2, h3, h4, h5 {
 .form-input:focus {
 	border: 1px solid #777;
 	box-shadow: 1px 1px 1px #b5cede;
+}
+
+.form-input.form-error {
+	border:1px solid #f40000;
 }
 
 .form-section-heading > .form-section-heading-element .inline-input {
@@ -183,13 +210,37 @@ div.input-group-element {
 	display: table-cell;
 	padding: 0;
 	vertical-align: top;
+	text-align: left;
 }
 
 div.input-group-element > input, div.input-group-element > button {
 	margin: 0;
 }
 
+div.input-group-element.input-group-element-check {
+	width:50px;
+}
+
 div.input-group-element.btnop {
     width:40px;
 }
 
+div.box > div.heading.discrete {
+	background-color: #fff;
+	margin: 0 5px;
+}
+
+div.error-text {
+	text-align: right;
+	display:none;
+	margin: 3px 0 5px 0;
+}
+
+div.error-text.show-error {
+	display:block;
+}
+
+.box {
+	background-color: #ffffff;
+	margin: 8px 0;
+}

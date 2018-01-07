@@ -39,7 +39,7 @@ import ca.n4dev.aegaeon.api.repository.UserInfoRepository;
  *
  */
 @Service
-public class UserInfoService extends BaseService<UserInfo, UserInfoRepository> {
+public class UserInfoService extends BaseSecuredService<UserInfo, UserInfoRepository> {
 
 	/**
 	 * @param pRepository

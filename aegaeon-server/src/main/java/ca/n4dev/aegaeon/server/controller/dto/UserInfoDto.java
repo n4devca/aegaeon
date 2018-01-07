@@ -41,6 +41,8 @@ public class UserInfoDto {
     
     private String parentCode;
     
+    private boolean otherInfo;
+    
     public UserInfoDto() {}
     
     /**
@@ -57,6 +59,7 @@ public class UserInfoDto {
         this.code = pCode;
         this.labelName = pLabelName;
         this.value = pValue;
+        this.otherInfo = false;
     }
 
     /**
@@ -127,6 +130,20 @@ public class UserInfoDto {
      */
     public void setParentCode(String pParentCode) {
         parentCode = pParentCode;
+    }
+
+    /**
+     * @return the otherInfo
+     */
+    public boolean isOtherInfo() {
+        return otherInfo;
+    }
+
+    /**
+     * @param pOtherInfo the otherInfo to set
+     */
+    public void setOtherInfo(boolean pOtherInfo) {
+        otherInfo = pOtherInfo;
     }
     
 }

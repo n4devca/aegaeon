@@ -29,7 +29,7 @@ select @uid, id
 from authority;
 
 -- A user info
-insert into user_info()
+-- insert into user_info()
 
 select id into @gt_auth from grant_type where code = 'authorization_code';
 select id into @gt_implicit from grant_type where code = 'implicit';

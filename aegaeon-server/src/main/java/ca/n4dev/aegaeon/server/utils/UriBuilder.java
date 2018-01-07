@@ -27,7 +27,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
-import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
+import ca.n4dev.aegaeon.server.view.TokenResponse;
 
 /**
  * UriBuilder.java

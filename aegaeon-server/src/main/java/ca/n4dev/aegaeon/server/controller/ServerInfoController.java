@@ -39,9 +39,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.api.protocol.FlowFactory;
 import ca.n4dev.aegaeon.server.config.ServerInfo;
-import ca.n4dev.aegaeon.server.controller.dto.ServerInfoResponse;
 import ca.n4dev.aegaeon.server.service.ScopeService;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
+import ca.n4dev.aegaeon.server.view.ServerInfoResponse;
 
 /**
  * SimpleServerInforController.java

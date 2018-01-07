@@ -44,6 +44,7 @@ import ca.n4dev.aegaeon.api.token.payload.Claims;
 import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
 import ca.n4dev.aegaeon.server.utils.Utils;
+import ca.n4dev.aegaeon.server.view.mapper.TokenMapper;
 
 /**
  * IdTokenService.java
@@ -69,8 +70,8 @@ public class IdTokenService extends BaseTokenService<IdToken, IdTokenRepository>
                           UserService pUserService, 
                           ClientService pClientService,
                           UserAuthorizationService pUserAuthorizationService,
-                          PayloadProvider pPayloadProvider) {
-        super(pRepository, pTokenFactory, pUserService, pClientService, pUserAuthorizationService, pPayloadProvider);
+                          TokenMapper pTokenMapper) {
+        super(pRepository, pTokenFactory, pUserService, pClientService, pUserAuthorizationService, pTokenMapper);
     }
 
     /* (non-Javadoc)
@@ -81,7 +82,7 @@ public class IdTokenService extends BaseTokenService<IdToken, IdTokenRepository>
 
         // Create Payload.
         List<String> scopes = Utils.convert(pScopes, s -> s.getName());
-        Map<String, String> payload = this.payloadProvider.createPayload(pUser, pClient, scopes);
+        Map<String, String> payload = this.userService.createPayload(pUser, pClient, scopes);
         
         // If we need to include nonce param to prevent replay attack
         if (Utils.isNotEmpty(pFlow.getNonce())) {

@@ -22,8 +22,6 @@
 package ca.n4dev.aegaeon.api.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import ca.n4dev.aegaeon.api.model.Client;
@@ -45,12 +43,11 @@ public interface ClientRepository extends JpaRepository<Client, Long>{
      * @return A client or null.
      */
     Client findByPublicId(String pPublicId);
-    
+
     /**
-     * Find a client by public id (and load redirection uri).
-     * @param pPublicId The public id.
-     * @return A client or null.
+     * Check if this publicid is already in use.
+     * @param pPublicId The public client id to check.
+     * @return true or false.
      */
-    @Query("from Client c join fetch c.redirections where c.publicId = :publicId ")
-    Client findByPublicIdWithRedirections(@Param("publicId") String pPublicId);
+    boolean existsByPublicId(String pPublicId);
 }

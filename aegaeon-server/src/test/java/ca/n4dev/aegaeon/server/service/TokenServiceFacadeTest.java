@@ -26,14 +26,17 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.test.context.support.WithMockUser;
-
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.model.Client;
+import ca.n4dev.aegaeon.api.model.ClientRedirection;
 import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.protocol.FlowFactory;
-import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
+import ca.n4dev.aegaeon.server.utils.Utils;
+import ca.n4dev.aegaeon.server.view.TokenResponse;
+import org.springframework.security.test.context.support.WithMockUser;
 
 /**
  * TokenServiceFacadeTest.java
@@ -45,6 +48,12 @@ import ca.n4dev.aegaeon.server.controller.dto.TokenResponse;
  */
 public class TokenServiceFacadeTest extends BaseTokenServiceTest {
 
+    private Authentication getFakeAuthentication() {
+        Authentication a = new UsernamePasswordAuthenticationToken(getUser(USERNAME), "allo1122");
+        
+        return a;
+    }
+    
     @Autowired
     private TokenServicesFacade tokenServicesFacade;
     
@@ -53,14 +62,14 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
     public void accessTokenRSA() {
         
         Client client = clientService.findByPublicId(CLIENT_IMPL);
-        User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES);
+        List<ClientRedirection> redirections = clientService.findRedirectionsByclientId(client.getId());
         
         TokenResponse token = this.tokenServicesFacade.createTokenResponse(FlowFactory.implicit(), 
                                                                            client.getPublicId(), 
-                                                                           user.getId(), 
-                                                                           scopes, 
-                                                                           client.getRedirections().get(0).getUrl());
+                                                                           Utils.join(scopes, s -> s.getName()), 
+                                                                           redirections.get(0).getUrl(),
+                                                                           getFakeAuthentication());
         
         Assert.assertNotNull(token);
         Assert.assertTrue(token.getTokenType().equals(TokenResponse.BEARER));
@@ -76,12 +85,12 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
         Client client = clientService.findByPublicId(CLIENT_AUTH);
         User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES + " offline_access");
+        List<ClientRedirection> redirections = clientService.findRedirectionsByclientId(client.getId());
         
         TokenResponse token = this.tokenServicesFacade.createTokenResponse(FlowFactory.authCode(), 
                 client.getPublicId(), 
-                user.getId(), 
-                scopes, 
-                client.getRedirections().get(0).getUrl());
+                Utils.join(scopes, s -> s.getName()), 
+                redirections.get(0).getUrl(), getFakeAuthentication());
 
         Assert.assertNotNull(token);
         Assert.assertTrue(token.getTokenType().equals(TokenResponse.BEARER));
@@ -97,12 +106,13 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
         Client client = clientService.findByPublicId(CLIENT_AUTH_3);
         User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES);
+        List<ClientRedirection> redirections = clientService.findRedirectionsByclientId(client.getId());
         
         TokenResponse token = this.tokenServicesFacade.createTokenResponse(FlowFactory.authCode(), 
                                                                            client.getPublicId(), 
-                                                                           user.getId(), 
-                                                                           scopes, 
-                                                                           client.getRedirections().get(0).getUrl());
+                                                                           Utils.join(scopes, s -> s.getName()), 
+                                                                           redirections.get(0).getUrl(),
+                                                                           getFakeAuthentication());
         
         Assert.assertNotNull(token);
         Assert.assertTrue(token.getTokenType().equals(TokenResponse.BEARER));
@@ -117,12 +127,12 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
         Client client = clientService.findByPublicId(CLIENT_AUTH_2);
         User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES + " offline_access");
+        List<ClientRedirection> redirections = clientService.findRedirectionsByclientId(client.getId());
         
         this.tokenServicesFacade.createTokenResponse(FlowFactory.authCode(), 
                 client.getPublicId(), 
-                user.getId(), 
-                scopes, 
-                client.getRedirections().get(0).getUrl());
+                Utils.join(scopes, s -> s.getName()), 
+                redirections.get(0).getUrl(), getFakeAuthentication());
         
         // Should not be here
         Assert.fail();
@@ -133,12 +143,13 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
         Client client = clientService.findByPublicId(CLIENT_IMPL);
         User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES + " offline_access");
+        List<ClientRedirection> redirections = clientService.findRedirectionsByclientId(client.getId());
         
         this.tokenServicesFacade.createTokenResponse(FlowFactory.implicit(), 
                 client.getPublicId(), 
-                user.getId(), 
-                scopes, 
-                client.getRedirections().get(0).getUrl());
+                Utils.join(scopes, s -> s.getName()), 
+                redirections.get(0).getUrl(), 
+                getFakeAuthentication());
 
         // Should not be here
         Assert.fail();
@@ -149,12 +160,13 @@ public class TokenServiceFacadeTest extends BaseTokenServiceTest {
         Client client = clientService.findByPublicId(CLIENT_IMPL_UNALLOWED);
         User user = getUser(USERNAME);
         List<Scope> scopes = scopeService.findScopeFromString(SCOPES);
+        List<ClientRedirection> redirections = clientService.findRedirectionsByclientId(client.getId());
         
         this.tokenServicesFacade.createTokenResponse(FlowFactory.authCode(), 
                 client.getPublicId(), 
-                user.getId(), 
-                scopes, 
-                client.getRedirections().get(0).getUrl());
+                Utils.join(scopes, s -> s.getName()), 
+                redirections.get(0).getUrl(),
+                getFakeAuthentication());
 
         // Should not be here
         Assert.fail();

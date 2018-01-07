@@ -10,69 +10,73 @@
 <body>
 	<section layout:fragment="content">
 
-		<div class="normal-content user-profile">
+		<div class="normal-content page-user-account">
 
 			<form action="/user-account" class="frm" th:object="${user}"
 				  th:action="@{/user-account}" th:method="post">
-				  
-				<div class="page">
-					<div class="page-title">
-                        <div class="grid">
-                            <div class="row">
-                                <div class="col-10">
-            						<h1 th:text="#{page.useraccount.title}">Account</h1>                            
-                                </div>
-                                
-                                <div class="col-2 right">
-                                    <span th:if="${!#strings.isEmpty(saveState)}" th:text="${saveState}"></span>
-                                    <button type="submit" class="btn btnblue btnag" name="action" value="save">
-                                        [[#{action.save}]]
-                                    </button>
-                                </div>
-                            </div>
-                        
+                  
+                <div class="page">
+                    <div class="page-header">
+                        <div class="page-title">
+                            <h1 th:text="#{page.useraccount.title}">Account</h1>
                         </div>
-					</div>
-					<div class="page-content">
-						<div class="grid">
+                        <div class="page-title-menu">
+                            <span th:if="${!#strings.isEmpty(saveState)}" th:text="${saveState}"></span>
+                            <button type="submit" class="btn btn-ok" name="action" value="save">
+                                [[#{action.save}]]
+                            </button>
+                        </div>
+                    </div>
+                    <div class="page-content">
+                        <div class="box">
+                            <div class="body">
 
-							<div class="row">
-								<div class="col-3">
-                                    <div class="box">
-                                        <div class="body">
-                                        
-        									<div class="form-group">
-        										<label for="user-account-picture" th:text="#{page.useraccount.form.label.picture}"></label> 
-                                                <img alt="user-picture" th:src="${user.pictureUrl}" th:if="${user.pictureUrl}" /> 
-                                                <input type="text" id="user-account-name" th:field="*{pictureUrl}" class="form-input" />
-        									</div>
-                                        </div>
-                                    
-                                    </div>
-								</div>
-								<div class="col-9">
-                                    <div class="box">
-                                        <div class="body">
-        									<div class="form-group">
-        										<label for="user-account-name" th:text="#{page.useraccount.form.label.name}"></label> 
-                                                <input type="text" id="user-account-name" th:field="*{name}" class="form-input" />
-        									</div>
-                                            
-                                            <th:block th:each="g : ${user.groups}">
-                                                <div th:replace="components/user-info :: user-info(${g.value}, 'groups[\'' + ${g.key} + '\']')"></div>
-                                            </th:block>
-                                        </div>
-                                    </div>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="footer right">
-						
-					</div>
-				</div>
+                                <div class="form-group">
+                                    <label for="user-account-name" th:text="#{page.useraccount.form.label.name}"></label>
+                                    <input type="text" id="user-account-name" class="form-input"
+                                           maxlength="100" required="required"
+                                           th:field="*{userView.name}"
+                                           th:errorclass="form-error" />
+                                    <div class="error-text" id="user-account-name-error"
+                                         th:classappend="${#fields.hasErrors('userView.name')} ? 'show-error'">Name cannot be empty.</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="user-account-picture" th:text="#{page.useraccount.form.label.picture}"></label>
+                                    <input type="text" id="user-account-picture" maxlength="500" class="form-input" placeholder="https://..."
+                                           th:field="*{userView.picture}" />
+                                    <img id="user-account-picture-display"
+                                         th:src="${user.userView.picture}" th:classappend="${#strings.isEmpty(user.userView.picture)} ? 'hidden'" />
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div th:each="ui,uix : *{groupInfo}">
+                            <h2 th:text="${ui.labelName}"></h2>
+                            <div class="box">
+                                <div class="body">
+
+                                    <th:block th:each="uv,uvx : ${ui.children}">
+                                        <div th:replace="components/user-info :: user-info(${uv}, 'groupInfo[' + ${uix.index} + '].children[' + ${uvx.index} + ']')"></div>
+                                    </th:block>
+
+                                    <input type="hidden" th:field="*{groupInfo[__${uix.index}__].code}" />
+                                    <input type="hidden" th:field="*{groupInfo[__${uix.index}__].labelName}" />
+
+                                </div>
+
+
+                            </div>
+
+                        </div>
+                        <div class="right"><a href="#ag-site-header" th:text="#{action.gotop}" class="link">Top</a></div>
+                    </div>
+                </div>  
+                  
 			</form>
 		</div>
+        <script src="/js/user-account.js" th:src="@{/resources/js/user-account.js}"></script>
 	</section>
 </body>
 </html>

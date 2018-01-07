@@ -23,6 +23,7 @@
 package ca.n4dev.aegaeon.api.repository;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -45,4 +46,10 @@ public interface UserInfoRepository extends JpaRepository<UserInfo, Long> {
 	 * @return A list of user info.
 	 */
 	List<UserInfo> findByUserId(Long pUserId);
+	
+	/**
+	 * Delete all userInfo by ids
+	 * @param ids The ids.
+	 */
+	void deleteByIdIn(Set<Long> ids);
 }

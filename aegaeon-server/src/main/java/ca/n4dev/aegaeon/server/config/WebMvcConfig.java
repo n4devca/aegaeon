@@ -24,18 +24,20 @@ package ca.n4dev.aegaeon.server.config;
 import java.util.List;
 import java.util.Locale;
 
+import nz.net.ultraq.thymeleaf.LayoutDialect;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
 import ca.n4dev.aegaeon.server.controller.interceptor.RequestMethodArgumentResolver;
 import ca.n4dev.aegaeon.server.controller.interceptor.ServerInfoInterceptor;
+import org.thymeleaf.extras.springsecurity4.dialect.SpringSecurityDialect;
 
 /**
  * WebMvcConfig.java
@@ -46,7 +48,7 @@ import ca.n4dev.aegaeon.server.controller.interceptor.ServerInfoInterceptor;
  * @since May 11, 2017
  */
 @Configuration
-public class WebMvcConfig extends WebMvcConfigurerAdapter {
+public class WebMvcConfig implements WebMvcConfigurer {
     
     @Value("${aegaeon.info.issuer}")
     private String issuer;
@@ -91,7 +93,17 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
         					  this.privacyPolicy, 
         					  this.customStyleSheet);
     }
-    
+
+    @Bean
+    public LayoutDialect layoutDialect() {
+        return new LayoutDialect();
+    }
+
+    @Bean
+    public SpringSecurityDialect springSecurityDialect() {
+        return new SpringSecurityDialect();
+    }
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());

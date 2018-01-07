@@ -30,7 +30,7 @@ import ca.n4dev.aegaeon.server.utils.Utils;
 /**
  * BaseController.java
  * 
- * TODO(rguillemette) Add description
+ * A base controller to expose MessageSource.
  *
  * @author by rguillemette
  * @since May 22, 2017

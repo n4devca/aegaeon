@@ -21,26 +21,14 @@
  */
 package ca.n4dev.aegaeon.server.security;
 
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
-import com.nimbusds.jwt.SignedJWT;
-
-import ca.n4dev.aegaeon.api.model.AccessToken;
-import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.server.config.ServerInfo;
-import ca.n4dev.aegaeon.server.service.AccessTokenService;
-import ca.n4dev.aegaeon.server.service.ClientService;
-import ca.n4dev.aegaeon.server.token.TokenFactory;
-import ca.n4dev.aegaeon.server.utils.Utils;
+import ca.n4dev.aegaeon.server.service.AuthenticationService;
 
 /**
  * AccessTokenAuthenticationProvider.java
@@ -54,15 +42,11 @@ public class AccessTokenAuthenticationProvider implements AuthenticationProvider
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessTokenAuthenticationProvider.class);
     
-    private AccessTokenService accessTokenService;
-    private TokenFactory tokenFactory;
+    private AuthenticationService authenticationService;
     
-    public AccessTokenAuthenticationProvider(ClientService pClientService, 
-                                             AccessTokenService pAccessTokenService,
-                                             TokenFactory pTokenFactory,
+    public AccessTokenAuthenticationProvider(AuthenticationService pAuthenticationService,
                                              ServerInfo pServerInfo) {
-        this.accessTokenService = pAccessTokenService;
-        this.tokenFactory = pTokenFactory;
+        this.authenticationService = pAuthenticationService;
     }
     
     /* (non-Javadoc)
@@ -70,68 +54,11 @@ public class AccessTokenAuthenticationProvider implements AuthenticationProvider
      */
     @Override
     public Authentication authenticate(Authentication pAuthentication) throws AuthenticationException {
-                
-        /*
-         * JWT: 
-         * t: not null
-         * t: signed ok
-         * t: date ok
-         * t: issuer ok
-         * db: still exists
-         * 
-         * Opaque:
-         * db: still exists
-         * db: date ok
-         * 
-         * */
-        
+       
         AccessTokenAuthentication accessTokenAuthentication = (AccessTokenAuthentication) pAuthentication;
         String token = accessTokenAuthentication.getAccessToken();
 
-        try {
-            // JWT ?
-            SignedJWT.parse(token);
-            
-            // Try to get access token
-            AccessToken accessToken = this.accessTokenService.findByTokenValue(token);
-            
-            // Exists ?
-            if (accessToken == null) {
-                throw new AuthenticationCredentialsNotFoundException(token + " is invalid or has been revoked.");
-            }
-            
-            // Still Valid ?
-            if (!Utils.isAfterNow(accessToken.getValidUntil())) {
-                throw new AuthenticationCredentialsNotFoundException(token + " is expired.");
-            }
-            
-            // Validate
-            if (!this.tokenFactory.validate(accessToken.getClient(), token)) {
-                throw new AccessTokenAuthenticationException("The JWT is not valid");
-            }
-            
-            // OK, good
-            User u = accessToken.getUser();
-            List<String> roles = new ArrayList<>();
-            
-            if (u.getAuthorities() != null) {
-                u.getAuthorities().forEach(a -> roles.add(a.getCode()));
-            }
-
-            Authentication auth = new AccessTokenAuthentication(u, 
-                                                                token, 
-                                                                accessToken.getScopeList(), 
-                                                                roles);
-            
-            return auth;
-            
-        } catch (ParseException pe) {
-            LOGGER.info("AccessTokenAuthenticationProvider#authenticate: unable to parse as JWT");
-            throw new AccessTokenAuthenticationException("AccessTokenAuthenticationProvider#authenticate: unable to parse as JWT");
-        } catch (Exception e) {
-            LOGGER.info("AccessTokenAuthenticationProvider#authenticate: Error checking JWT token");
-            throw new AccessTokenAuthenticationException("Error checking JWT token");
-        }
+        return this.authenticationService.authenticate(token);
     }
     
 

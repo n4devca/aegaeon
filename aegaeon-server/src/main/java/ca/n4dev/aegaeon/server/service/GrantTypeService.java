@@ -19,46 +19,45 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.utils;
+package ca.n4dev.aegaeon.server.service;
 
-import ca.n4dev.aegaeon.api.model.Client;
-import ca.n4dev.aegaeon.api.model.ClientScope;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import ca.n4dev.aegaeon.api.model.GrantType;
+import ca.n4dev.aegaeon.api.repository.GrantTypeRepository;
 
 /**
- * ClientUtils.java
+ * GrantService.java
  * 
  * TODO(rguillemette) Add description
  *
  * @author by rguillemette
- * @since Jun 21, 2017
+ * @since Nov 23, 2017
  */
-public class ClientUtils {
+@Service
+public class GrantTypeService  extends BaseService<GrantType, GrantTypeRepository>{
 
-    private ClientUtils() {}
+    /**
+     * Default Constructor.
+     * @param pRepository GrantType repository.
+     */
+    @Autowired
+    public GrantTypeService(GrantTypeRepository pRepository) {
+        super(pRepository);
+    }
 
-    public static boolean hasClientScope(Client pClient, String pScopeName) {
-        if (pClient != null && Utils.isNotEmpty(pScopeName)) {
-            for (ClientScope sc : pClient.getScopes()) {
-                if (sc.getScope().getName().equals(pScopeName)) {
-                    return true;
-                }
-            }
-        }
-        
-        return false;
+
+    /**
+     * Find all grants.
+     * @return A list of grants.
+     */
+    @Transactional(readOnly = true)
+    public List<GrantType> findAll() {
+        return this.getRepository().findAll();
     }
-    
-    public static boolean hasClientGrant(Client pClient, String pGrantType) {
-        if (pClient != null && Utils.isNotEmpty(pGrantType)) {
-            for (GrantType g : pClient.getGrantTypes()) {
-                if (g.getCode().equals(pGrantType)) {
-                    return true;
-                }
-            }
-        }
-        
-        return false;
-    }
-    
+
 }
