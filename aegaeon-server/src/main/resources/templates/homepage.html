@@ -25,8 +25,13 @@
                         <li><span th:text="#{page.home.welcome.about.6}"></span></li>
                     </ul>
 
-                    <div class="center">
+                    <div class="center" sec:authorize="!hasRole('ROLE_USER')">
                         <a href="/login" class="btn" th:href="@{login}" th:text="#{action.login}">Login</a>
+                        <form action="/create-account" th:action="@{/create-account}" method="post" class="frm">
+                            <button type="submit" class="btn">
+                                <span>Create Account</span>
+                            </button>
+                        </form>
                     </div>
 
                 </div>

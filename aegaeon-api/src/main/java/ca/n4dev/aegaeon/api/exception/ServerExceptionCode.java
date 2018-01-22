@@ -49,5 +49,7 @@ public enum ServerExceptionCode {
     CLIENT_REDIRECTIONURL_INVALID,
 
     UNEXPECTED_ERROR,
+
+    USER_INVALID_PASSWORD,
     ;
 }

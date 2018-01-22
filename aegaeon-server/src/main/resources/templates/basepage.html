@@ -27,16 +27,32 @@
 
         <div class="site-header-content">
             <div class="site-header-brand" layout:fragment="header-brand">
-                <h1 th:text="${serverInfo.serverName}"></h1>
+                <a href="/" th:href="@{/}">
+                    <h1 th:text="${serverInfo.serverName}"></h1>
+                </a>
             </div>
 
             <div class="site-header-nav"  layout:fragment="header-nav">
-                <th:block sec:authorize="hasRole('ROLE_USER')">
                     <div id="ag-user-menu" class="user-menu">
-                        <a href="/user-account" th:href="@{/user-account}" class="link">account</a>
-                        <form action="/logout" th:action="@{/logout}" method="post">
-                            <button type="submit" class="btn-link">Logout</button>
-                        </form>
+                        <th:block sec:authorize="!hasRole('ROLE_USER')">
+                            <form action="/create-account" th:action="@{/create-account}" method="post" class="frm">
+                                <button type="submit" class="btn-link">
+                                    <span>Create Account</span>
+                                </button>
+                            </form>
+                        </th:block>
+
+                        <th:block sec:authorize="hasRole('ROLE_ADMIN')">
+                            <a href="/admin/clients" th:href="@{/admin/clients}" class="link">Clients</a>
+                        </th:block>
+
+                        <th:block sec:authorize="hasRole('ROLE_USER')">
+                            <a href="/user-account" th:href="@{/user-account}" class="link">My Account</a>
+                            <form action="/logout" th:action="@{/logout}" method="post">
+                                <button type="submit" class="btn-link">Logout</button>
+                            </form>
+                        </th:block>
+
                     </div>
 
 
@@ -45,7 +61,6 @@
                     <!--</a>-->
 
 
-                </th:block>
             </div>
         </div>
 

@@ -71,29 +71,7 @@ public class Client extends BaseEntity implements OAuthClient {
     
     @Column(name = "refresh_token_seconds")
     private Long refreshTokenSeconds;
-    
-//    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
-//    private List<ClientRedirection> redirections;
-//    
-//    @OneToMany(mappedBy = "client")
-//    private List<ClientContact> contacts;
-//    
-//    @OneToMany(mappedBy = "client")
-//    private List<ClientRequestedUri> requestedUris;
-//    
-//    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
-//    private List<ClientScope> scopes;
-//    
-//    @ManyToMany
-//    @JoinTable(name = "client_grant_type",
-//               joinColumns = @JoinColumn(name = "client_id", referencedColumnName = "id"),
-//               inverseJoinColumns = @JoinColumn(name = "grant_type_id", referencedColumnName = "id"))
-//    private List<GrantType> grantTypes;
-//    
-    
-//    @Transient
-//    private List<ClientScope> scopes;
-    
+
     public Client() {}
     
     public Client(Long pId) {

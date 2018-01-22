@@ -381,6 +381,27 @@ public class Utils {
         return new Differentiation<>(newObjs, updatedObjs, removedObjs);
     }
 
+    public static <E,C> List<C> combine(List<C> pManagedList, List<E> pOriginalList, BiFunction<C, E, Boolean> pEqualsFunc, Function<E, C> pCreatorFunc) {
+        List<C> combined = new ArrayList<>();
+
+        for (E original : pOriginalList) {
+            boolean found = false;
+            for (C managed : pManagedList) {
+                if (pEqualsFunc.apply(managed, original)) {
+                    combined.add(managed);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                combined.add(pCreatorFunc.apply(original));
+            }
+        }
+
+        return combined;
+    }
+
     public static boolean validateRedirectionUri(String pUri) {
 
         try {

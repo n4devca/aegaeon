@@ -47,6 +47,10 @@ public class Scope extends BaseEntity {
     @Type(type = "boolean")
     private boolean system;
 
+    @Column(name = "defaultvalue")
+    @Type(type = "boolean")
+    private boolean defaultValue;
+
     /**
      * @return the name
      */
@@ -88,6 +92,13 @@ public class Scope extends BaseEntity {
     public void setSystem(boolean pSystem) {
         system = pSystem;
     }
-    
-    
+
+    /**
+     *
+     * @return
+     */
+    public boolean isDefaultValue() {
+        return defaultValue;
+    }
+
 }

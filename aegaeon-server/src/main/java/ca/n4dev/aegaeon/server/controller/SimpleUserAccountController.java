@@ -67,7 +67,7 @@ public class SimpleUserAccountController extends BaseUiController {
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleUserAccountController.class);
     
     public static final String URL = "/user-account";
-    public static final String VIEW = "user-account";
+    public static final String VIEW = "/user/user-account";
     
     private static final String CODE_SAVESTATE_NORMAL = "normal";
     private static final String CODE_SAVESTATE_MODIFIED = "modified";

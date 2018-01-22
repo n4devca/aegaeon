@@ -92,7 +92,7 @@ public class SpringAuthUserDetails implements UserDetails {
     }
 
     /* (non-Javadoc)
-     * @see org.springframework.security.core.userdetails.UserDetails#getUsername()
+     * @see org.springframework.security.core.userdetails.UserDetails#getUserName()
      */
     @Override
     public String getUsername() {

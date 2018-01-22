@@ -30,6 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ca.n4dev.aegaeon.api.model.Authority;
+import ca.n4dev.aegaeon.api.repository.AuthorityRepository;
+import ca.n4dev.aegaeon.api.validation.PasswordEvaluator;
+import ca.n4dev.aegaeon.server.utils.StringRandomizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -71,26 +75,32 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
     private OpenIdEventLogger openIdEventLogger;
     private UserMapper userMapper;
     private UserInfoRepository userInfoRepository;
+    private AuthorityRepository authorityRepository;
     private UserInfoTypeService userInfoTypeService; 
     private PasswordEncoder passwordEncoder;
-    
+    private PasswordEvaluator passwordEvaluator;
+
     /**
      * Default constructor.
      * @param pRepository The user repo.
      */
     @Autowired
-    public UserService(UserRepository pRepository, 
+    public UserService(UserRepository pRepository,
+                       AuthorityRepository pAuthorityRepository,
                        UserInfoRepository pUserInfoRepository,
                        UserInfoTypeService pUserInfoTypeService,
                        PasswordEncoder pPasswordEncoder,
-                       OpenIdEventLogger pOpenIdEventLogger, 
-                       UserMapper pUserMapper) {
+                       OpenIdEventLogger pOpenIdEventLogger,
+                       UserMapper pUserMapper,
+                       PasswordEvaluator pPasswordEvaluator) {
         super(pRepository);
+        this.authorityRepository = pAuthorityRepository;
         this.userInfoRepository = pUserInfoRepository;
         this.passwordEncoder = pPasswordEncoder;
         this.openIdEventLogger = pOpenIdEventLogger;
         this.userMapper = pUserMapper;
         this.userInfoTypeService = pUserInfoTypeService;
+        this.passwordEvaluator = pPasswordEvaluator;
     }
 
     /**
@@ -123,25 +133,34 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
         
         return response;
     }
-    
+
+    /**
+     * Create a user.
+     *
+     * @param pUsername The username
+     * @param pName It's name.
+     * @param pRawPasswd The choosen password
+     * @return The new user.
+     */
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or isAnonymous()")
     public UserView create(String pUsername, 
                            String pName,
-                           String pRawPasswd,
-                           boolean pEnabled) {
+                           String pRawPasswd) {
         
         Assert.notEmpty(pUsername, ServerExceptionCode.INVALID_PARAMETER);
-        
-        User u = new User();
+        Assert.notEmpty(pRawPasswd, ServerExceptionCode.USER_INVALID_PASSWORD);
+        Assert.isTrue(this.passwordEvaluator.evaluate(pRawPasswd).isValid(), ServerExceptionCode.USER_INVALID_PASSWORD);
+
+        User u = new User(StringRandomizer.getInstance().getRandomString(128));
         u.setUserName(pUsername);
         u.setName(pName);
-        u.setEnabled(pEnabled);
-        
-        if (Utils.isNotEmpty(pRawPasswd)) {
-            u.setPasswd(this.passwordEncoder.encode(pRawPasswd));            
-        }
-        
+        u.setEnabled(true);
+        u.setPasswd(this.passwordEncoder.encode(pRawPasswd));
+
+        Authority authUser = this.authorityRepository.findByCode("ROLE_USER");
+        u.addAuthorities(authUser);
+
         // Save
         u = this.save(u);
 

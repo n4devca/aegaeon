@@ -45,7 +45,11 @@ header.site-header .site-header-content .site-header-brand {
     padding: 0.5em 1em;
 }
 
-header.site-header .site-header-content .site-header-brand h1 {
+header.site-header .site-header-content .site-header-brand a {
+    text-decoration: none;
+}
+
+header.site-header .site-header-content .site-header-brand a h1 {
     color: #0d5f94;
 }
 
@@ -221,6 +225,14 @@ div.box div.footer {
     width: 100%;
 }
 
+.btn.btn-sm {
+    text-align: center;
+    display: inline-block;
+    /* margin: 0.3em 0 0.7em 0; */
+    padding: 0.4em 0.5em;
+    font-size: 1em;
+}
+
 
 .btn-link {
     border: 0;
@@ -233,24 +245,36 @@ div.box div.footer {
 }
 
 .frm {
-
+    display: inline;
 }
 
 .form-group {
-
+    margin: 0.3em 0 0.4em;
 }
 
 .form-group label {
     display: block;
+    font-weight: bold;
 }
 
 .form-group input.form-input, .form-group select.form-input, .form-group textarea.form-input {
     display: block;
     border: 1px solid #aaa;
-    margin: 5px 0 10px 0;
-    padding: 5px;
+    margin: 0.3em 0 0.7em 0;
+    padding: 0.4em 0.5em;
     width: 100%;
     box-sizing: border-box;
+}
+
+.error-text {
+    display: none;
+    color:#f40000;
+}
+.error-text.show-error {
+    display: block;
+}
+.form-group input.form-input.input-error, .form-group select.form-input.input-error, .form-group textarea.form-input.input-error {
+    border: 1px solid #f40000;
 }
 
 input:focus, textarea:focus {
@@ -259,7 +283,7 @@ input:focus, textarea:focus {
 }
 
 select {
-    background-color: #aaaaaa;
+    background-color: #dcdcdc;
 }
 
 .table {
@@ -275,7 +299,7 @@ select {
 
 .table > tbody > tr > td, .table > thead > tr > th {
     border: 1px solid #ddd;
-    padding: 8px 5px;
+    padding: 5px 3px;
     text-align: center;
 }
 
@@ -295,6 +319,40 @@ select {
 .link:hover, .btn-link:hover {
     text-decoration: underline;
 }
+
+
+div.input-group {
+    display: table;
+    width: 100%;
+    margin: 0.3em 0 0.4em;
+}
+
+div.input-group-element {
+    display: table-cell;
+    padding: 0;
+    vertical-align: top;
+    text-align: left;
+}
+
+div.input-group-element label {
+    display: inline;
+}
+div.input-group-element.right {
+    text-align: right;
+}
+
+div.input-group div.input-group-element input, div.input-group div.input-group-element  button {
+    margin: 0;
+}
+
+div.input-group-element.input-group-element-check {
+    width:50px;
+}
+
+div.input-group-element.btnop {
+    width:40px;
+}
+
 
 /* Utils */
 .center {

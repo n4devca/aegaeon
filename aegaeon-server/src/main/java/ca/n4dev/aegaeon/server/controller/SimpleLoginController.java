@@ -29,7 +29,9 @@ import org.springframework.web.servlet.ModelAndView;
 /**
  * SimpleLoginController.java
  * 
- * TODO(rguillemette) Add description
+ * Controller driving login page.
+ *
+ * Can be enable/disable using aegaeon.modules.login flag.
  *
  * @author by rguillemette
  * @since Jul 14, 2017

@@ -78,8 +78,6 @@ public class PromptAwareAuthenticationFilter extends GenericFilterBean {
         HttpServletRequest request = (HttpServletRequest) pServletRequest;
         HttpServletResponse response = (HttpServletResponse) pServletResponse;
         
-        
-        
         // Only on /authorize
         String requestedPath = request.getServletPath();
 
