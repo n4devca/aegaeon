@@ -28,6 +28,7 @@ import ca.n4dev.aegaeon.api.token.TokenProviderType;
 import ca.n4dev.aegaeon.server.controller.dto.PageDto;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Differentiation;
+import ca.n4dev.aegaeon.server.utils.StringRandomizer;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import ca.n4dev.aegaeon.server.view.ClientView;
 import ca.n4dev.aegaeon.server.view.SelectableItemView;
@@ -41,6 +42,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,6 +69,9 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
     private ClientRequestUriRepository clientRequestUriRepository;
     private ClientContactRepository clientContactRepository;
 
+    private ScopeRepository scopeRepository;
+    private GrantTypeRepository grantTypeRepository;
+
     /**
      * Default Constructor.
      *
@@ -78,6 +84,8 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
                          ClientRedirectionRepository pClientRedirectionRepository,
                          ClientRequestUriRepository pClientRequestUriRepository,
                          ClientContactRepository pClientContactRepository,
+                         ScopeRepository pScopeRepository,
+                         GrantTypeRepository pGrantTypeRepository,
                          ClientMapper pClientMapper,
                          ScopeMapper pScopeMapper,
                          GrantTypeMapper pGrantTypeMapper) {
@@ -89,6 +97,9 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
         this.clientRedirectionRepository = pClientRedirectionRepository;
         this.clientRequestUriRepository = pClientRequestUriRepository;
         this.clientContactRepository = pClientContactRepository;
+
+        this.scopeRepository = pScopeRepository;
+        this.grantTypeRepository = pGrantTypeRepository;
 
         this.clientMapper = pClientMapper;
         this.scopeMapper = pScopeMapper;
@@ -105,8 +116,8 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
         Page<Client> page = getRepository().findAll(pPageable);
 
         List<ClientView> dtos = page.getContent().stream()
-                .map(c -> clientMapper.clientToClientDto(c, null, null, null, null))
-                .collect(Collectors.toList());
+                                    .map(c -> clientMapper.clientToClientDto(c, null, null, null, null))
+                                    .collect(Collectors.toList());
 
         return new PageDto<>(dtos, pPageable, page.getTotalElements());
     }
@@ -127,9 +138,27 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
         return this.clientScopeRepository.findByClientId(pClientId);
     }
 
+    List<ClientScope> instanciateClientScope(Client pClient) {
+        List<Scope> allScopes = this.scopeRepository.findAll();
+        List<ClientScope> clientScopes = allScopes.stream()
+                                                  .map(scope -> new ClientScope(pClient, scope, false))
+                                                  .collect(Collectors.toList());
+
+        return clientScopes;
+    }
+
+    List<ClientGrantType> instanciateClientGrantType(Client pClient) {
+        List<GrantType> allGrant = this.grantTypeRepository.findAll();
+        List<ClientGrantType> clientGrants =
+                allGrant.stream().map(grantType -> new ClientGrantType(pClient, grantType, false)).collect(Collectors.toList());
+
+        return clientGrants;
+    }
+
     List<ClientContact> findContactByClientId(Long pClientId) {
         return this.clientContactRepository.findByClientId(pClientId);
     }
+
 
     @Transactional(readOnly = true)
     public boolean hasScope(Long pClientId, String pScope) {
@@ -182,19 +211,46 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
                 List<ClientRedirection> clientRedirections = this.findRedirectionsByclientId(pId);
                 List<ClientContact> contacts = this.findContactByClientId(pId);
                 List<ClientGrantType> clientGrantTypes = this.findGrantTypesByclientId(pId);
-                ClientView clientView = this.clientMapper.clientToClientDto(client,
-                        clientScopes,
-                        clientRedirections,
-                        contacts,
-                        clientGrantTypes);
 
-                //clientView.setGrants(clientMapper.);
+
+                ClientView clientView = this.clientMapper.clientToClientDto(client,
+                                                                            combineScopes(client, clientScopes),
+                                                                            clientRedirections,
+                                                                            contacts,
+                                                                            combineGrants(client, clientGrantTypes));
+
 
                 return clientView;
             }
         }
 
         return null;
+    }
+
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional(readOnly = true)
+    public ClientView instanciateOne() {
+        Client newClient = new Client(-1L);
+        newClient.setSecret(StringRandomizer.getInstance().getRandomString(128));
+
+        enforceProperValues(newClient);
+
+        ClientView clientView = this.clientMapper.clientToClientDto(newClient,
+                                                   combineScopes(newClient, new ArrayList<>()),
+                                                   Collections.emptyList(),
+                                                   Collections.emptyList(),
+                                                   combineGrants(newClient, new ArrayList<>()));
+
+        // Pre-select some values
+        for (SelectableItemView cs : clientView.getScopes()) {
+            if (cs.getName().equals("openid")) {
+                cs.setSelected(true);
+            }
+        }
+
+
+        return clientView;
     }
 
     /**
@@ -211,16 +267,17 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
         // Mandatory info
         Assert.notNull(pClientId, ServerExceptionCode.ENTITY_ID_EMPTY);
         Assert.notNull(pEntity, ServerExceptionCode.ENTITY_EMPTY);
-        if (Utils.areOneEmpty(pEntity.getName(), pEntity.getPublicId(), pEntity.getSecret(), pEntity.getProviderType())) {
+        if (Utils.areOneEmpty(pEntity.getName(), pEntity.getPublicId(), pEntity.getProviderType())) {
             Utils.raise(ServerExceptionCode.CLIENT_ATTR_EMPTY);
         }
 
-        // Get the client from db
-        Client client = this.findById(pClientId);
+        // Get the client from db or create
+        boolean isNew = pClientId <= 0;
+        Client client = !isNew ? this.findById(pClientId) : new Client();
         Assert.notNull(client, ServerExceptionCode.ENTITY_EMPTY);
 
         // Validate view
-        validateUpdatedView(client, pEntity);
+        validateUpdatedView(client, pEntity, isNew);
 
         // update client entity
         this.clientMapper.clientViewToclient(pEntity, client);
@@ -229,23 +286,25 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
         // Save client
         client = this.save(client);
 
+        Long clientId = client.getId();
+
         // Update dependencies
-        updateScope(pClientId, pEntity.getScopes());
-        updateGrantTypes(pClientId, pEntity.getGrants());
-        updateRedirectionUrls(pClientId, pEntity.getRedirections());
-        updateContacts(pClientId, pEntity.getContacts());
+        updateScope(clientId, pEntity.getScopes());
+        updateGrantTypes(clientId, pEntity.getGrants());
+        updateRedirectionUrls(clientId, pEntity.getRedirections());
+        updateContacts(clientId, pEntity.getContacts());
 
 
-        return this.findOne(pClientId);
+        return this.findOne(clientId);
     }
 
     private void updateRedirectionUrls(Long pClientId, List<String> pUrls) {
         List<ClientRedirection> redirections = this.findRedirectionsByclientId(pClientId);
 
         Differentiation<ClientRedirection> diff = Utils.differentiate(redirections, pUrls,
-                (redUrl, url) -> redUrl.getUrl().equalsIgnoreCase(url),
-                (redUrl, url) -> redUrl,
-                url -> new ClientRedirection(new Client(pClientId), url));
+                                                                      (redUrl, url) -> redUrl.getUrl().equalsIgnoreCase(url),
+                                                                      (redUrl, url) -> redUrl,
+                                                                      url -> new ClientRedirection(new Client(pClientId), url));
 
         // Create / Update existing
         Utils.isNotEmptyThen(diff.getNewObjs(), this.clientRedirectionRepository::saveAll);
@@ -259,9 +318,9 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
         List<ClientContact> contacts = this.findContactByClientId(pClientId);
 
         Differentiation<ClientContact> diff = Utils.differentiate(contacts, pContacts,
-                (contact, ctString) -> Utils.equals(contact.getEmail(), ctString),
-                (contact, ctString) -> contact,
-                ctString -> new ClientContact(new Client(pClientId), ctString));
+                                                                  (contact, ctString) -> Utils.equals(contact.getEmail(), ctString),
+                                                                  (contact, ctString) -> contact,
+                                                                  ctString -> new ClientContact(new Client(pClientId), ctString));
 
         // Create / Update existing
         Utils.isNotEmptyThen(diff.getNewObjs(), this.clientContactRepository::saveAll);
@@ -276,12 +335,12 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
 
         Differentiation<ClientGrantType> diff =
                 Utils.differentiate(grants, grantViews,
-                        (clientGrant, viewGrant) -> clientGrant.getGrantType().getId().equals(viewGrant.getGrantType().getId()),
-                        (clientGrant, viewGrant) -> {
-                            clientGrant.setSelected(viewGrant.isSelected());
-                            return clientGrant;
-                        },
-                        newGrant -> new ClientGrantType(new Client(pClientId), newGrant.getGrantType(), newGrant.isSelected()));
+                                    (clientGrant, viewGrant) -> clientGrant.getGrantType().getId().equals(viewGrant.getGrantType().getId()),
+                                    (clientGrant, viewGrant) -> {
+                                        clientGrant.setSelected(viewGrant.isSelected());
+                                        return clientGrant;
+                                    },
+                                    newGrant -> new ClientGrantType(new Client(pClientId), newGrant.getGrantType(), newGrant.isSelected()));
 
         // Create / Update existing
         Utils.isNotEmptyThen(diff.getUpdatedObjs(), this.clientGrantTypeRepository::saveAll);
@@ -296,12 +355,13 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
         List<ClientScope> viewScopes = this.scopeMapper.scopeViewsToClientScopes(pClientScopesView);
 
         Differentiation<ClientScope> diff = Utils.differentiate(currentScopes, viewScopes,
-                (c, v) -> c.getScope().getId().equals(v.getScope().getId()),
-                (c, v) -> {
-                    c.setSelected(v.isSelected());
-                    return c;
-                },
-                (n) -> new ClientScope(new Client(pClientId), n.getScope(), n.isSelected()));
+                                                                (c, v) -> c.getScope().getId().equals(v.getScope().getId()),
+                                                                (c, v) -> {
+                                                                    c.setSelected(v.isSelected());
+                                                                    return c;
+                                                                },
+                                                                (n) -> new ClientScope(new Client(pClientId), n.getScope(),
+                                                                                       n.isSelected()));
 
         // Create / Update existing
         Utils.isNotEmptyThen(diff.getUpdatedObjs(), this.clientScopeRepository::saveAll);
@@ -311,10 +371,10 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
         Utils.isNotEmptyThen(diff.getRemovedObjs(), this.clientScopeRepository::deleteAll);
     }
 
-    private void validateUpdatedView(Client pClient, ClientView pClientView) {
+    private void validateUpdatedView(Client pClient, ClientView pClientView, boolean pIsNew) {
 
         // If the publicId is changed, check if it does not exists already
-        if (!pClient.getPublicId().equalsIgnoreCase(pClientView.getPublicId()) &&
+        if ((pIsNew || !pClient.getPublicId().equalsIgnoreCase(pClientView.getPublicId())) &&
                 this.getRepository().existsByPublicId(pClientView.getPublicId())) {
             Utils.raise(ServerExceptionCode.CLIENT_DUPLICATE_PUBLICID);
         }
@@ -332,13 +392,12 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
             });
         });
 
-        
-        
+
         // For contacts and redirectionUrl, empty are simply removed
         if (Utils.isNotEmpty(pClientView.getContacts())) {
             pClientView.getContacts().removeIf(Utils::isEmpty);
         }
-        
+
         if (Utils.isNotEmpty(pClientView.getRedirections())) {
             // Validate Url
             pClientView.getRedirections().forEach(u -> {
@@ -346,7 +405,7 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
                     Utils.raise(ServerExceptionCode.CLIENT_REDIRECTIONURL_INVALID, u + " is invalid.");
                 }
             });
-            
+
             // Remove empty
             pClientView.getRedirections().removeIf(Utils::isEmpty);
         }
@@ -364,8 +423,9 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
             pClient.setIdTokenSeconds(ClientConfig.DEFAULT_ID_TOKEN_SECONDS);
         }
 
-        if (pClient.getRefreshTokenSeconds() == null || pClient.getRefreshTokenSeconds() < 60 || pClient.getRefreshTokenSeconds() > ClientConfig.MAX_REFRESH_TOKEN_SECONDS) {
-            pClient.setIdTokenSeconds(ClientConfig.DEFAULT_REFRESH_TOKEN_SECONDS);
+        if (pClient.getRefreshTokenSeconds() == null || pClient.getRefreshTokenSeconds() < 60 || pClient
+                .getRefreshTokenSeconds() > ClientConfig.MAX_REFRESH_TOKEN_SECONDS) {
+            pClient.setRefreshTokenSeconds(ClientConfig.DEFAULT_REFRESH_TOKEN_SECONDS);
         }
 
         // Invalid ProviderType?
@@ -373,7 +433,24 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
             pClient.setProviderName(ClientConfig.DEFAULT_PROVIDER_TYPE.toString());
         }
 
+        if (Utils.isEmpty(pClient.getSecret())) {
+            pClient.setSecret(StringRandomizer.getInstance().getRandomString(128));
+        }
+    }
 
+    private List<ClientScope> combineScopes(Client pClient, List<ClientScope> pClientScopes) {
+        return Utils.combine(pClientScopes,
+                             this.scopeRepository.findAll(),
+                             (pClientScope, pScope) -> Utils.equals(pClientScope.getScope(), pScope),
+                             pScope -> new ClientScope(pClient, pScope, pScope.isDefaultValue()));
+
+    }
+
+    private List<ClientGrantType> combineGrants(Client pClient, List<ClientGrantType> pClientGrantTypes) {
+        return Utils.combine(pClientGrantTypes,
+                             this.grantTypeRepository.findAll(),
+                             (pClientGrant, pGrant) -> Utils.equals(pClientGrant.getGrantType(), pGrant),
+                             pGrant -> new ClientGrantType(pClient, pGrant, false));
     }
 
 

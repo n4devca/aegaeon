@@ -28,7 +28,7 @@ import ca.n4dev.aegaeon.api.token.OAuthUser;
 /**
  * UserView.java
  * 
- * TODO(rguillemette) Add description
+ * A user view.
  *
  * @author by rguillemette
  * @since Dec 13, 2017
@@ -36,7 +36,9 @@ import ca.n4dev.aegaeon.api.token.OAuthUser;
 public class UserView implements OAuthUser  {
 
     private Long id;
-    
+
+    private String userName;
+
     private String uniqueIdentifier;
     
     private String name;
@@ -134,8 +136,21 @@ public class UserView implements OAuthUser  {
     public String getUniqueIdentifier() {
         return this.uniqueIdentifier;
     }
-    
-    
+
+    /**
+     * @return the userName
+     */
+    public String getUserName() {
+        return userName;
+    }
+
+    /**
+     * @param pUserName the userName
+     */
+    public void setUserName(String pUserName) {
+        userName = pUserName;
+    }
+
     public String toString() {
         return new StringBuilder()
                     .append(getClass().getSimpleName())

@@ -21,6 +21,7 @@
  */
 package ca.n4dev.aegaeon.api.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -70,9 +71,17 @@ public class User extends BaseEntity implements OAuthUser {
     private List<Authority> authorities;
     
     
-    public User() {}
+    public User() {
+        this.authorities = new ArrayList<>();
+    }
+
+    public User(String pUniqueIdentifier) {
+        this();
+        this.uniqueIdentifier = pUniqueIdentifier;
+    }
     
     public User(Long pId) {
+        this();
         this.setId(pId);
     }
     
@@ -117,6 +126,13 @@ public class User extends BaseEntity implements OAuthUser {
      */
     public void setAuthorities(List<Authority> pAuthorities) {
         authorities = pAuthorities;
+    }
+
+    /**
+     * @param pAuthority the authorities to add
+     */
+    public void addAuthorities(Authority pAuthority) {
+        authorities.add(pAuthority);
     }
 
     /**
