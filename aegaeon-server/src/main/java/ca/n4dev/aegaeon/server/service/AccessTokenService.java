@@ -70,7 +70,6 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
      * @param pUserService
      * @param pClientService
      * @param pUserAuthorizationService
-     * @param pPayloadProvider
      */
     @Autowired
     public AccessTokenService(AccessTokenRepository pRepository, 
@@ -107,32 +106,6 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
         }
         
         return this.save(at);
-    }
-    
-    @Transactional(readOnly = true)
-    public void authenticateAccessToken(String pToken) {
-        AccessToken accessToken = null;
-        String tokenStr = pToken == null ? "-" : pToken;
-        
-        // Get it
-        if (Utils.isNotEmpty(pToken)) {
-            accessToken = this.findByToken(pToken);
-        }
-        
-        // Exists ?
-        if (accessToken == null) {
-            throw new AuthenticationCredentialsNotFoundException(tokenStr + " is invalid or has been revoked.");
-        }
-        
-        // Still Valid ?
-        if (!Utils.isAfterNow(accessToken.getValidUntil())) {
-            throw new AuthenticationCredentialsNotFoundException(tokenStr + " is expired.");
-        }
-        
-        // Validate
-        if (!this.tokenFactory.validate(accessToken.getClient(), pToken)) {
-            throw new AccessTokenAuthenticationException("The JWT is not valid");
-        }
     }
 
     /* (non-Javadoc)

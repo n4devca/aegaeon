@@ -24,11 +24,7 @@ package ca.n4dev.aegaeon.server.utils;
 import java.net.URI;
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -239,8 +235,8 @@ public class Utils {
         return false;
     }
     
-    public static MultiValueMap<String, String> asMap(String... pKeyValues) {
-        MultiValueMap<String, String> p = new LinkedMultiValueMap<>();
+    public static Map<String, String> asMap(String... pKeyValues) {
+        Map<String, String> p = new LinkedHashMap<>();
 
         if (pKeyValues != null) {
             
@@ -249,7 +245,7 @@ public class Utils {
             }
             
             for (int i = 0, j = pKeyValues.length; i < j; i += 2) {
-                p.add(pKeyValues[i], pKeyValues[i+1]);
+                p.put(pKeyValues[i], pKeyValues[i+1]);
             }
         }
           

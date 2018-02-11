@@ -44,8 +44,7 @@ public class ServerInfo {
     
     private String customStyleSheet;
 
-	public ServerInfo() {}
-    
+
     public ServerInfo(String pIssuer) {
         this(pIssuer, null, null, null, null, null);
     }

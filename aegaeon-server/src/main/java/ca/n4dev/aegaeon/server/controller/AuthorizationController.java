@@ -71,12 +71,12 @@ public class AuthorizationController {
     private TokenServicesFacade tokenServicesFacade;
     
     @Autowired
-    public AuthorizationController(AuthorizationService pauthorizationService, 
+    public AuthorizationController(AuthorizationService pAuthorizationService,
                                    UserAuthorizationService pUserAuthorizationService, 
                                    AuthorizationCodeService pAuthorizationCodeService,
                                    TokenServicesFacade pTokenServicesFacade) {
         
-        this.authorizationService = pauthorizationService;
+        this.authorizationService = pAuthorizationService;
         
         this.userAuthorizationService = pUserAuthorizationService;
         this.authorizationCodeService = pAuthorizationCodeService;
@@ -85,8 +85,8 @@ public class AuthorizationController {
     }
     
     @RequestMapping(value = "")
-    public ModelAndView authorize(@RequestParam("response_type") String pResponseType,
-                                  @RequestParam("client_id") String pClientPublicId,
+    public ModelAndView authorize(@RequestParam(value = "response_type", required = false) String pResponseType,
+                                  @RequestParam(value = "client_id", required = false) String pClientPublicId,
                                   @RequestParam(value = "scope", required = false) String pScope,
                                   @RequestParam(value = "redirection_url", required = false) String pRedirectionUrl,
                                   @RequestParam(value = "state", required = false) String pState,

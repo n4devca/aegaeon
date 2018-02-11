@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ca.n4dev.aegaeon.api.token.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,10 +36,6 @@ import org.springframework.stereotype.Component;
 
 import com.nimbusds.jwt.SignedJWT;
 
-import ca.n4dev.aegaeon.api.token.OAuthClient;
-import ca.n4dev.aegaeon.api.token.OAuthUser;
-import ca.n4dev.aegaeon.api.token.Token;
-import ca.n4dev.aegaeon.api.token.TokenProviderType;
 import ca.n4dev.aegaeon.api.token.provider.TokenProvider;
 import ca.n4dev.aegaeon.api.token.verifier.TokenVerifier;
 import ca.n4dev.aegaeon.server.token.key.KeysProvider;
@@ -198,7 +195,7 @@ public class TokenFactory {
     }
     
     
-    public OAuthUser extractAndValidate(OAuthClient pOAuthClient, String pTokenValue) throws Exception {
+    public OAuthUserAndClaim extractAndValidate(OAuthClient pOAuthClient, String pTokenValue) throws Exception {
         
         return this.tokenVerifierHolder.get(pOAuthClient.getProviderName()).extractAndValidate(pTokenValue);
     }

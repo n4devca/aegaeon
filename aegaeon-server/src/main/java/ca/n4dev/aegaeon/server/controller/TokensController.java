@@ -76,7 +76,30 @@ public class TokensController {
         this.tokenServicesFacade = pTokenServicesFacade;
         this.openIdEventLogger = pOpenIdEventLogger;
     }
-   
+
+
+    /*
+    * /Token
+    * >>>> grant_type
+    * > openid
+    * authorization_code
+    * refresh_token
+    * > oauth
+    * password
+    * client_credentials
+    * refresh_token
+    * authorization_code
+    *
+    * /authorize
+    * >>>> response_type
+    * > openid
+    * code = auth flow
+    * id_token [token] = implicit flow
+    * > oauth
+    * code = auth flow
+    * token = implicit flow
+    */
+
     /**
      * 
      * @param pGrantType

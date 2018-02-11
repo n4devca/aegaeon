@@ -21,6 +21,7 @@
  */
 package ca.n4dev.aegaeon.server.token.verifier;
 
+import ca.n4dev.aegaeon.api.token.OAuthUserAndClaim;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -29,6 +30,9 @@ import ca.n4dev.aegaeon.api.token.OAuthUser;
 import ca.n4dev.aegaeon.api.token.TokenProviderType;
 import ca.n4dev.aegaeon.api.token.payload.Claims;
 import ca.n4dev.aegaeon.server.config.ServerInfo;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * BaseJwtVerifier.java
@@ -70,7 +74,7 @@ public abstract class BaseJwtVerifier {
     /* (non-Javadoc)
      * @see ca.n4dev.aegaeon.api.token.verifier.TokenVerifier#extract(java.lang.String)
      */
-    public OAuthUser extract(String pToken) {
+    public OAuthUserAndClaim extract(String pToken) {
         try {
 
             SignedJWT signedJWT = SignedJWT.parse(pToken);
@@ -86,7 +90,7 @@ public abstract class BaseJwtVerifier {
     /* (non-Javadoc)
      * @see ca.n4dev.aegaeon.api.token.verifier.TokenVerifier#extractAndValidate(java.lang.String)
      */
-    public OAuthUser extractAndValidate(String pToken) {
+    public OAuthUserAndClaim extractAndValidate(String pToken) {
         try {
             SignedJWT signedJWT = SignedJWT.parse(pToken);
             
@@ -117,36 +121,65 @@ public abstract class BaseJwtVerifier {
         return this.tokenProviderType;
     }
 
-    private OAuthUser extract(SignedJWT pSignedJWT) {
+    private OAuthUserAndClaim extract(SignedJWT pSignedJWT) {
         try {
             
             JWTClaimsSet claims = pSignedJWT.getJWTClaimsSet();
             
             final String sub = claims.getSubject();
             final String name = claims.getStringClaim(Claims.NAME);
-            
-            return new OAuthUser() {
-                
-                @Override
-                public String getUniqueIdentifier() {
-                    return sub;
+            Map<String, String> m = new LinkedHashMap<>();
+
+            claims.getClaims().forEach((k, v) -> {
+                if (!Claims.NAME.equals(k) && !Claims.SUB.equals(k)) {
+                    m.put(k, String.valueOf(v));
                 }
-                
-                @Override
-                public String getName() {
-                    return name;
-                }
-                
-                @Override
-                public Long getId() {
-                    return null;
-                }
-            };
+            });
+
+            return new OAuthUserAndClaimImpl(sub, name, m);
             
         } catch (Exception e) {
             // ignore
         }
         
         return null;
+    }
+
+    private static final class OAuthUserAndClaimImpl implements OAuthUserAndClaim {
+
+        private OAuthUser oauthUser;
+        private Map<String, String> claims;
+
+        OAuthUserAndClaimImpl(final String pSub, final String pName, final Map<String, String> pClaims) {
+            this.oauthUser = new OAuthUser() {
+
+                @Override
+                public String getUniqueIdentifier() {
+                    return pSub;
+                }
+
+                @Override
+                public String getName() {
+                    return pName;
+                }
+
+                @Override
+                public Long getId() {
+                    return null;
+                }
+            };
+
+            this.claims = pClaims;
+        }
+
+        @Override
+        public OAuthUser getOAuthUser() {
+            return this.oauthUser;
+        }
+
+        @Override
+        public Map<String, String> getClaims() {
+            return this.claims;
+        }
     }
 }
