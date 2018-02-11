@@ -152,6 +152,12 @@ public class HMAC512JwtTokenProvider implements TokenProvider {
         builder.issuer(this.serverInfo.getIssuer());
         builder.subject(pOAuthUser.getUniqueIdentifier());
         builder.audience(pOAuthClient.getClientId());
+
+        if (pPayloads != null && !pPayloads.isEmpty()) {
+            for (Map.Entry<String, String> en : pPayloads.entrySet()) {
+                builder.claim(en.getKey(), en.getValue());
+            }
+        }
         
         JWTClaimsSet claimsSet = builder.build();
         

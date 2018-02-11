@@ -21,7 +21,7 @@
  */
 package ca.n4dev.aegaeon.api.token.verifier;
 
-import ca.n4dev.aegaeon.api.token.OAuthUser;
+import ca.n4dev.aegaeon.api.token.OAuthUserAndClaim;
 import ca.n4dev.aegaeon.api.token.TokenProviderType;
 
 /**
@@ -64,12 +64,12 @@ public interface TokenVerifier {
      * @param pToken The token to extract.
      * @return An OAuthUser created from the jwt token or null.
      */
-    OAuthUser extract(String pToken);
+    OAuthUserAndClaim extract(String pToken);
     
     /**
      * Extract a jwt token, then validate it.
      * @param pToken The token to extract.
      * @return An OAuthUser created from the jwt token or null.
      */
-    OAuthUser extractAndValidate(String pToken);
+    OAuthUserAndClaim extractAndValidate(String pToken);
 }

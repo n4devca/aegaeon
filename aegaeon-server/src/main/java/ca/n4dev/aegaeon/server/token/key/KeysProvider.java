@@ -48,7 +48,7 @@ public class KeysProvider {
     
     /**
      * Default Constructor.
-     * @param pObjectMapper Jackson's ObjectMapper 
+     * @param pKeyUri The uri of your ket set.
      */
     @Autowired
     public KeysProvider(@Value("${aegaeon.jwks}") String pKeyUri) throws Exception {

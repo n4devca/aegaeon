@@ -85,7 +85,7 @@ public class WebSecurityConfig {
     }
 
     @Configuration
-    @Order(1)
+    @Order(20)
     public static class ClientAuthWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
         
         @Autowired
@@ -97,13 +97,14 @@ public class WebSecurityConfig {
         @Override
         protected void configure(HttpSecurity pHttp) throws Exception {
             pHttp
-                .antMatcher(TokensController.URL)
-                .antMatcher(IntrospectController.URL)
-                    .authorizeRequests()
-                    .anyRequest().hasAnyAuthority("ROLE_CLIENT")
+
+
+                .authorizeRequests()
+                    .mvcMatchers(TokensController.URL, IntrospectController.URL)
+                    .hasAnyAuthority("ROLE_CLIENT")
                 .and()
-                .httpBasic()
-                    .authenticationEntryPoint(authenticationEntryPoint)
+                    .httpBasic()
+                        .authenticationEntryPoint(authenticationEntryPoint)
                 .and()
                     .sessionManagement()
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -115,7 +116,7 @@ public class WebSecurityConfig {
     }
     
     @Configuration
-    @Order(2) 
+    @Order(30)
     public static class UserInfoWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
         
         @Autowired
@@ -154,10 +155,10 @@ public class WebSecurityConfig {
         @Override
         protected void configure(HttpSecurity pHttp) throws Exception {
             pHttp
-                .antMatcher(UserInfoController.URL)
-                    .csrf().disable()
+                .csrf().disable()
                 .authorizeRequests()
-                    .anyRequest().hasAnyAuthority("ROLE_USER")
+                    .mvcMatchers(UserInfoController.URL)
+                    .hasAnyAuthority("ROLE_USER")
                 .and()
                 .addFilterBefore(accessTokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                     .sessionManagement()
@@ -191,14 +192,14 @@ public class WebSecurityConfig {
         protected void configure(HttpSecurity pHttp) throws Exception {
             pHttp
                     .authorizeRequests()
-                    .antMatchers("/resources/**").permitAll()
-                    .antMatchers(ServerInfoController.URL).permitAll()
-                    .antMatchers(PublicJwkController.URL).permitAll()
-                    .antMatchers(SimpleHomeController.URL).permitAll()
-                    .antMatchers(SimpleCreateAccountController.URL).permitAll()
-                    .antMatchers(SimpleCreateAccountController.URL_ACCEPT).permitAll()
+                        // public
+                        .antMatchers("/resources/**").permitAll()
+                        .antMatchers(ServerInfoController.URL).permitAll()
+                        .antMatchers(PublicJwkController.URL).permitAll()
+                        .antMatchers(SimpleHomeController.URL).permitAll()
+                        .antMatchers(SimpleCreateAccountController.URL).permitAll()
+                        .antMatchers(SimpleCreateAccountController.URL_ACCEPT).permitAll()
                     .anyRequest().hasAnyAuthority("ROLE_USER")
-                    //.antMatchers("/authorize").hasAnyAuthority("ROLE_USER")
                     .and()
                     .addFilterBefore(promptAwareAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                     .formLogin()

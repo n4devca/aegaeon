@@ -37,7 +37,7 @@ public class UserServiceTest /* extends BaseServiceTest */ {
     @Test
     public void test() {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        System.out.println(encoder.encode("admin@localhost"));
+        System.out.println(encoder.encode("ca.n4dev.auth.client"));
     }
     
 }
