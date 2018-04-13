@@ -30,6 +30,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import ca.n4dev.aegaeon.api.protocol.AuthRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -88,15 +89,16 @@ public class PromptAwareAuthenticationFilter extends GenericFilterBean {
             String redirectionUrl = request.getParameter("redirection_url");
             String responseType = request.getParameter("response_type");
             String state = request.getParameter("state");
+            String nonce = request.getParameter("nonce");
             
             if (Utils.isNotEmpty(ps) && ps.equals(Prompt.none.toString()) && Utils.isNotEmpty(clientIdStr)) {
                 Authentication existingAuth = SecurityContextHolder.getContext().getAuthentication();
                 
                 if (existingAuth == null) {
                     
-                    Flow flow = FlowFactory.of(responseType);
                     Long clientId = null;
-                    
+                    AuthRequest authRequest = new AuthRequest(responseType, nonce, state);
+
                     try {
                         clientId = Long.parseLong(clientIdStr);                        
                     } catch (Exception e) {
@@ -107,14 +109,14 @@ public class PromptAwareAuthenticationFilter extends GenericFilterBean {
                         
                         // Redirect properly
                         throw new OauthRestrictedException(getClass(),
-                                flow, 
-                                OAuthErrorType.invalid_request, 
+                                OAuthErrorType.invalid_request,
+                                authRequest,
                                 clientIdStr, 
                                 redirectionUrl,
                                 "Invalid redirect_uri.");
                     }
                     
-                    handleError(redirectionUrl, state, flow, request, response);
+                    handleError(redirectionUrl, state, authRequest, request, response);
                     return;
                 }            
             }
@@ -125,11 +127,11 @@ public class PromptAwareAuthenticationFilter extends GenericFilterBean {
     
     private void handleError(String pRedirectionUrl,
                              String pState, 
-                             Flow pFlow,
+                             AuthRequest pAuthRequest,
                              HttpServletRequest pHttpServletRequest, 
                              HttpServletResponse pHttpServletResponse) {
         
-        OAuthPublicRedirectionException ex = new OAuthPublicRedirectionException(getClass(), pFlow, OAuthErrorType.login_required, pRedirectionUrl);
+        OAuthPublicRedirectionException ex = new OAuthPublicRedirectionException(getClass(), OAuthErrorType.login_required, pAuthRequest, pRedirectionUrl);
         
         RedirectView redirect = this.controllerErrorInterceptor.oauthPublicException(ex);
         

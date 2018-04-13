@@ -36,7 +36,7 @@ import ca.n4dev.aegaeon.api.model.User;
  * @author by rguillemette
  * @since May 13, 2017
  */
-public class SpringAuthUserDetails implements UserDetails {
+public class AegaeonUserDetails implements UserDetails {
 
     private static final long serialVersionUID = -5669423040345933280L;
     private Long id;
@@ -46,19 +46,19 @@ public class SpringAuthUserDetails implements UserDetails {
     private boolean nonlocked;
     private Collection<? extends GrantedAuthority> authorities;
     /**
-     * Default Contructor.
+     * Default Constructor.
      * @param pUsername The user's username.
      * @param pPassword the user's password.
      * @param pEnable If this user is enabled.
      * @param pNonLocked If this user is not locked.
      * @param pAuthorities The collection of authorities of this user.
      */
-    public SpringAuthUserDetails(Long pId,
-                             String pUsername, 
-                             String pPassword, 
-                             boolean pEnable, 
-                             boolean pNonLocked, 
-                             Collection<? extends GrantedAuthority> pAuthorities) {
+    public AegaeonUserDetails(Long pId,
+                              String pUsername,
+                              String pPassword,
+                              boolean pEnable,
+                              boolean pNonLocked,
+                              Collection<? extends GrantedAuthority> pAuthorities) {
         this.id = pId;
         this.username = pUsername;
         this.password = pPassword;

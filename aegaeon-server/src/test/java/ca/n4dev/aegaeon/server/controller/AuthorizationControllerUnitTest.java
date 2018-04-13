@@ -3,9 +3,11 @@ package ca.n4dev.aegaeon.server.controller;
 import ca.n4dev.aegaeon.api.exception.OAuthErrorType;
 import ca.n4dev.aegaeon.api.exception.OAuthPublicJsonException;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
-import ca.n4dev.aegaeon.api.protocol.FlowFactory;
+import ca.n4dev.aegaeon.api.protocol.AuthRequest;
+import ca.n4dev.aegaeon.api.protocol.FlowUtils;
+import ca.n4dev.aegaeon.api.protocol.GrantType;
 import ca.n4dev.aegaeon.api.protocol.Prompt;
-import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
+import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 import ca.n4dev.aegaeon.server.service.AuthorizationCodeService;
 import ca.n4dev.aegaeon.server.service.AuthorizationService;
 import ca.n4dev.aegaeon.server.service.TokenServicesFacade;
@@ -22,10 +24,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.result.StatusResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
@@ -74,13 +73,12 @@ public class AuthorizationControllerUnitTest {
     public void successAuthorize() throws Exception {
 
         doThrow(new OauthRestrictedException(AuthorizationService.class,
-                                             FlowFactory.authCode(),
                                              OAuthErrorType.invalid_request,
+                                             new AuthRequest(FlowUtils.RTYPE_AUTH_CODE),
                                              "test.1",
                                              "https://cool-url.com"))
-                .when(authorizationService).validateAuthorizationRequest(anyString(),
+                .when(authorizationService).validateAuthorizationRequest(new AuthRequest(FlowUtils.RTYPE_AUTH_CODE),
                                                                          RequestMethod.POST,
-                                                                         FlowFactory.authCode(),
                                                                          "test.1",
                                                                          "https://cool-url.com",
                                                                          "openid");
@@ -131,6 +129,7 @@ public class AuthorizationControllerUnitTest {
                                                               null,
                                                               null,
                                                               null,
+                                                              null,
                                                               buildUser(),
                                                               RequestMethod.POST);
 
@@ -157,6 +156,7 @@ public class AuthorizationControllerUnitTest {
                                                               null,
                                                               Prompt.none.toString(),
                                                               null,
+                                                              null,
                                                               buildUser(),
                                                               RequestMethod.POST);
 
@@ -170,12 +170,12 @@ public class AuthorizationControllerUnitTest {
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
 
-        SpringAuthUserDetails userDetails = new SpringAuthUserDetails(1L,
-                                                                      "tester",
-                                                                      "passwd",
-                                                                      true,
-                                                                      true,
-                                                                      authorities);
+        AegaeonUserDetails userDetails = new AegaeonUserDetails(1L,
+                                                                "tester",
+                                                                "passwd",
+                                                                true,
+                                                                true,
+                                                                authorities);
 
 
         return new UsernamePasswordAuthenticationToken(userDetails, "passwd", authorities);

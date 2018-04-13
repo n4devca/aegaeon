@@ -60,6 +60,9 @@ public class AuthorizationCode extends BaseEntity {
     private String scopes;
     
     private String redirectUrl;
+
+    @Column(name = "response_type")
+    private String responseType;
     
     /**
      * Default no-args constructor.
@@ -164,6 +167,18 @@ public class AuthorizationCode extends BaseEntity {
     public void setRedirectUrl(String pRedirectUrl) {
         redirectUrl = pRedirectUrl;
     }
-    
-    
+
+    /**
+     * @return the responseType
+     */
+    public String getResponseType() {
+        return responseType;
+    }
+
+    /**
+     * @param pResponseType the responseType to set
+     */
+    public void setResponseType(String pResponseType) {
+        responseType = pResponseType;
+    }
 }

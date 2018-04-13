@@ -21,6 +21,7 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
+import ca.n4dev.aegaeon.api.exception.OAuthPublicJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Controller;
@@ -65,11 +66,8 @@ public class PublicJwkController {
         try {
             return this.tokenFactory.publicJwks();
         } catch (Exception e) {
-            throw new OauthRestrictedException(PublicJwkController.class, 
-                                               FlowFactory.clientCredential(), 
-                                               OAuthErrorType.temporarily_unavailable, 
-                                               null, 
-                                               null);
+            throw new OAuthPublicJsonException(PublicJwkController.class,
+                                               OAuthErrorType.temporarily_unavailable);
         }
     }
 }

@@ -11,7 +11,9 @@ import java.util.List;
  * @since 2.0.0 - Feb 11 - 2018
  */
 public enum ResponseType {
-    ID_TOKEN, CODE, TOKEN;
+    id_token,
+    code,
+    token;
 
     /**
      * Get a ResponseType from a String

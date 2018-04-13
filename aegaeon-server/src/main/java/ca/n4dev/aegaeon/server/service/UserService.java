@@ -279,7 +279,7 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
      * #createPayload(ca.n4dev.aegaeon.api.token.OAuthUser, ca.n4dev.aegaeon.api.token.OAuthClient, java.util.List)
      */
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('CLIENT') or principal.id = pOAuthUser.id")
+    @PreAuthorize("hasRole('CLIENT') or principal.id == #pOAuthUser.id")
     public Map<String, String> createPayload(OAuthUser pOAuthUser, OAuthClient pOAuthClient, List<String> pRequestedScopes) {
         Map<String, String> payload = new LinkedHashMap<>();
         

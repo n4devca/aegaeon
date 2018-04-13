@@ -21,7 +21,11 @@
  */
 package ca.n4dev.aegaeon.api.exception;
 
+import java.util.List;
+
+import ca.n4dev.aegaeon.api.protocol.AuthRequest;
 import ca.n4dev.aegaeon.api.protocol.Flow;
+import ca.n4dev.aegaeon.api.protocol.ResponseType;
 
 /**
  * OAuthPublicJsonException.java
@@ -39,11 +43,17 @@ public class OAuthPublicJsonException extends BaseOAuthException {
     private static final long serialVersionUID = -3097198698305780764L;
 
     /**
-     * @param pGrantType
      * @param pError
      */
-    public OAuthPublicJsonException(Class<?> pSource, Flow pFlow, OAuthErrorType pError) {
-        super(pSource, pFlow, pError);
+    public OAuthPublicJsonException(Class<?> pSource, OAuthErrorType pError) {
+        this(pSource, pError, null);
+    }
+
+    /**
+     * @param pError
+     */
+    public OAuthPublicJsonException(Class<?> pSource, OAuthErrorType pError, AuthRequest pAuthRequest) {
+        super(pSource, pError, pAuthRequest);
     }
 
 }

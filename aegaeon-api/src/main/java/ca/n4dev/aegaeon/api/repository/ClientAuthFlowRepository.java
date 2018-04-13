@@ -19,45 +19,27 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.service;
+package ca.n4dev.aegaeon.api.repository;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import ca.n4dev.aegaeon.api.model.GrantType;
-import ca.n4dev.aegaeon.api.repository.GrantTypeRepository;
+import ca.n4dev.aegaeon.api.model.ClientAuthFlow;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
- * GrantService.java
+ * ClientGrantTypeRepository.java
  * 
- * TODO(rguillemette) Add description
+ * ClientGrantType repository.
  *
  * @author by rguillemette
- * @since Nov 23, 2017
+ * @since Dec 9, 2017
  */
-@Service
-public class GrantTypeService  extends BaseService<GrantType, GrantTypeRepository>{
+public interface ClientAuthFlowRepository extends JpaRepository<ClientAuthFlow, Long> {
 
     /**
-     * Default Constructor.
-     * @param pRepository GrantType repository.
-     */
-    @Autowired
-    public GrantTypeService(GrantTypeRepository pRepository) {
-        super(pRepository);
-    }
-
-
-    /**
-     * Find all grants.
+     * Find client's grant.
+     * @param pClientId The client's id.
      * @return A list of grants.
      */
-    @Transactional(readOnly = true)
-    public List<GrantType> findAll() {
-        return this.getRepository().findAll();
-    }
-
+    List<ClientAuthFlow> findByClientId(Long pClientId);
 }

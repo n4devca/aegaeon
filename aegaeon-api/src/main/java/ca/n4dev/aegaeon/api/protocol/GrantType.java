@@ -19,28 +19,41 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.repository;
-
-import java.util.List;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import ca.n4dev.aegaeon.api.model.ClientGrantType;
+package ca.n4dev.aegaeon.api.protocol;
 
 /**
- * ClientGrantTypeRepository.java
+ * GrantType.java
  * 
- * ClientGrantType repository.
+ * TODO(rguillemette) Add description
  *
  * @author by rguillemette
- * @since Dec 9, 2017
+ * @since May 24, 2017
  */
-public interface ClientGrantTypeRepository extends JpaRepository<ClientGrantType, Long> {
+public enum GrantType {
+    AUTHORIZATION_CODE,
+    IMPLICIT,
+    CLIENT_CREDENTIALS,
+    REFRESH_TOKEN,
+    PASSWORD, // Not implemented
+    HYBRID
+    ;
+    
+    public static GrantType from(String pGrantString) {
+        for (GrantType grant : GrantType.values()) {
+            if (grant.toString().equals(pGrantString)) {
+                return grant;
+            }
+        }
+        
+        return null;
+    }
+    
+    public static boolean is(String pParameter, GrantType pGrant) {
+        if (pGrant != null && pParameter != null && !pParameter.isEmpty()) {
+            return pGrant == from(pParameter);            
+        }
+        
+        return false;
+    }
 
-    /**
-     * Find client's grant.
-     * @param pClientId The client's id.
-     * @return A list of grants.
-     */
-    List<ClientGrantType> findByClientId(Long pClientId);
 }

@@ -56,7 +56,7 @@ public class UserServiceUnitTest {
         User user = buildUser();
         UserView userView = buildUserView();
 
-        when(userRepository.findByUserName(any())).thenReturn(user);
+        //when(userRepository.findByUserName(any())).thenReturn(user);
         when(userInfoRepository.findByUserId(any())).thenReturn(buildUserInfo());
         when(userMapper.toView(any(), any())).thenReturn(userView);
 

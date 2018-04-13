@@ -21,6 +21,7 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
+import ca.n4dev.aegaeon.api.protocol.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.Authentication;
@@ -36,11 +37,7 @@ import org.springframework.web.servlet.view.RedirectView;
 import ca.n4dev.aegaeon.api.exception.OAuthErrorType;
 import ca.n4dev.aegaeon.api.exception.OAuthPublicJsonException;
 import ca.n4dev.aegaeon.api.exception.ServerException;
-import ca.n4dev.aegaeon.api.protocol.Flow;
-import ca.n4dev.aegaeon.api.protocol.FlowFactory;
-import ca.n4dev.aegaeon.api.protocol.Prompt;
-import ca.n4dev.aegaeon.api.protocol.RequestedGrant;
-import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
+import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 import ca.n4dev.aegaeon.server.service.AuthorizationCodeService;
 import ca.n4dev.aegaeon.server.service.AuthorizationService;
 import ca.n4dev.aegaeon.server.service.TokenServicesFacade;
@@ -93,15 +90,16 @@ public class AuthorizationController {
                                   @RequestParam(value = "nonce", required = false) String pNonce,
                                   @RequestParam(value = "prompt", required = false) String pPrompt,
                                   @RequestParam(value = "display", required = false) String pDisplay,
+                                  @RequestParam(value = "id_token_hint", required = false) String pIdTokenHint,
                                   Authentication pAuthentication,
                                   RequestMethod pRequestMethod) {
         
-        Flow flow = FlowFactory.of(pResponseType, pNonce);
         Prompt p = Prompt.from(pPrompt);
-        
+        //List<ResponseType> responseTypes = ResponseType.of(pResponseType);
+        AuthRequest authRequest = new AuthRequest(pResponseType, pNonce, pState);
         
         // Validate request: No exception == OK
-        this.authorizationService.validateAuthorizationRequest(pResponseType, pRequestMethod, flow, pClientPublicId, pRedirectionUrl, pScope);
+        this.authorizationService.validateAuthorizationRequest(authRequest, pRequestMethod, pClientPublicId, pRedirectionUrl, pScope);
         
         boolean isAlreadyAuthorized = this.authorizationService.isAuthorized(pAuthentication, pClientPublicId);
         
@@ -111,7 +109,7 @@ public class AuthorizationController {
         if (p != null) {
             
             if (p == Prompt.none && !isAlreadyAuthorized) {
-                throw new OAuthPublicJsonException(getClass(), flow, OAuthErrorType.unauthorized_client);
+                throw new OAuthPublicJsonException(getClass(), OAuthErrorType.unauthorized_client, authRequest);
             } else if (!isAlreadyAuthorized || p == Prompt.login || p == Prompt.consent) {
                 return authPage;
             }  // else OK
@@ -123,10 +121,12 @@ public class AuthorizationController {
         RedirectView redirect = null;
         
         // TODO(RG): Client Credential
-        if (flow.has(RequestedGrant.AUTHORIZATIONCODE)) {
-            redirect = authorizeCodeResponse(pAuthentication, flow, pClientPublicId, pScope, pRedirectionUrl, pState);
-        } else if (flow.has(RequestedGrant.IMPLICIT)) {
-            redirect = implicitResponse(pAuthentication, flow, pClientPublicId, pScope, pRedirectionUrl, pState);
+        GrantType grantType = FlowUtils.getAuthorizationType(authRequest);
+
+        if (grantType == GrantType.AUTHORIZATION_CODE) {
+            redirect = authorizeCodeResponse(pAuthentication, authRequest, pClientPublicId, pScope, pRedirectionUrl, pState);
+        } else if (grantType == GrantType.IMPLICIT) {
+            redirect = implicitResponse(pAuthentication, authRequest, pClientPublicId, pScope, pRedirectionUrl, pState);
         } 
         
         return new ModelAndView(redirect);
@@ -140,15 +140,16 @@ public class AuthorizationController {
                                              @RequestParam(value = "state", required = false) String pState,
                                              @RequestParam(value = "prompt", required = false) String pPrompt,
                                              @RequestParam(value = "display", required = false) String pDisplay,
+                                             @RequestParam(value = "id_token_hint", required = false) String pIdTokenHint,
                                              Authentication pAuthentication) {
         
         try {
             
             // Create a UserAuth and redirect
-            SpringAuthUserDetails userDetails = (SpringAuthUserDetails) pAuthentication.getPrincipal();
+            AegaeonUserDetails userDetails = (AegaeonUserDetails) pAuthentication.getPrincipal();
             this.userAuthorizationService.createOneUserAuthorization(userDetails, pClientPublicId, pScope);
             
-            return authorize(pResponseType, pClientPublicId, pScope, pRedirectionUrl, pState, null, pPrompt, pDisplay, pAuthentication, RequestMethod.POST);
+            return authorize(pResponseType, pClientPublicId, pScope, pRedirectionUrl, pState, null, pPrompt, pDisplay, pIdTokenHint, pAuthentication, RequestMethod.POST);
             
         } catch (ServerException se) {
             // Rethrow, will be catch
@@ -159,7 +160,7 @@ public class AuthorizationController {
     }
     
     private RedirectView authorizeCodeResponse(Authentication pAuthentication,
-                                               Flow pFlow,
+                                               AuthRequest pAuthRequest,
                                                String pClientId,
                                                String pScopes,
                                                String pRedirectionUrl,
@@ -169,8 +170,9 @@ public class AuthorizationController {
         try {
             
             // Create auth code
-            SpringAuthUserDetails user = (SpringAuthUserDetails) pAuthentication.getPrincipal();
-            AuthorizationCodeView code = this.authorizationCodeService.createCode(user.getId(), pClientId, pScopes, pRedirectionUrl);
+            AegaeonUserDetails user = (AegaeonUserDetails) pAuthentication.getPrincipal();
+            tokenServicesFacade.validateClientFlow(pClientId, GrantType.AUTHORIZATION_CODE);
+            AuthorizationCodeView code = this.authorizationCodeService.createCode(user.getId(), pClientId, pAuthRequest.getResponseTypeParam(), pScopes, pRedirectionUrl);
 
             // Returned values
             MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
@@ -190,8 +192,8 @@ public class AuthorizationController {
         }
     }
     
-    private RedirectView implicitResponse(Authentication pAuthentication, 
-                                          Flow pFlow,
+    private RedirectView implicitResponse(Authentication pAuthentication,
+                                          AuthRequest pAuthRequest,
                                           String pClientId,
                                           String pScopes,
                                           String pRedirectionUrl,
@@ -200,7 +202,7 @@ public class AuthorizationController {
         
         try {
            
-            TokenResponse token = this.tokenServicesFacade.createTokenForImplicit(pFlow, pClientId, pScopes, pRedirectionUrl, pAuthentication);
+            TokenResponse token = this.tokenServicesFacade.createTokenForImplicit(pAuthRequest, pClientId, pScopes, pRedirectionUrl, pAuthentication);
             
             RedirectView view = new RedirectView(
                     UriBuilder.build(pRedirectionUrl, 
@@ -219,7 +221,7 @@ public class AuthorizationController {
     
     /**
      * Create a page to ask user consent.
-     * @see authorize endpoint.
+     * See authorize endpoint.
      * 
      * @param pResponseType The response type.
      * @param pClientPublicId The client public id.

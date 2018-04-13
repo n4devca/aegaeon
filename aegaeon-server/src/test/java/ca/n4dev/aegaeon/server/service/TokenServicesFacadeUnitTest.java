@@ -3,14 +3,14 @@ package ca.n4dev.aegaeon.server.service;
 import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
 import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.api.model.*;
-import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
+import ca.n4dev.aegaeon.api.protocol.GrantType;
+import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 import ca.n4dev.aegaeon.server.view.TokenResponse;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -76,7 +76,7 @@ public class TokenServicesFacadeUnitTest {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
         when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findGrantTypesByclientId(anyLong())).thenReturn(buildGrants(GrantType.CODE_AUTH_CODE));
+        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(buildGrants(GrantType.AUTHORIZATION_CODE));
         when(this.authorizationCodeService.findByCode(anyString())).thenReturn(buildAuthCode("auth-code-0xff",
                                                                                                              "test.1",
                                                                                                              "https://cool-place.com/"));
@@ -188,7 +188,7 @@ public class TokenServicesFacadeUnitTest {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
         when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findGrantTypesByclientId(anyLong())).thenReturn(null);
+        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(null);
 
         facade.createTokenForAuthCode("test.1",
                                       "auth-code-0xff",
@@ -201,7 +201,7 @@ public class TokenServicesFacadeUnitTest {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
         when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findGrantTypesByclientId(anyLong())).thenReturn(buildGrants(GrantType.CODE_IMPLICIT));
+        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(buildGrants(GrantType.IMPLICIT));
 
         facade.createTokenForAuthCode("test.1",
                                       "auth-code-0xff",
@@ -214,7 +214,7 @@ public class TokenServicesFacadeUnitTest {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
         when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findGrantTypesByclientId(anyLong())).thenReturn(buildGrants(GrantType.CODE_AUTH_CODE));
+        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(buildGrants(GrantType.AUTHORIZATION_CODE));
         when(authorizationCodeService.findByCode(anyString())).thenReturn(buildAuthCode("other-auth-code-0xff",
                                                                                                         "test.1",
                                                                                                         "https://cool-place.com/"));
@@ -230,7 +230,7 @@ public class TokenServicesFacadeUnitTest {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
         when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findGrantTypesByclientId(anyLong())).thenReturn(buildGrants(GrantType.CODE_AUTH_CODE));
+        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(buildGrants(GrantType.AUTHORIZATION_CODE));
         when(authorizationCodeService.findByCode(anyString())).thenReturn(buildAuthCode("auth-code-0xff",
                                                                                                         "test.2",
                                                                                                         "https://cool-place.com/"));
@@ -246,7 +246,7 @@ public class TokenServicesFacadeUnitTest {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
         when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findGrantTypesByclientId(anyLong())).thenReturn(buildGrants(GrantType.CODE_AUTH_CODE));
+        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(buildGrants(GrantType.AUTHORIZATION_CODE));
         when(authorizationCodeService.findByCode(anyString())).thenReturn(buildAuthCode("auth-code-0xff",
                                                                                                         "test.1",
                                                                                                         "https://not-a-cool-place.com/"));
@@ -264,12 +264,12 @@ public class TokenServicesFacadeUnitTest {
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
 
-        SpringAuthUserDetails userDetails = new SpringAuthUserDetails(1L,
-                                                                      "tester",
-                                                                      "passwd",
-                                                                      true,
-                                                                      true,
-                                                                      authorities);
+        AegaeonUserDetails userDetails = new AegaeonUserDetails(1L,
+                                                                "tester",
+                                                                "passwd",
+                                                                true,
+                                                                true,
+                                                                authorities);
 
 
         return new UsernamePasswordAuthenticationToken(userDetails, "passwd", authorities);
@@ -286,13 +286,10 @@ public class TokenServicesFacadeUnitTest {
         return client;
     }
 
-    private List<ClientGrantType> buildGrants(String pGrantCode) {
-        List<ClientGrantType> grants = new ArrayList<>();
+    private List<ClientAuthFlow> buildGrants(GrantType pGrantCode) {
+        List<ClientAuthFlow> grants = new ArrayList<>();
 
-        GrantType g = new GrantType();
-        g.setCode(pGrantCode);
-
-        grants.add(new ClientGrantType(buildClient("test.1"), g, true));
+        grants.add(new ClientAuthFlow(buildClient("test.1"), pGrantCode));
 
         return grants;
     }

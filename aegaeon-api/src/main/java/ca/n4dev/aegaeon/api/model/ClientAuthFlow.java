@@ -21,11 +21,9 @@
  */
 package ca.n4dev.aegaeon.api.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+
+import ca.n4dev.aegaeon.api.protocol.GrantType;
 
 /**
  * ClientGrantType.java
@@ -37,35 +35,29 @@ import javax.persistence.Table;
  */
 
 @Entity
-@Table(name = "client_grant_type")
-public class ClientGrantType extends BaseEntity {
+@Table(name = "client_auth_flow")
+public class ClientAuthFlow extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "client_id")
     private Client client;
-    
-    @ManyToOne
-    @JoinColumn(name = "grant_type_id")
-    private GrantType grantType;
-    
-    @Column(nullable = false, columnDefinition = "TINYINT(1)")
-    private boolean selected;
-    
+
+    @Column(name = "flow")
+    @Enumerated(EnumType.STRING)
+    private GrantType flow;
+
     /**
      * Default Constructor.
      */
-    public ClientGrantType() {}
+    public ClientAuthFlow() {}
 
     /**
      * Full Constructor.
      * @param pClient The associated client.
-     * @param pGrantType The grant.
-     * @param pSelected If this grant has been selected.
      */
-    public ClientGrantType(Client pClient, GrantType pGrantType, boolean pSelected) {
+    public ClientAuthFlow(Client pClient, GrantType pGrantType) {
         this.client = pClient;
-        this.grantType = pGrantType;
-        this.selected = pSelected;
+        this.flow = pGrantType;
     }
 
     /**
@@ -83,30 +75,16 @@ public class ClientGrantType extends BaseEntity {
     }
 
     /**
-     * @return the grantType
+     * @return the flow
      */
-    public GrantType getGrantType() {
-        return grantType;
+    public GrantType getFlow() {
+        return flow;
     }
 
     /**
-     * @param pGrantType the grantType to set
+     * @param pFlow the flow to set
      */
-    public void setGrantType(GrantType pGrantType) {
-        grantType = pGrantType;
-    }
-
-    /**
-     * @return the selected
-     */
-    public boolean isSelected() {
-        return selected;
-    }
-
-    /**
-     * @param pSelected the selected to set
-     */
-    public void setSelected(boolean pSelected) {
-        selected = pSelected;
+    public void setFlow(GrantType pFlow) {
+        flow = pFlow;
     }
 }

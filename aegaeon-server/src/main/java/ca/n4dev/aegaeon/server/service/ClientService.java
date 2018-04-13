@@ -20,10 +20,27 @@
  */
 package ca.n4dev.aegaeon.server.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
-import ca.n4dev.aegaeon.api.model.*;
+import ca.n4dev.aegaeon.api.model.Client;
+import ca.n4dev.aegaeon.api.model.ClientAuthFlow;
+import ca.n4dev.aegaeon.api.model.ClientContact;
+import ca.n4dev.aegaeon.api.model.ClientRedirection;
+import ca.n4dev.aegaeon.api.model.ClientScope;
 import ca.n4dev.aegaeon.api.protocol.ClientConfig;
-import ca.n4dev.aegaeon.api.repository.*;
+import ca.n4dev.aegaeon.api.protocol.GrantType;
+import ca.n4dev.aegaeon.api.repository.ClientAuthFlowRepository;
+import ca.n4dev.aegaeon.api.repository.ClientContactRepository;
+import ca.n4dev.aegaeon.api.repository.ClientRedirectionRepository;
+import ca.n4dev.aegaeon.api.repository.ClientRepository;
+import ca.n4dev.aegaeon.api.repository.ClientRequestUriRepository;
+import ca.n4dev.aegaeon.api.repository.ClientScopeRepository;
+import ca.n4dev.aegaeon.api.repository.ScopeRepository;
 import ca.n4dev.aegaeon.api.token.TokenProviderType;
 import ca.n4dev.aegaeon.server.controller.dto.PageDto;
 import ca.n4dev.aegaeon.server.utils.Assert;
@@ -32,20 +49,16 @@ import ca.n4dev.aegaeon.server.utils.StringRandomizer;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import ca.n4dev.aegaeon.server.view.ClientView;
 import ca.n4dev.aegaeon.server.view.SelectableItemView;
+import ca.n4dev.aegaeon.server.view.Selection;
 import ca.n4dev.aegaeon.server.view.mapper.ClientMapper;
-import ca.n4dev.aegaeon.server.view.mapper.GrantTypeMapper;
 import ca.n4dev.aegaeon.server.view.mapper.ScopeMapper;
+import ca.n4dev.aegaeon.server.view.mapper.SelectionMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 
 /**
@@ -61,16 +74,15 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
 
     private ClientMapper clientMapper;
     private ScopeMapper scopeMapper;
-    private GrantTypeMapper grantTypeMapper;
+    private SelectionMapper selectionMapper;
 
-    private ClientGrantTypeRepository clientGrantTypeRepository;
+    private ClientAuthFlowRepository clientAuthFlowRepository;
     private ClientScopeRepository clientScopeRepository;
     private ClientRedirectionRepository clientRedirectionRepository;
     private ClientRequestUriRepository clientRequestUriRepository;
     private ClientContactRepository clientContactRepository;
 
     private ScopeRepository scopeRepository;
-    private GrantTypeRepository grantTypeRepository;
 
     /**
      * Default Constructor.
@@ -79,31 +91,29 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
      */
     @Autowired
     public ClientService(ClientRepository pRepository,
-                         ClientGrantTypeRepository pClientGrantTypeRepository,
+                         ClientAuthFlowRepository pClientGrantTypeRepository,
                          ClientScopeRepository pClientScopeRepository,
                          ClientRedirectionRepository pClientRedirectionRepository,
                          ClientRequestUriRepository pClientRequestUriRepository,
                          ClientContactRepository pClientContactRepository,
                          ScopeRepository pScopeRepository,
-                         GrantTypeRepository pGrantTypeRepository,
                          ClientMapper pClientMapper,
                          ScopeMapper pScopeMapper,
-                         GrantTypeMapper pGrantTypeMapper) {
+                         SelectionMapper pSelectionMapper) {
 
         super(pRepository);
 
-        this.clientGrantTypeRepository = pClientGrantTypeRepository;
+        this.clientAuthFlowRepository = pClientGrantTypeRepository;
         this.clientScopeRepository = pClientScopeRepository;
         this.clientRedirectionRepository = pClientRedirectionRepository;
         this.clientRequestUriRepository = pClientRequestUriRepository;
         this.clientContactRepository = pClientContactRepository;
 
         this.scopeRepository = pScopeRepository;
-        this.grantTypeRepository = pGrantTypeRepository;
 
         this.clientMapper = pClientMapper;
         this.scopeMapper = pScopeMapper;
-        this.grantTypeMapper = pGrantTypeMapper;
+        this.selectionMapper = pSelectionMapper;
     }
 
     /**
@@ -130,29 +140,12 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
         return this.clientRedirectionRepository.findByClientId(pClientId);
     }
 
-    List<ClientGrantType> findGrantTypesByclientId(Long pClientId) {
-        return this.clientGrantTypeRepository.findByClientId(pClientId);
+    List<ClientAuthFlow> findAuthFlowByclientId(Long pClientId) {
+        return this.clientAuthFlowRepository.findByClientId(pClientId);
     }
 
     List<ClientScope> findScopeByClientId(Long pClientId) {
         return this.clientScopeRepository.findByClientId(pClientId);
-    }
-
-    List<ClientScope> instanciateClientScope(Client pClient) {
-        List<Scope> allScopes = this.scopeRepository.findAll();
-        List<ClientScope> clientScopes = allScopes.stream()
-                                                  .map(scope -> new ClientScope(pClient, scope, false))
-                                                  .collect(Collectors.toList());
-
-        return clientScopes;
-    }
-
-    List<ClientGrantType> instanciateClientGrantType(Client pClient) {
-        List<GrantType> allGrant = this.grantTypeRepository.findAll();
-        List<ClientGrantType> clientGrants =
-                allGrant.stream().map(grantType -> new ClientGrantType(pClient, grantType, false)).collect(Collectors.toList());
-
-        return clientGrants;
     }
 
     List<ClientContact> findContactByClientId(Long pClientId) {
@@ -173,12 +166,11 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
     }
 
     @Transactional(readOnly = true)
-    public boolean hasGrantType(Long pClientId, String pGrantType) {
+    public boolean hasGrantType(Long pClientId, GrantType pGrantType) {
 
-        if (pClientId != null && Utils.isNotEmpty(pGrantType)) {
-            List<ClientGrantType> clientGrants = this.findGrantTypesByclientId(pClientId);
-
-            return Utils.isOneTrue(clientGrants, cg -> cg.getGrantType().getCode().equals(pGrantType));
+        if (pClientId != null && pGrantType != null) {
+            List<ClientAuthFlow> clientGrants = this.findAuthFlowByclientId(pClientId);
+            return Utils.isOneTrue(clientGrants, cg -> cg.getFlow().equals(pGrantType.toString()));
         }
 
         return false;
@@ -210,7 +202,7 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
                 List<ClientScope> clientScopes = this.findScopeByClientId(pId);
                 List<ClientRedirection> clientRedirections = this.findRedirectionsByclientId(pId);
                 List<ClientContact> contacts = this.findContactByClientId(pId);
-                List<ClientGrantType> clientGrantTypes = this.findGrantTypesByclientId(pId);
+                List<ClientAuthFlow> clientGrantTypes = this.findAuthFlowByclientId(pId);
 
 
                 ClientView clientView = this.clientMapper.clientToClientDto(client,
@@ -230,17 +222,17 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
 
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
-    public ClientView instanciateOne() {
+    public ClientView instantiateOne() {
         Client newClient = new Client(-1L);
         newClient.setSecret(StringRandomizer.getInstance().getRandomString(128));
 
         enforceProperValues(newClient);
 
         ClientView clientView = this.clientMapper.clientToClientDto(newClient,
-                                                   combineScopes(newClient, new ArrayList<>()),
-                                                   Collections.emptyList(),
-                                                   Collections.emptyList(),
-                                                   combineGrants(newClient, new ArrayList<>()));
+                                                                    combineScopes(newClient, new ArrayList<>()),
+                                                                    Collections.emptyList(),
+                                                                    Collections.emptyList(),
+                                                                    combineGrants(newClient, new ArrayList<>()));
 
         // Pre-select some values
         for (SelectableItemView cs : clientView.getScopes()) {
@@ -290,7 +282,7 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
 
         // Update dependencies
         updateScope(clientId, pEntity.getScopes());
-        updateGrantTypes(clientId, pEntity.getGrants());
+        updateAuthFlow(clientId, pEntity.getGrants());
         updateRedirectionUrls(clientId, pEntity.getRedirections());
         updateContacts(clientId, pEntity.getContacts());
 
@@ -329,42 +321,43 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
         Utils.isNotEmptyThen(diff.getRemovedObjs(), this.clientContactRepository::deleteAll);
     }
 
-    private void updateGrantTypes(Long pClientId, List<SelectableItemView> pGrantTypesView) {
-        List<ClientGrantType> grants = this.findGrantTypesByclientId(pClientId);
-        List<ClientGrantType> grantViews = this.grantTypeMapper.selectableItemViewsToClientGrantTypes(pGrantTypesView);
+    private void updateAuthFlow(Long pClientId, List<SelectableItemView> pGrantTypesView) {
+        List<ClientAuthFlow> clientAuthFlows = this.findAuthFlowByclientId(pClientId);
+        //List<ClientAuthFlow> selectedAuthFlows = this.grantTypeMapper.selectableItemViewsToClientGrantTypes(pGrantTypesView);
+        List<Selection<ClientAuthFlow>> selectedAuthFlows = this.selectionMapper.selectableItemViewsToClientAuthFlows(pGrantTypesView);
 
-        Differentiation<ClientGrantType> diff =
-                Utils.differentiate(grants, grantViews,
-                                    (clientGrant, viewGrant) -> clientGrant.getGrantType().getId().equals(viewGrant.getGrantType().getId()),
-                                    (clientGrant, viewGrant) -> {
-                                        clientGrant.setSelected(viewGrant.isSelected());
-                                        return clientGrant;
-                                    },
-                                    newGrant -> new ClientGrantType(new Client(pClientId), newGrant.getGrantType(), newGrant.isSelected()));
+        // Remove unselected
+        selectedAuthFlows = selectedAuthFlows.stream().filter(a -> a.isSelected()).collect(Collectors.toList());
+
+        Differentiation<ClientAuthFlow> diff =
+                Utils.differentiate(clientAuthFlows,
+                                    selectedAuthFlows,
+                                    (pClientAuthFlow, pViewFlow) -> pClientAuthFlow.getFlow() == pViewFlow.getEntity().getFlow(),
+                                    (pClientAuthFlow, pViewFlow) -> pClientAuthFlow,
+                                    pNewFlow -> new ClientAuthFlow(new Client(pClientId), pNewFlow.getEntity().getFlow()));
 
         // Create / Update existing
-        Utils.isNotEmptyThen(diff.getUpdatedObjs(), this.clientGrantTypeRepository::saveAll);
-        Utils.isNotEmptyThen(diff.getNewObjs(), this.clientGrantTypeRepository::saveAll);
+        // Utils.isNotEmptyThen(diff.getUpdatedObjs(), this.clientAuthFlowRepository::saveAll);
+        Utils.isNotEmptyThen(diff.getNewObjs(), this.clientAuthFlowRepository::saveAll);
 
         // Delete
-        Utils.isNotEmptyThen(diff.getRemovedObjs(), this.clientGrantTypeRepository::deleteAll);
+        Utils.isNotEmptyThen(diff.getRemovedObjs(), this.clientAuthFlowRepository::deleteAll);
     }
 
     private void updateScope(Long pClientId, List<SelectableItemView> pClientScopesView) {
         List<ClientScope> currentScopes = this.findScopeByClientId(pClientId);
-        List<ClientScope> viewScopes = this.scopeMapper.scopeViewsToClientScopes(pClientScopesView);
+        //List<ClientScope> viewScopes = this.scopeMapper.scopeViewsToClientScopes(pClientScopesView);
+        List<Selection<ClientScope>> viewScopes = this.selectionMapper.selectableItemViewsToClientScopes(pClientScopesView);
+
+        viewScopes = viewScopes.stream().filter(s -> s.isSelected()).collect(Collectors.toList());
 
         Differentiation<ClientScope> diff = Utils.differentiate(currentScopes, viewScopes,
-                                                                (c, v) -> c.getScope().getId().equals(v.getScope().getId()),
-                                                                (c, v) -> {
-                                                                    c.setSelected(v.isSelected());
-                                                                    return c;
-                                                                },
-                                                                (n) -> new ClientScope(new Client(pClientId), n.getScope(),
-                                                                                       n.isSelected()));
+                                                                (c, v) -> c.getScope().getId().equals(v.getEntity().getId()),
+                                                                (c, v) -> c,
+                                                                (n) -> new ClientScope(new Client(pClientId), n.getEntity().getScope()));
 
         // Create / Update existing
-        Utils.isNotEmptyThen(diff.getUpdatedObjs(), this.clientScopeRepository::saveAll);
+        // Utils.isNotEmptyThen(diff.getUpdatedObjs(), this.clientScopeRepository::saveAll);
         Utils.isNotEmptyThen(diff.getNewObjs(), this.clientScopeRepository::saveAll);
 
         // Delete
@@ -438,19 +431,24 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
         }
     }
 
-    private List<ClientScope> combineScopes(Client pClient, List<ClientScope> pClientScopes) {
+    private List<Selection<ClientScope>> combineScopes(Client pClient, List<ClientScope> pClientScopes) {
+
         return Utils.combine(pClientScopes,
                              this.scopeRepository.findAll(),
                              (pClientScope, pScope) -> Utils.equals(pClientScope.getScope(), pScope),
-                             pScope -> new ClientScope(pClient, pScope, pScope.isDefaultValue()));
+                             pScope -> new Selection<>(new ClientScope(pClient, pScope), pScope.isDefaultValue()),
+                             pClientScope -> new Selection<>(pClientScope, true));
 
     }
 
-    private List<ClientGrantType> combineGrants(Client pClient, List<ClientGrantType> pClientGrantTypes) {
-        return Utils.combine(pClientGrantTypes,
-                             this.grantTypeRepository.findAll(),
-                             (pClientGrant, pGrant) -> Utils.equals(pClientGrant.getGrantType(), pGrant),
-                             pGrant -> new ClientGrantType(pClient, pGrant, false));
+    private List<Selection<ClientAuthFlow>> combineGrants(Client pClient, List<ClientAuthFlow> pClientAuthFlows) {
+
+        return Utils.combine(pClientAuthFlows,
+                             Arrays.asList(GrantType.values()),
+                             (pClientAuthFlow, pGrantType) -> pGrantType.equals(pClientAuthFlow.getFlow()),
+                             pGrantType -> new Selection<>(new ClientAuthFlow(pClient, pGrantType), false),
+                             pClientAuthFlow -> new Selection<>(pClientAuthFlow, true));
+
     }
 
 

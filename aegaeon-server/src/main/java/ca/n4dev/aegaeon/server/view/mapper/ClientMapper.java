@@ -23,11 +23,12 @@ package ca.n4dev.aegaeon.server.view.mapper;
 
 import java.util.List;
 
+import ca.n4dev.aegaeon.server.view.Selection;
 import org.mapstruct.*;
 
 import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.ClientContact;
-import ca.n4dev.aegaeon.api.model.ClientGrantType;
+import ca.n4dev.aegaeon.api.model.ClientAuthFlow;
 import ca.n4dev.aegaeon.api.model.ClientRedirection;
 import ca.n4dev.aegaeon.api.model.ClientScope;
 import ca.n4dev.aegaeon.server.view.ClientView;
@@ -40,7 +41,7 @@ import ca.n4dev.aegaeon.server.view.ClientView;
  * @author by rguillemette
  * @since Dec 8, 2017
  */
-@Mapper(componentModel = "spring", uses = {ScopeMapper.class, GrantTypeMapper.class})
+@Mapper(componentModel = "spring", uses = {ScopeMapper.class, SelectionMapper.class})
 public interface ClientMapper {
     
     @Mappings({
@@ -51,10 +52,10 @@ public interface ClientMapper {
         @Mapping(target = "grants", source = "pClientGrantTypes")
     })
     ClientView clientToClientDto(Client pClient, 
-                                 List<ClientScope> pClientScopes, 
+                                 List<Selection<ClientScope>> pClientScopes,
                                  List<ClientRedirection> pClientRedirections, 
                                  List<ClientContact> pClientContacts,
-                                 List<ClientGrantType> pClientGrantTypes);
+                                 List<Selection<ClientAuthFlow>> pClientGrantTypes);
     
     @InheritInverseConfiguration
     @Mappings({

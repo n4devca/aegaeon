@@ -48,15 +48,11 @@ public class ClientScope extends BaseEntity {
     @JoinColumn(name = "scope_id")
     private Scope scope;
     
-    @Type(type = "boolean")
-    private boolean selected;
-
     public ClientScope() {}
 
-    public ClientScope(Client pClient, Scope pScope, boolean pSelected) {
+    public ClientScope(Client pClient, Scope pScope) {
         this.client = pClient;
         this.scope = pScope;
-        this.selected = pSelected;
     }
 
 
@@ -88,19 +84,4 @@ public class ClientScope extends BaseEntity {
         scope = pScope;
     }
 
-    /**
-     * @return the selected
-     */
-    public boolean isSelected() {
-        return selected;
-    }
-
-    /**
-     * @param pSelected the selected to set
-     */
-    public void setSelected(boolean pSelected) {
-        selected = pSelected;
-    }
-
-    
 }

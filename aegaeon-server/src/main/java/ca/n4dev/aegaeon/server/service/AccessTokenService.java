@@ -25,10 +25,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
+import ca.n4dev.aegaeon.api.exception.OpenIdException;
+import ca.n4dev.aegaeon.api.protocol.AuthRequest;
+import ca.n4dev.aegaeon.api.protocol.ResponseType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
@@ -37,14 +38,10 @@ import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.ClientScope;
 import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.api.model.User;
-import ca.n4dev.aegaeon.api.protocol.Flow;
-import ca.n4dev.aegaeon.api.protocol.FlowFactory;
 import ca.n4dev.aegaeon.api.repository.AccessTokenRepository;
 import ca.n4dev.aegaeon.api.token.OAuthUser;
 import ca.n4dev.aegaeon.api.token.Token;
 import ca.n4dev.aegaeon.api.token.TokenType;
-import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
-import ca.n4dev.aegaeon.server.security.AccessTokenAuthenticationException;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
@@ -86,7 +83,7 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#createManagedToken(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    AccessToken createManagedToken(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
+    AccessToken createManagedToken(AuthRequest pAuthRequest, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
         
         Token token = this.tokenFactory.createToken(pUser, 
                                                     pClient, 
@@ -120,7 +117,7 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#validate(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    void validate(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
+    void validate(AuthRequest pAuthRequest, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
         // No more validations for access token.
     }
 
@@ -128,13 +125,13 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#isTokenToCreate(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    boolean isTokenToCreate(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) {
+    boolean isTokenToCreate(AuthRequest pAuthRequest, User pUser, Client pClient, List<Scope> pScopes) {
         
         // OpenID: don't return access token if the requested type is only id_token
-        if (pFlow.getResponseType().length == 1 && pFlow.getResponseType()[0].equals(FlowFactory.PARAM_ID_TOKEN)) {
+        if (pAuthRequest == null || Utils.equals(pAuthRequest.getResponseTypeParam(), "id_token")) {
             return false;
         }
-        
+
         return true;
     }
     
@@ -155,8 +152,6 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
             
             AccessToken at = new AccessToken();
             at.setClient(pClient);
-            //at.setUser(pUser);
-            
             at.setToken(token.getValue());
             at.setValidUntil(token.getValidUntil());
             
@@ -166,8 +161,7 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
             
             return this.save(at);
         } catch (Exception e) {
-            // TODO(RG) : throw something meaningful
-            throw new ServerException(e);
+            throw new OpenIdException(ServerExceptionCode.UNEXPECTED_ERROR);
         }
     }
     
@@ -213,7 +207,6 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
          */
         @Override
         public String getUniqueIdentifier() {
-            // TODO Auto-generated method stub
             return this.client.getPublicId();
         }
 

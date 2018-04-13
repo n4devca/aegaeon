@@ -56,8 +56,11 @@ public class UriBuilder {
     
     public static String build(String pUrl, OAuthPublicRedirectionException pOAuthPublicException) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
-        
-        append(params, "state", pOAuthPublicException.getState());
+
+        if (pOAuthPublicException.getAuthRequest() != null) {
+            append(params, "state", pOAuthPublicException.getAuthRequest().getState());
+        }
+
         append(params, "error", pOAuthPublicException.getError().toString());
         
         return build(pUrl, params);
