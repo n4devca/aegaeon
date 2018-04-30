@@ -21,11 +21,7 @@
  */
 package ca.n4dev.aegaeon.api.exception;
 
-import java.util.List;
-
 import ca.n4dev.aegaeon.api.protocol.AuthRequest;
-import ca.n4dev.aegaeon.api.protocol.Flow;
-import ca.n4dev.aegaeon.api.protocol.ResponseType;
 
 /**
  * OAuthPublicRedirectionException.java
@@ -38,6 +34,7 @@ import ca.n4dev.aegaeon.api.protocol.ResponseType;
  * @author by rguillemette
  * @since May 22, 2017
  */
+@Deprecated
 public class OAuthPublicRedirectionException extends BaseOAuthException {
 
     private static final long serialVersionUID = -8734236117353192521L;
@@ -47,7 +44,7 @@ public class OAuthPublicRedirectionException extends BaseOAuthException {
      * @param pError The error code.
      */
     public OAuthPublicRedirectionException(Class<?> pSource,
-                                           OAuthErrorType pError,
+                                           OpenIdErrorType pError,
                                            AuthRequest pAuthRequest,
                                            String pRedirectUrl) {
         super(pSource, pError, pAuthRequest);

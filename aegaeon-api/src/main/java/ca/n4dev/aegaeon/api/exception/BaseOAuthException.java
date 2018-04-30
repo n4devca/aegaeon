@@ -21,14 +21,9 @@
  */
 package ca.n4dev.aegaeon.api.exception;
 
-import java.util.List;
-
 import ca.n4dev.aegaeon.api.protocol.AuthRequest;
-import ca.n4dev.aegaeon.api.protocol.ResponseType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import ca.n4dev.aegaeon.api.protocol.Flow;
 
 /**
  * BaseOAuthException.java
@@ -46,7 +41,7 @@ public class BaseOAuthException extends ServerException {
     
     protected String userId;
     
-    protected OAuthErrorType error;
+    protected OpenIdErrorType error;
     
     @JsonIgnore
     protected AuthRequest authRequest;
@@ -63,12 +58,12 @@ public class BaseOAuthException extends ServerException {
     @JsonIgnore
     protected String clientPublicId;
 
-    public BaseOAuthException(Class<?> pSource, OAuthErrorType pError) {
+    public BaseOAuthException(Class<?> pSource, OpenIdErrorType pError) {
         this(pSource, pError, null);
     }
 
 
-    public BaseOAuthException(Class<?> pSource, OAuthErrorType pError, AuthRequest pAuthRequest) {
+    public BaseOAuthException(Class<?> pSource, OpenIdErrorType pError, AuthRequest pAuthRequest) {
         this.source = pSource;
         this.error = pError;
         this.authRequest = pAuthRequest;
@@ -90,14 +85,14 @@ public class BaseOAuthException extends ServerException {
     /**
      * @return the error
      */
-    public OAuthErrorType getError() {
+    public OpenIdErrorType getError() {
         return error;
     }
 
     /**
      * @param pError the error to set
      */
-    public void setError(OAuthErrorType pError) {
+    public void setError(OpenIdErrorType pError) {
         error = pError;
     }
 

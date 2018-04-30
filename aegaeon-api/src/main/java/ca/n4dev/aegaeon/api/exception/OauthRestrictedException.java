@@ -20,10 +20,7 @@
  */
 package ca.n4dev.aegaeon.api.exception;
 
-import java.util.List;
-
 import ca.n4dev.aegaeon.api.protocol.AuthRequest;
-import ca.n4dev.aegaeon.api.protocol.ResponseType;
 
 /**
  * OauthRestrictedException.java
@@ -36,6 +33,7 @@ import ca.n4dev.aegaeon.api.protocol.ResponseType;
  * @author by rguillemette
  * @since May 22, 2017
  */
+@Deprecated
 public class OauthRestrictedException extends BaseOAuthException {
 
     private static final long serialVersionUID = 5891552760445577562L;
@@ -49,7 +47,7 @@ public class OauthRestrictedException extends BaseOAuthException {
      * @param pRedirectUrl The redirection url.
      */
     public OauthRestrictedException(Class<?> pSource,
-                                    OAuthErrorType pError,
+                                    OpenIdErrorType pError,
                                     AuthRequest pAuthRequest,
                                     String pClientPublicId,
                                     String pRedirectUrl) {
@@ -65,7 +63,7 @@ public class OauthRestrictedException extends BaseOAuthException {
      * @param pMessage A message or error description.
      */
     public OauthRestrictedException(Class<?> pSource,
-                                    OAuthErrorType pError,
+                                    OpenIdErrorType pError,
                                     AuthRequest pAuthRequest,
                                     String pClientPublicId,
                                     String pRedirectUrl,

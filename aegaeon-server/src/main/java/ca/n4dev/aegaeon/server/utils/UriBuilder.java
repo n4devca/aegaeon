@@ -21,12 +21,16 @@
  */
 package ca.n4dev.aegaeon.server.utils;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import ca.n4dev.aegaeon.api.exception.OpenIdErrorType;
+import ca.n4dev.aegaeon.api.exception.OpenIdException;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
 import ca.n4dev.aegaeon.server.view.TokenResponse;
 
 /**
@@ -38,6 +42,16 @@ import ca.n4dev.aegaeon.server.view.TokenResponse;
  * @since May 17, 2017
  */
 public class UriBuilder {
+
+    public static final String REDIRECTION_ERROR_KEY = "error";
+    public static final String REDIRECTION_DESC_KEY = "error_description";
+
+    public static final String PARAM_PROMPT = "prompt";
+    public static final String PARAM_STATE = "state";
+    public static final String PARAM_CLIENT_ID = "client_id";
+    public static final String PARAM_REDIRECTION_URL = "redirection_url";
+    public static final String PARAM_RESPONSE_TYPE = "response_type";
+    public static final String PARAM_NONCE = "nonce";
 
     public static String build(String pUrl, TokenResponse pTokenResponse, String pState) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
@@ -51,24 +65,37 @@ public class UriBuilder {
         append(params, "scope", pTokenResponse.getScope());
         append(params, "state", pState);
 
-        return build(pUrl, params);
+        return build(pUrl, params, false);
     }
-    
-    public static String build(String pUrl, OAuthPublicRedirectionException pOAuthPublicException) {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
 
-        if (pOAuthPublicException.getAuthRequest() != null) {
-            append(params, "state", pOAuthPublicException.getAuthRequest().getState());
+    public static String build(String pUrl, OpenIdException pOpenIdException, boolean pAsFragment) {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.setAll(buildModel(pOpenIdException));
+        return build(pUrl, params, pAsFragment);
+    }
+
+    public static String build(String pUrl, MultiValueMap<String, String> pParam, boolean pAsFragment) {
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(pUrl);
+
+        if (pAsFragment) {
+            String queryParams = UriComponentsBuilder.fromHttpUrl(pUrl).queryParams(pParam).build().getQuery();
+            builder = builder.fragment(queryParams);
+        } else {
+            builder = builder.queryParams(pParam);
         }
-
-        append(params, "error", pOAuthPublicException.getError().toString());
-        
-        return build(pUrl, params);
-    }
-    
-    public static String build(String pUrl, MultiValueMap<String, String> pParam) {
-        UriComponents uriComponents =  UriComponentsBuilder.fromHttpUrl(pUrl).queryParams(pParam).build();
+        UriComponents uriComponents =  builder.build();
         return uriComponents.toUri().toString();
+    }
+
+    public static Map<String, String> buildModel(OpenIdException pOpenIdException) {
+        LinkedHashMap<String, String> model = new LinkedHashMap<>();
+
+        model.put(REDIRECTION_ERROR_KEY, OpenIdErrorType.fromServerCode(pOpenIdException.getCode()).toString());
+        model.put(REDIRECTION_DESC_KEY, pOpenIdException.getMessage());
+        model.put(PARAM_STATE, pOpenIdException.getClientState());
+
+        return model;
     }
     
     private static void append(MultiValueMap<String, String> pParams, String pKey, String pValue) {
@@ -76,4 +103,5 @@ public class UriBuilder {
             pParams.add(pKey, pValue);
         }
     }
+
 }

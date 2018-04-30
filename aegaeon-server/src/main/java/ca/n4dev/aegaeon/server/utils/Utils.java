@@ -34,9 +34,12 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
+import ca.n4dev.aegaeon.api.exception.OpenIdException;
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -238,6 +241,10 @@ public class Utils {
     }
 
     public static Map<String, String> asMap(String... pKeyValues) {
+        return asMap(false, pKeyValues);
+    }
+
+    public static Map<String, String> asMap(boolean pSkipNullValue, String... pKeyValues) {
         Map<String, String> p = new LinkedHashMap<>();
 
         if (pKeyValues != null) {
@@ -247,7 +254,9 @@ public class Utils {
             }
 
             for (int i = 0, j = pKeyValues.length; i < j; i += 2) {
-                p.put(pKeyValues[i], pKeyValues[i + 1]);
+                if (!pSkipNullValue || pKeyValues[i + 1] != null) {
+                    p.put(pKeyValues[i], pKeyValues[i + 1]);
+                }
             }
         }
 

@@ -1,5 +1,6 @@
 package ca.n4dev.aegaeon.api.exception;
 
+import ca.n4dev.aegaeon.api.protocol.GrantType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -14,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class OpenIdException extends ServerException {
 
     @JsonProperty("error")
-    private OAuthErrorType error;
+    private OpenIdErrorType error;
 
     @JsonProperty("error_description")
     private String errorDescription;
@@ -26,16 +27,37 @@ public class OpenIdException extends ServerException {
     private String username;
 
     @JsonIgnore
+    private Class<?> source;
+
+    @JsonIgnore
     private String clientPublicId;
 
     @JsonIgnore
-    private Class<?> source;
+    private String clientState;
+
+    @JsonIgnore
+    private String clientUri;
+
+    @JsonIgnore
+    private ErrorHandling errorHandling;
+
+    @JsonIgnore
+    private GrantType requestedGrantType;
+
 
     /**
      * Basic Constructor.
      * @param pServerExceptionCode The internal server error code.
      */
     public OpenIdException(ServerExceptionCode pServerExceptionCode) {
+        super(pServerExceptionCode);
+    }
+
+    /**
+     * Basic Constructor.
+     * @param pServerExceptionCode The internal server error code.
+     */
+    public OpenIdException(ServerExceptionCode pServerExceptionCode, Throwable pThrowable) {
         super(pServerExceptionCode);
     }
 
@@ -52,14 +74,14 @@ public class OpenIdException extends ServerException {
     /**
      * @return the error
      */
-    public OAuthErrorType getError() {
+    public OpenIdErrorType getError() {
         return error;
     }
 
     /**
      * @param pError the error to set
      */
-    public void setError(OAuthErrorType pError) {
+    public void setError(OpenIdErrorType pError) {
         error = pError;
     }
 
@@ -132,4 +154,61 @@ public class OpenIdException extends ServerException {
     public void setSource(Class<?> pSource) {
         source = pSource;
     }
+
+    /**
+     * @return the clientState
+     */
+    public String getClientState() {
+        return clientState;
+    }
+
+    /**
+     * @param pClientState the clientState to set
+     */
+    public void setClientState(String pClientState) {
+        clientState = pClientState;
+    }
+
+    /**
+     * @return the clientUri
+     */
+    public String getClientUri() {
+        return clientUri;
+    }
+
+    /**
+     * @param pClientUri the clientUri to set
+     */
+    public void setClientUri(String pClientUri) {
+        clientUri = pClientUri;
+    }
+
+    /**
+     * @return the errorHandling
+     */
+    public ErrorHandling getErrorHandling() {
+        return errorHandling;
+    }
+
+    /**
+     * @return the requestedGrantType
+     */
+    public GrantType getRequestedGrantType() {
+        return requestedGrantType;
+    }
+
+    /**
+     * @param pRequestedGrantType the requestedGrantType to set
+     */
+    public void setRequestedGrantType(GrantType pRequestedGrantType) {
+        requestedGrantType = pRequestedGrantType;
+    }
+
+    /**
+     * @param pErrorHandling the errorHandling to set
+     */
+    public void setErrorHandling(ErrorHandling pErrorHandling) {
+        errorHandling = pErrorHandling;
+    }
+
 }

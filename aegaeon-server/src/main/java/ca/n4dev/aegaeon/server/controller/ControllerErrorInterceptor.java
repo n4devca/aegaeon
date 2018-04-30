@@ -21,235 +21,266 @@
 package ca.n4dev.aegaeon.server.controller;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import ca.n4dev.aegaeon.api.exception.OAuthErrorType;
-import ca.n4dev.aegaeon.api.exception.OAuthPublicJsonException;
-import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
-import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
+import ca.n4dev.aegaeon.api.exception.ErrorHandling;
+import ca.n4dev.aegaeon.api.exception.OpenIdErrorType;
 import ca.n4dev.aegaeon.api.exception.OpenIdException;
 import ca.n4dev.aegaeon.api.exception.ServerException;
+import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.api.exception.Severity;
 import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
 import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
-import ca.n4dev.aegaeon.api.protocol.ResponseType;
+import ca.n4dev.aegaeon.api.protocol.GrantType;
 import ca.n4dev.aegaeon.server.config.ServerInfo;
 import ca.n4dev.aegaeon.server.utils.UriBuilder;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.view.RedirectView;
 
 /**
  * ControllerErrorInterceptor.java
- *
- * TODO(rguillemette) Add description
+ * <p>
+ * Controller catching all exception and able to answer to UA or display
+ * an internal error page.
  *
  * @author by rguillemette
  * @since May 12, 2017
  */
 @ControllerAdvice
-public class ControllerErrorInterceptor {
+public class ControllerErrorInterceptor extends BaseUiController {
 
 
     /*
-    * 1- Redirection (auth-endpoint with question mark or fragment)
-    *   > error, error_description, error_uri, state
-    *
-    * 2- Return Json (token endpoint)
-    *   > error, error_description, error_uri
-    *
-    * 3- Nothing returned (displayed by Aegaeon)
-    *   > error, error_description, client information
-    *
-    * */
+     * 1- Redirection (auth-endpoint with question mark or fragment)
+     *   > error, error_description, error_uri, state
+     *
+     * 2- Return Json (token endpoint)
+     *   > error, error_description, error_uri
+     *
+     * 3- Nothing returned (displayed by Aegaeon)
+     *   > error, error_description, client information
+     *
+     * */
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ControllerErrorInterceptor.class);
 
     private static final String ERROR_VIEW = "error";
-    private static final String HASHTAG = "#";
-    private static final String QUESTIONMARK = "?";
+    private static final String REDIRECTION_ERROR_KEY = "error";
+    private static final String REDIRECTION_DESC_KEY = "error_description";
+    private static final String REDIRECTION_STATE_KEY = "state";
 
+    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private OpenIdEventLogger openIdEventLogger;
     private ServerInfo serverInfo;
 
-
-
-    public ControllerErrorInterceptor(OpenIdEventLogger pOpenIdEventLogger, ServerInfo pServerInfo) {
+    /**
+     * Constructor.
+     *
+     * @param pOpenIdEventLogger event Logger.
+     * @param pServerInfo        Aegaeon server info.
+     */
+    @Autowired
+    public ControllerErrorInterceptor(OpenIdEventLogger pOpenIdEventLogger, ServerInfo pServerInfo, MessageSource pMessageSource) {
+        super(pMessageSource);
         this.openIdEventLogger = pOpenIdEventLogger;
         this.serverInfo = pServerInfo;
-    }
-
-    private ModelAndView getBasicPage(String pViewName, Throwable pThrowable) {
-        ModelAndView mv = new ModelAndView(pViewName);
-
-        mv.addObject("error", pThrowable);
-        mv.addObject("serverInfo", this.serverInfo);
-
-        return mv;
-    }
-
-    /**
-     *
-     * @param pOAuthPublicException
-     * @return
-     */
-    @ExceptionHandler(OAuthPublicRedirectionException.class)
-    public RedirectView oauthPublicException(final OAuthPublicRedirectionException pOAuthPublicException) {
-
-        this.openIdEventLogger.log(OpenIdEvent.PUBLIC_ERROR,
-                                   (Class<?>) Utils.coalesce(pOAuthPublicException.getSource(), pOAuthPublicException.getClass()),
-                                   null,
-                                   pOAuthPublicException);
-
-        String url = UriBuilder.build(pOAuthPublicException.getRedirectUrl(), pOAuthPublicException);
-
-        if (Utils.contains(pOAuthPublicException.getAuthRequest().getResponseTypes(), ResponseType.code)) {
-            return new RedirectView(url, false);
-
-            // TODO(RG) check the rule here
-        } else if (Utils.contains(pOAuthPublicException.getAuthRequest().getResponseTypes(), ResponseType.id_token)) {
-            // TODO(RG): this smell bad
-            url = url.replace(QUESTIONMARK, HASHTAG);
-            return new RedirectView(url, false);
-        } else {
-            // TODO(RG) Client Cred: check what we should do in this case
-            return new RedirectView(url, false);
-        }
-    }
-
-    /**
-     *
-     * @param pOauthRestrictedException
-     * @return
-     */
-    @ExceptionHandler(OauthRestrictedException.class)
-    public ModelAndView oauthRestrictedException(final OauthRestrictedException pOauthRestrictedException) {
-        this.openIdEventLogger.log(OpenIdEvent.RESTRICTED_ERROR, pOauthRestrictedException.getSource(), null, pOauthRestrictedException);
-
-        ModelAndView mv = getBasicPage("error", pOauthRestrictedException);
-
-        mv.addObject("type", "OauthRestrictedException");
-
-        return mv;
-    }
-
-    @ExceptionHandler(OAuthPublicJsonException.class)
-    @ResponseBody
-    public ResponseEntity<OAuthPublicJsonException> oauthPublicJsonException(
-            final OAuthPublicJsonException pOAuthPublicJsonException) {
-
-        this.openIdEventLogger.log(OpenIdEvent.PUBLIC_ERROR, pOAuthPublicJsonException.getSource(), null, pOAuthPublicJsonException);
-
-        return new ResponseEntity<OAuthPublicJsonException>(pOAuthPublicJsonException,
-                                                            getStatusFromError(pOAuthPublicJsonException.getError()));
     }
 
 
     @ExceptionHandler(OpenIdException.class)
     public Object openIdException(OpenIdException pOpenIdException,
+                                  Locale pLocale,
                                   HttpServletRequest pHttpServletRequest,
                                   HttpServletResponse pHttpServletResponse) {
+        // TODO: Log by type
         this.openIdEventLogger.log(OpenIdEvent.OTHERS, pOpenIdException.getSource(), pOpenIdException.getError());
+        ErrorHandling answerType = getErrorAnswerType(pOpenIdException);
 
-        /* logic here */
+        if (answerType == ErrorHandling.JSON) {
+            return toJsonView(pOpenIdException, pHttpServletResponse);
+        } else if (answerType == ErrorHandling.REDIRECT) {
+            return redirectErrorToClient(pOpenIdException.getClientUri(), pOpenIdException);
+        }
 
-        ModelAndView mv = getBasicPage("error", pOpenIdException);
+        // Default to internal
+        return internalErrorPage(Severity.INFO,
+                                 pLocale,
+                                 OpenIdErrorType.fromServerCode(pOpenIdException.getCode()).toString(),
+                                 null,
+                                 pHttpServletRequest,
+                                 pHttpServletResponse);
+    }
 
-        mv.addObject("type", "OauthRestrictedException");
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ModelAndView notFoundException(final NoHandlerFoundException pNoHandlerFoundException,
+                                          Locale pLocale,
+                                          HttpServletRequest pHttpServletRequest,
+                                          HttpServletResponse pHttpServletResponse) {
+
+        //return internalErrorPage(pNoHandlerFoundException, pHttpServletRequest, pHttpServletResponse);
+
+        return internalErrorPage(Severity.INFO,
+                                 pLocale,
+                                 "notfound",
+                                 getLabel("notfound", new String[]{pNoHandlerFoundException.getRequestURL()}, pLocale),
+                                 pHttpServletRequest,
+                                 pHttpServletResponse);
+
+    }
+
+    @ExceptionHandler(ServerException.class)
+    public ModelAndView genericServerException(final ServerException pServerException,
+                                               Locale pLocale,
+                                               HttpServletRequest pHttpServletRequest,
+                                               HttpServletResponse pHttpServletResponse) {
+
+        return internalErrorPage(Severity.WARNING,
+                                 pLocale,
+                                 "serverexception",
+                                 getLabel("serverexception", new String[]{pServerException.getCode().toString()}, pLocale),
+                                 pHttpServletRequest,
+                                 pHttpServletResponse);
+    }
+
+    @ExceptionHandler(Throwable.class)
+    public ModelAndView exception(final Throwable pThrowable,
+                                  Locale pLocale,
+                                  HttpServletRequest pHttpServletRequest,
+                                  HttpServletResponse pHttpServletResponse) {
+
+        return internalErrorPage(Severity.DANGER,
+                                 pLocale,
+                                 "page.error.list.unexpected",
+                                 null,
+                                 pHttpServletRequest,
+                                 pHttpServletResponse);
+    }
+
+
+    private ModelAndView internalErrorPage(Severity pSeverity,
+                                           Locale pLocale,
+                                           String pErrorType,
+                                           String pErrorMessage,
+                                           HttpServletRequest pHttpServletRequest,
+                                           HttpServletResponse pHttpServletResponse) {
+
+        LOGGER.error("internalErrorPage",
+                     new StringBuilder()
+                             .append(pSeverity)
+                             .append(">")
+                             .append(pErrorType)
+                             .append("/")
+                             .append(pErrorMessage)
+                             .toString());
+
+        /*
+         * date
+         * severity
+         * errorType
+         * errorMessage
+         * descriptionCode | description
+         * */
+
+        ModelAndView mv = new ModelAndView(ERROR_VIEW);
+
+        String errorMessage = Utils.isNotEmpty(pErrorMessage) ?
+                pErrorMessage : getLabel("page.error.list." + pErrorType, pLocale);
+
+        mv.addObject("date", formatter.format(LocalDateTime.now()));
+        mv.addObject("severity", pSeverity.toString());
+        mv.addObject("errorMessage", errorMessage);
+        mv.addObject("errorType", pErrorType);
+        mv.addObject("serverInfo", this.serverInfo);
+
 
         return mv;
     }
 
-    private ModelAndView toHtmlView(Map<String, ? extends Object> pModel) {
+    private RedirectView redirectErrorToClient(String pRedirectionUri, OpenIdException pOpenIdException) {
+        RedirectView view = new RedirectView();
+        view.setContextRelative(false);
+
+        // Build Url
+        String url = UriBuilder.build(pRedirectionUri,
+                                      pOpenIdException,
+                                      pOpenIdException.getRequestedGrantType() == GrantType.IMPLICIT);
+
+        view.setUrl(url);
+
+        return view;
+    }
+
+
+    private ModelAndView toHtmlView(Map<String, ?> pModel) {
         ModelAndView view = new ModelAndView(ERROR_VIEW);
         view.addAllObjects(pModel);
         return view;
     }
 
-    private ModelAndView toJsonView(Map<String, Object> pModel, HttpServletResponse pHttpServletResponse) {
+    private ModelAndView toJsonView(OpenIdException pOpenIdException, HttpServletResponse pHttpServletResponse) {
         MappingJackson2HttpMessageConverter jsonConverter = new MappingJackson2HttpMessageConverter();
         MediaType jsonMimeType = MediaType.APPLICATION_JSON;
 
         try {
-            jsonConverter.write(pModel, jsonMimeType, new ServletServerHttpResponse(pHttpServletResponse));
+
+            Map<String, String> models = UriBuilder.buildModel(pOpenIdException);
+            jsonConverter.write(models, jsonMimeType, new ServletServerHttpResponse(pHttpServletResponse));
             return null;
+
         } catch (IOException pIOException) {
             return toHtmlView(Utils.asMap("exception", pIOException.getMessage()));
         }
 
     }
 
-    private HttpStatus getStatusFromError(OAuthErrorType pOAuthErrorType) {
-        if (pOAuthErrorType != null) {
-            switch (pOAuthErrorType) {
-                case temporarily_unavailable:
-                    return HttpStatus.INTERNAL_SERVER_ERROR;
+    private boolean isCode(ServerExceptionCode pServerExceptionCode, ServerExceptionCode pCode) {
+        return Utils.equals(pServerExceptionCode, pCode);
+    }
 
-                case invalid_grant:
-                case invalid_scope:
-                case unsupported_response_type:
-                    return HttpStatus.BAD_REQUEST;
+    private ErrorHandling getErrorAnswerType(OpenIdException pOpenIdException) {
 
-                case unauthorized_client:
-                    return HttpStatus.UNAUTHORIZED;
+        if (pOpenIdException != null) {
 
+            if (isCode(ServerExceptionCode.CLIENT_REDIRECTIONURL_INVALID, pOpenIdException.getCode()) ||
+                    isCode(ServerExceptionCode.CLIENT_EMPTY, pOpenIdException.getCode()) ||
+                    isCode(ServerExceptionCode.AUTH_CODE_UNEXPECTED_CLIENT, pOpenIdException.getCode()) ||
+                    isCode(ServerExceptionCode.AUTH_CODE_UNEXPECTED_REDIRECTION, pOpenIdException.getCode()) ||
+                    Utils.isEmpty(pOpenIdException.getClientUri())) {
+
+                return ErrorHandling.INTERNAL;
+
+            } else if (Utils.isNotEmpty(pOpenIdException.getClientUri()) &&
+                    Utils.isNotEmpty(pOpenIdException.getClientPublicId())) {
+
+                if ((pOpenIdException.getRequestedGrantType() == GrantType.IMPLICIT || pOpenIdException
+                        .getRequestedGrantType() == GrantType.HYBRID)) {
+                    return ErrorHandling.REDIRECT;
+                } else {
+                    return ErrorHandling.JSON;
+                }
             }
         }
 
-        return HttpStatus.INTERNAL_SERVER_ERROR;
-    }
-
-
-    @ExceptionHandler(NoHandlerFoundException.class)
-    public ModelAndView notFoundException(final NoHandlerFoundException pNoHandlerFoundException) {
-        LOGGER.error("Not found");
-
-        ModelAndView mv = getBasicPage("error-not-found", pNoHandlerFoundException);
-        mv.addObject("requestUrl", pNoHandlerFoundException.getRequestURL());
-        mv.addObject("serverInfo", this.serverInfo);
-
-        return mv;
-    }
-
-    @ExceptionHandler(ServerException.class)
-    public ModelAndView genericServerException(final ServerException pServerException) {
-        LOGGER.error("Generic ServerException", pServerException);
-
-        ModelAndView mv = getBasicPage("error", pServerException);
-        String errorMessage = (pServerException != null ? pServerException.getMessage() : "Unknown error");
-
-        mv.addObject("type", "ServerException");
-        mv.addObject("errorMessage", errorMessage);
-        mv.addObject("errorCode", pServerException.getCode().toString());
-
-        return mv;
-    }
-
-    @ExceptionHandler(Throwable.class)
-    public ModelAndView exception(final Throwable pThrowable) {
-        LOGGER.error("Generic Exception", pThrowable);
-
-        ModelAndView mv = getBasicPage("error", pThrowable);
-        String errorMessage = (pThrowable != null ? pThrowable.getMessage() : "Unknown error");
-
-        mv.addObject("type", "Throwable");
-        mv.addObject("errorMessage", errorMessage);
-
-        return mv;
+        // Stricter in case we missed something
+        return ErrorHandling.INTERNAL;
     }
 
 }

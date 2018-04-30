@@ -22,14 +22,8 @@ package ca.n4dev.aegaeon.server.service;
 
 import java.util.List;
 
-import ca.n4dev.aegaeon.api.exception.InvalidScopeException;
-import ca.n4dev.aegaeon.api.exception.OAuthErrorType;
-import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
-import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.ClientRedirection;
-import ca.n4dev.aegaeon.api.model.Scope;
-import ca.n4dev.aegaeon.api.protocol.AuthRequest;
 import ca.n4dev.aegaeon.api.repository.ClientRedirectionRepository;
 import ca.n4dev.aegaeon.api.repository.ClientRepository;
 import ca.n4dev.aegaeon.api.repository.UserAuthorizationRepository;
@@ -39,11 +33,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * AuthorizationService.java
- *
+ * <p>
  * TODO(rguillemette) Add description
  *
  * @author by rguillemette
@@ -58,7 +51,6 @@ public class AuthorizationService {
     private ScopeService scopeService;
 
     /**
-     *
      * @param pClientRepository
      */
     @Autowired
@@ -72,87 +64,60 @@ public class AuthorizationService {
         this.scopeService = pScopeService;
     }
 
-    /**
-     * Validate every aspect of an authorization request.
-     * @param pAuthRequest
-     * @param pRequestMethod
-     * @param pClientPublicId
-     * @param pRedirectionUrl
-     * @param pScope
-     */
+
     @Transactional(readOnly = true)
-    public void validateAuthorizationRequest(AuthRequest pAuthRequest,
-                                             RequestMethod pRequestMethod,
-                                             String pClientPublicId,
-                                             String pRedirectionUrl,
-                                             String pScope) {
-
-        // Required
-        if (Utils.areOneEmpty(pClientPublicId, pRedirectionUrl, pScope) || pAuthRequest.getResponseTypes() == null || pAuthRequest.getResponseTypes().size() == 0) {
-            throw new OauthRestrictedException(getClass(),
-                                               OAuthErrorType.invalid_request,
-                                               pAuthRequest,
-                                               pClientPublicId,
-                                               pRedirectionUrl,
-                                               "One parameter is empty");
-        }
-
-        // Test method and param
-        if (pRequestMethod != RequestMethod.GET && pRequestMethod != RequestMethod.POST) {
-            throw new OAuthPublicRedirectionException(getClass(),
-                                                      OAuthErrorType.invalid_request,
-                                                      pAuthRequest,
-                                                      pRedirectionUrl);
-        }
-
-        // Supported response type ?
-        if (pAuthRequest.getResponseTypes() == null || pAuthRequest.getResponseTypes().size() == 0) {
-            throw new OauthRestrictedException(getClass(),
-                                               OAuthErrorType.invalid_request,
-                                               pAuthRequest,
-                                               pClientPublicId,
-                                               pRedirectionUrl,
-                                               "Invalid flow");
-        }
-
-
-        // Check redirection
-        List<ClientRedirection> redirections = this.clientRedirectionRepository.findByClientPublicId(pClientPublicId);
-
-        if (redirections == null || !Utils.isOneTrue(redirections, cr -> cr.getUrl().equals(pRedirectionUrl))) {
-            throw new OauthRestrictedException(getClass(),
-                                               OAuthErrorType.invalid_request,
-                                               pAuthRequest,
-                                               pClientPublicId,
-                                               pRedirectionUrl,
-                                               "Invalid redirect_uri.");
-        }
-
-        // Test Scopes
-        try {
-            List<Scope> scopes = this.scopeService.findScopeFromString(pScope);
-        } catch (InvalidScopeException scex) {
-
-            throw new OAuthPublicRedirectionException(getClass(),
-                                                      OAuthErrorType.invalid_scope,
-                                                      pAuthRequest,
-                                                      pRedirectionUrl);
-        }
+    public boolean isAuthorized(Authentication pAuthentication, String pClientPublicId) {
+        return isAuthorized(pAuthentication, pClientPublicId, null);
     }
 
-
-    public boolean isAuthorized(Authentication pAuthentication, String pClientPublicId) {
+    @Transactional(readOnly = true)
+    public boolean isAuthorized(Authentication pAuthentication, String pClientPublicId, String pClientRedirectionUrl) {
 
         if (Utils.isNotEmpty(pClientPublicId)
                 && pAuthentication != null
                 && pAuthentication.getPrincipal() instanceof AegaeonUserDetails) {
 
-            Client client = this.clientRepository.findByPublicId(pClientPublicId);
             AegaeonUserDetails userDetails = (AegaeonUserDetails) pAuthentication.getPrincipal();
+            Client client = this.clientRepository.findByPublicId(pClientPublicId);
 
-            return this.userAuthorizationRepository.findByUserIdAndClientId(userDetails.getId(), client.getId()) != null;
+            if (client != null && userDetails != null) {
+
+                // Check Url first
+                if (Utils.isNotEmpty(pClientRedirectionUrl) && !checkRedirection(client.getId(), pClientRedirectionUrl)) {
+                    return false;
+                }
+
+                // Check if the user has allowed this client
+                return this.userAuthorizationRepository.findByUserIdAndClientId(userDetails.getId(), client.getId()) != null;
+            }
+
         }
 
+        return false;
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isClientInfoValid(String pClientPublicId, String pRedirectionUrl) {
+
+        if (!Utils.areOneEmpty(pClientPublicId, pRedirectionUrl)) {
+
+            // Get client by public id and check if exists
+            Client client = this.clientRepository.findByPublicId(pClientPublicId);
+
+            if (client != null) {
+                // And then, check if it is a valid redirection
+                return checkRedirection(client.getId(), pRedirectionUrl);
+            }
+        }
+
+        return false;
+    }
+
+    private boolean checkRedirection(Long pClientId, String pRedirectionUrl) {
+        if (pClientId != null && Utils.isNotEmpty(pRedirectionUrl)) {
+            List<ClientRedirection> clientRedirections = clientRedirectionRepository.findByClientId(pClientId);
+            return Utils.isOneTrue(clientRedirections, cr -> cr.getUrl().equals(pRedirectionUrl));
+        }
         return false;
     }
 }

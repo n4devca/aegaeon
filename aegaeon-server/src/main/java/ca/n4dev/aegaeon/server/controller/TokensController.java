@@ -21,7 +21,10 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
-import ca.n4dev.aegaeon.api.protocol.AuthRequest;
+import ca.n4dev.aegaeon.api.exception.OpenIdException;
+import ca.n4dev.aegaeon.api.exception.OpenIdExceptionBuilder;
+import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.server.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,12 +38,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.n4dev.aegaeon.api.exception.OAuthErrorType;
-import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
 import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
 import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
-import ca.n4dev.aegaeon.api.protocol.Flow;
-import ca.n4dev.aegaeon.api.protocol.FlowFactory;
 import ca.n4dev.aegaeon.api.protocol.GrantType;
 import ca.n4dev.aegaeon.server.service.TokenServicesFacade;
 import ca.n4dev.aegaeon.server.view.TokenResponse;
@@ -101,24 +100,40 @@ public class TokensController {
         TokenResponse response = null;
         GrantType grantType = GrantType.from(pGrantType);
 
-        if (grantType == GrantType.AUTHORIZATION_CODE) {
-            response = authorizationCodeResponse(pCode, pRedirectUri, pClientPublicId, pAuthentication);
-        } else if (grantType == GrantType.CLIENT_CREDENTIALS) {
-            response = clientCredentialResponse(pAuthentication, pScope, pRedirectUri);
-        } else if (grantType == GrantType.REFRESH_TOKEN) {
-            response = refreshTokenResponse(pAuthentication, pRefreshToken);
-        } else {
-            throw new OauthRestrictedException(getClass(),
-                    OAuthErrorType.invalid_request,
-                    null,
-                    pClientPublicId, 
-                    pRedirectUri,
-                    "Wrong grant_type.");
+        try {
+
+            if (grantType == GrantType.AUTHORIZATION_CODE) {
+                response = authorizationCodeResponse(pCode, pRedirectUri, pClientPublicId, pAuthentication);
+            } else if (grantType == GrantType.CLIENT_CREDENTIALS) {
+                response = clientCredentialResponse(pAuthentication, pScope, pRedirectUri);
+            } else if (grantType == GrantType.REFRESH_TOKEN) {
+                response = refreshTokenResponse(pAuthentication, pRefreshToken);
+            } else {
+                throw new OpenIdException(ServerExceptionCode.GRANT_INVALID);
+            }
+
+            this.openIdEventLogger.log(OpenIdEvent.TOKEN_GRANTING, getClass(), pAuthentication.getName(), response);
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (OpenIdException pOpenIdException) {
+            // Add info and rethrow
+
+            throw new OpenIdExceptionBuilder(pOpenIdException)
+                        .clientId(pClientPublicId)
+                        .redirection(pRedirectUri)
+                        .from(grantType)
+                        .build();
+
+        } catch (Exception pException) {
+            throw new OpenIdExceptionBuilder(pException)
+                    .clientId(pClientPublicId)
+                    .redirection(pRedirectUri)
+                    .from(grantType)
+                    .build();
         }
-        
-        this.openIdEventLogger.log(OpenIdEvent.TOKEN_GRANTING, getClass(), pAuthentication.getName(), response);
-        
-        return new ResponseEntity<>(response, HttpStatus.OK);
+
+
     }
     
     private TokenResponse clientCredentialResponse(Authentication pAuthentication,

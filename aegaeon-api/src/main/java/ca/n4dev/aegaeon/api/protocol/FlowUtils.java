@@ -1,7 +1,7 @@
 package ca.n4dev.aegaeon.api.protocol;
 
-import ca.n4dev.aegaeon.api.exception.OAuthErrorType;
-import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
+import ca.n4dev.aegaeon.api.exception.OpenIdExceptionBuilder;
+import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 
 /**
  * FlowCreator.java
@@ -46,19 +46,34 @@ public class FlowUtils {
     public static GrantType getAuthorizationType(AuthRequest pAuthRequest) {
 
         if (pAuthRequest == null) {
-            throw new OauthRestrictedException(FlowUtils.class, OAuthErrorType.invalid_grant, pAuthRequest, null, null);
+            throw new OpenIdExceptionBuilder()
+                    .code(ServerExceptionCode.RESPONSETYPE_INVALID)
+                    .build();
+            //throw new OauthRestrictedException(FlowUtils.class, OpenIdErrorType.invalid_grant, pAuthRequest, null, null);
+        }
+
+        return getAuthorizationType(pAuthRequest.getResponseTypeParam());
+    }
+
+
+    public static GrantType getAuthorizationType(String pResponseTypeParam) {
+
+        if (pResponseTypeParam == null || pResponseTypeParam.isEmpty()) {
+            throw new OpenIdExceptionBuilder()
+                    .code(ServerExceptionCode.RESPONSETYPE_INVALID)
+                    .build();
+            //throw new OauthRestrictedException(FlowUtils.class, OpenIdErrorType.invalid_grant, pAuthRequest, null, null);
         }
 
         /*
-        * code => Authorization Code
-        * id_token [token] => implicit
-        * token => implicit (oauth)
-        * code id_token => hybrid
-        * code token => hybrid
-        * code id_token token => hybrid
-        */
-        //List<String> responseTypeStrs = pResponseTypes.stream().map(rt -> rt.toString()).collect(Collectors.toList());
-        String responseTypeParam = pAuthRequest.getResponseTypeParam();
+         * code => Authorization Code
+         * id_token [token] => implicit
+         * token => implicit (oauth)
+         * code id_token => hybrid
+         * code token => hybrid
+         * code id_token token => hybrid
+         */
+        String responseTypeParam = pResponseTypeParam;
 
         if (RTYPE_AUTH_CODE.equalsIgnoreCase(responseTypeParam)) {
             return GrantType.AUTHORIZATION_CODE;
@@ -73,5 +88,4 @@ public class FlowUtils {
 
         return null;
     }
-
 }
