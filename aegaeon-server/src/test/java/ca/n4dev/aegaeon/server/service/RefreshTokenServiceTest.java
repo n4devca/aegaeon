@@ -26,6 +26,7 @@ import java.util.List;
 import ca.n4dev.aegaeon.api.protocol.AuthRequest;
 import ca.n4dev.aegaeon.api.protocol.FlowUtils;
 import ca.n4dev.aegaeon.api.protocol.GrantType;
+import ca.n4dev.aegaeon.api.protocol.ResponseType;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +64,7 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         Assert.assertNotNull(scopes);
         Assert.assertTrue(scopes.size() == 3);
 
-        AuthRequest authRequest = new AuthRequest();
+        AuthRequest authRequest = new AuthRequest(ResponseType.code.toString());
         RefreshToken token = refreshTokenService.createToken(authRequest, user.getId(), CLIENT_AUTH, scopes);
         Assert.assertNotNull(token);
     }
@@ -85,7 +86,6 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         Assert.assertNull(token);
     }
     
-    @Test(expected = ServerException.class)
     @WithMockUser(username = CLIENT_IMPL, roles = {"CLIENT"})
     public void testErrorImplicitClient() {
         User user = getUser(USERNAME);
@@ -99,11 +99,9 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         
         RefreshToken token = refreshTokenService.createToken(authRequest, user.getId(), CLIENT_IMPL, scopes);
         
-        // Exception throwed before getting here
         Assert.assertNull(token);
     }
     
-    @Test(expected = ServerException.class)
     @WithMockUser(username = CLIENT_AUTH_2, roles = {"CLIENT"})
     public void testErrorNotAuthorizedClient() {
         User user = getUser(USERNAME);
@@ -117,7 +115,6 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         
         RefreshToken token = refreshTokenService.createToken(authRequest, user.getId(), CLIENT_AUTH_2, scopes);
         
-        // Exception throwed before getting here
         Assert.assertNull(token);
     }
 }

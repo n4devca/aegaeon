@@ -80,7 +80,7 @@ public class ControllerErrorInterceptor extends BaseUiController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ControllerErrorInterceptor.class);
 
-    private static final String ERROR_VIEW = "error";
+    private static final String ERROR_VIEW = "errors";
     private static final String REDIRECTION_ERROR_KEY = "error";
     private static final String REDIRECTION_DESC_KEY = "error_description";
     private static final String REDIRECTION_STATE_KEY = "state";

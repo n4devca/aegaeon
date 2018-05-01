@@ -9,6 +9,7 @@ import ca.n4dev.aegaeon.server.config.ServerInfo;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,7 +29,7 @@ public class ErrorController extends BaseUiController {
 
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    public static final String URL = "/error";
+    public static final String URL = "/errors";
     public static final String VIEW = "error";
 
     private ServerInfo serverInfo;

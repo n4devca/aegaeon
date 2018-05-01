@@ -1,7 +1,6 @@
 package ca.n4dev.aegaeon.server.service;
 
-import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
-import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
+import ca.n4dev.aegaeon.api.exception.OpenIdException;
 import ca.n4dev.aegaeon.api.model.*;
 import ca.n4dev.aegaeon.api.protocol.GrantType;
 import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
@@ -115,7 +114,7 @@ public class TokenServicesFacadeUnitTest {
 
     }
 
-    @Test(expected = OauthRestrictedException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseNoAuth() {
 
         facade.createTokenForAuthCode("test.1",
@@ -124,7 +123,7 @@ public class TokenServicesFacadeUnitTest {
                                       null);
     }
 
-    @Test(expected = OauthRestrictedException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseMissingClientId() {
         facade.createTokenForAuthCode(null,
                                       "auth-code-0xff",
@@ -132,7 +131,7 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OauthRestrictedException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseMissingAuthCode() {
         facade.createTokenForAuthCode("test.1",
                                       null,
@@ -140,7 +139,7 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OauthRestrictedException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseMissingRedirect() {
         facade.createTokenForAuthCode("test.1",
                                       "auth-code-0xff",
@@ -148,7 +147,7 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OauthRestrictedException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseUnkownClient() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(null);
@@ -159,7 +158,7 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OauthRestrictedException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseNoRedirection() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
@@ -171,7 +170,7 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OauthRestrictedException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseInvalidRedirection() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
@@ -183,7 +182,7 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OAuthPublicRedirectionException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseNoGrant() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
@@ -196,7 +195,7 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OAuthPublicRedirectionException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseGrantNotAuthorized() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
@@ -209,7 +208,7 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OAuthPublicRedirectionException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseBadAuthCode() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
@@ -225,7 +224,7 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OauthRestrictedException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseNotSameClient() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
@@ -241,7 +240,7 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OauthRestrictedException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseNotRedirect() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));

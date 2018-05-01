@@ -173,7 +173,7 @@ public class PromptAwareAuthenticationFilter extends GenericFilterBean {
                         params.add(pK.toLowerCase(), (String) pV);
                     }
                 });
-                
+
                 String url = UriBuilder.build("/" + mv.getViewName(), params, false);
                 pHttpServletResponse.sendRedirect(url);
             }

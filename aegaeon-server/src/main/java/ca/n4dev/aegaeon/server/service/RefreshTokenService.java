@@ -111,7 +111,8 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
     @Override
     void validate(AuthRequest pAuthRequest, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
         
-        if (!this.clientService.hasScope(pClient.getId(), OFFLINE_SCOPE) 
+        if (!Utils.isOneTrue(pScopes, pScope -> OFFLINE_SCOPE.equals(pScope.getName()))
+                || !this.clientService.hasScope(pClient.getId(), OFFLINE_SCOPE)
                 || !this.clientService.hasGrantType(pClient.getId(), GrantType.AUTHORIZATION_CODE)) {
             throw new ServerException(ServerExceptionCode.SCOPE_UNAUTHORIZED_OFFLINE);            
         }
@@ -130,14 +131,16 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
      */
     @Override
     boolean isTokenToCreate(AuthRequest pAuthRequest, User pUser, Client pClient, List<Scope> pScopes) {
-        
-        if (Utils.contains(pAuthRequest.getResponseTypes(), ResponseType.code)
-                && this.clientService.hasScope(pClient.getId(), OFFLINE_SCOPE) 
-                && this.clientService.hasGrantType(pClient.getId(), GrantType.AUTHORIZATION_CODE)) {
-            
-            return true;            
+
+        // No need to do all these check if the offline_access has not been requested.
+        if (Utils.isOneTrue(pScopes, pScope -> OFFLINE_SCOPE.equals(pScope.getName()))) {
+            boolean isRequestAuthCode = Utils.contains(pAuthRequest.getResponseTypes(), ResponseType.code);
+            boolean hasClientOffline = this.clientService.hasScope(pClient.getId(), OFFLINE_SCOPE);
+            boolean hasClientAuthCode = this.clientService.hasGrantType(pClient.getId(), GrantType.AUTHORIZATION_CODE);
+
+            return isRequestAuthCode && hasClientOffline && hasClientAuthCode;
         }
-        
+
         return false;
     }
 }

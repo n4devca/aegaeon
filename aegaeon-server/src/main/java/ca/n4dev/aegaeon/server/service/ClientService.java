@@ -170,7 +170,7 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
 
         if (pClientId != null && pGrantType != null) {
             List<ClientAuthFlow> clientGrants = this.findAuthFlowByclientId(pClientId);
-            return Utils.isOneTrue(clientGrants, cg -> cg.getFlow().equals(pGrantType.toString()));
+            return Utils.isOneTrue(clientGrants, cg -> cg.getFlow().equals(pGrantType));
         }
 
         return false;
