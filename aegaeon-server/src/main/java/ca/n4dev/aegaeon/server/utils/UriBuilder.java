@@ -91,9 +91,9 @@ public class UriBuilder {
     public static Map<String, String> buildModel(OpenIdException pOpenIdException) {
         LinkedHashMap<String, String> model = new LinkedHashMap<>();
 
-        model.put(REDIRECTION_ERROR_KEY, OpenIdErrorType.fromServerCode(pOpenIdException.getCode()).toString());
-        model.put(REDIRECTION_DESC_KEY, pOpenIdException.getMessage());
-        model.put(PARAM_STATE, pOpenIdException.getClientState());
+        put(model, REDIRECTION_ERROR_KEY, OpenIdErrorType.fromServerCode(pOpenIdException.getCode()).toString());
+        put(model, REDIRECTION_DESC_KEY, pOpenIdException.getMessage());
+        put(model, PARAM_STATE, pOpenIdException.getClientState());
 
         return model;
     }
@@ -101,6 +101,12 @@ public class UriBuilder {
     private static void append(MultiValueMap<String, String> pParams, String pKey, String pValue) {
         if (Utils.isNotEmpty(pKey) && Utils.isNotEmpty(pValue)) {
             pParams.add(pKey, pValue);
+        }
+    }
+
+    private static void put(Map<String, String> pParams, String pKey, String pValue) {
+        if (Utils.isNotEmpty(pKey) && Utils.isNotEmpty(pValue)) {
+            pParams.put(pKey, pValue);
         }
     }
 

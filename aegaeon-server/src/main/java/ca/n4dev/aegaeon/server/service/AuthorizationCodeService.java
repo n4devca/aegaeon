@@ -102,7 +102,12 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
      * @return An {@link AuthorizationCode} or null.
      */
     AuthorizationCode findByCode(String pCode) {
-        return this.getRepository().findByCode(pCode);
+
+        if (Utils.isNotEmpty(pCode)) {
+            return this.getRepository().findByCode(pCode);
+        }
+
+        return null;
     }
     
     

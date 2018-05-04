@@ -77,6 +77,9 @@ public enum ServerExceptionCode {
     USER_UNAUTHENTICATED,
 
     UNEXPECTED_ERROR,
+
+    INTROSPECT_PARAM_INVALID,
+
     ;
 
 }

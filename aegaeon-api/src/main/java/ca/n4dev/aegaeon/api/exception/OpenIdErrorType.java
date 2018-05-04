@@ -95,44 +95,35 @@ public enum OpenIdErrorType {
     public static OpenIdErrorType fromServerCode(ServerExceptionCode pServerExceptionCode) {
         if (pServerExceptionCode != null) {
             switch (pServerExceptionCode) {
+
                 case CLIENT_UNAUTHORIZED_FLOW:
                     return unauthorized_client;
 
+                case REFRESH_TOKEN_EXPIRED:
                 case AUTH_CODE_EXPIRED:
                     return interaction_required;
 
+                case REFRESH_TOKEN_EMPTY:
+                case INTROSPECT_PARAM_INVALID:
                 case AUTH_CODE_EMPTY:
                     return invalid_request;
 
-                case AUTH_CODE_UNEXPECTED_CLIENT:
-                    return access_denied;
-
                 case AUTH_CODE_UNEXPECTED_REDIRECTION:
-                    return access_denied;
-
+                case AUTH_CODE_UNEXPECTED_CLIENT:
                 case CLIENT_EMPTY:
-                    return access_denied;
-
-                case CLIENT_UNAUTHORIZED_SCOPE:
-                    return consent_required;
-
                 case CLIENT_REDIRECTIONURL_INVALID:
                     return access_denied;
 
+                case CLIENT_UNAUTHORIZED_SCOPE:
                 case GRANT_INVALID:
                     return consent_required;
-
-                case REFRESH_TOKEN_EMPTY:
-                    return invalid_request;
-
-                case REFRESH_TOKEN_EXPIRED:
-                    return interaction_required;
 
                 case USER_UNAUTHENTICATED:
                     return login_required;
 
                 case RESPONSETYPE_INVALID:
                     return unsupported_response_type;
+
             }
         }
 

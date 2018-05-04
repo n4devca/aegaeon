@@ -21,6 +21,11 @@
  */
 package ca.n4dev.aegaeon.server.service;
 
+import java.time.ZoneOffset;
+
+import ca.n4dev.aegaeon.api.exception.ErrorHandling;
+import ca.n4dev.aegaeon.api.exception.OpenIdExceptionBuilder;
+import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -113,6 +118,7 @@ public class InstrospectService {
                     response.setClientId(accessToken.getClient().getPublicId());
                     response.setIssuer(this.serverInfo.getIssuer());
                     response.setScope(accessToken.getScopes());
+                    response.setExpiration(accessToken.getValidUntil().toInstant(ZoneOffset.UTC).getEpochSecond());
                     
                     openIdEventLogger.log(OpenIdEvent.REQUEST_INFO, getClass(), u.getUserName(), null);
                 }
@@ -120,6 +126,11 @@ public class InstrospectService {
             } catch (Exception e) {
                 openIdEventLogger.log(OpenIdEvent.OTHERS, getClass(), e.getMessage());
             }
+        } else {
+            throw new OpenIdExceptionBuilder()
+                        .clientId(pAgentOfClientId)
+                        .code(ServerExceptionCode.INTROSPECT_PARAM_INVALID)
+                        .build();
         }
 
         

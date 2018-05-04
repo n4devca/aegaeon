@@ -85,17 +85,16 @@ public class TokenServicesFacade {
                                                 String pRedirectUri,
                                                 Authentication pAuthentication) {
 
-        Assert.notEmpty(pCode, ServerExceptionCode.AUTH_CODE_EMPTY);
 
         validateAuthentication(pAuthentication);
-
-        AuthorizationCode authCode = this.authorizationCodeService.findByCode(pCode);
-        validateAuthorizationCode(authCode, pClientPublicId, pRedirectUri);
 
         Client client = this.clientService.findByPublicId(pClientPublicId);
         validateClient(client, pClientPublicId);
         validateRedirectionUri(client, pRedirectUri);
         validateClientFlow(client, GrantType.AUTHORIZATION_CODE);
+
+        AuthorizationCode authCode = this.authorizationCodeService.findByCode(pCode);
+        validateAuthorizationCode(authCode, pClientPublicId, pRedirectUri);
 
         try {
 
@@ -195,7 +194,7 @@ public class TokenServicesFacade {
 
         validateClient(client, pClientPublicId);
         validateClientFlow(client, GrantType.IMPLICIT);
-        validateClientScope(client, pScopes);
+        validateClientScopes(client, pScopes);
         validateRedirectionUri(client, pRedirectUrl);
 
         // Make sure the offline scope is not request
@@ -339,6 +338,13 @@ public class TokenServicesFacade {
     private void validateClientScopes(Client pClient, List<Scope> pScopes) {
         if (Utils.isNotEmpty(pScopes)) {
             pScopes.forEach(pScope -> validateClientScope(pClient, pScope.getName()));
+        }
+    }
+
+    private void validateClientScopes(Client pClient, String pScopes) {
+        if (Utils.isNotEmpty(pScopes)) {
+            final List<String> scopeList = scopeService.parseScopeString(pScopes);
+            scopeList.forEach(pScope -> validateClientScope(pClient, pScope));
         }
     }
 

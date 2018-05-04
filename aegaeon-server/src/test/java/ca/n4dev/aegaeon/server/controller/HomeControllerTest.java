@@ -19,10 +19,13 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.web;
+package ca.n4dev.aegaeon.server.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
+import ca.n4dev.aegaeon.server.controller.ControllerErrorInterceptor;
+import ca.n4dev.aegaeon.server.controller.SimpleHomeController;
+import ca.n4dev.aegaeon.server.web.BaseWebTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,31 +39,28 @@ import ca.n4dev.aegaeon.server.controller.AuthorizationController;
 
 /**
  * HomeControllerTest.java
- * 
- * TODO(rguillemette) Add description
+ *
+ * A test to make sure we always have an homepage.
  *
  * @author by rguillemette
  * @since May 30, 2017
  */
 @AutoConfigureMockMvc
-public class HomeControllerTest extends BaseWebTest {
+public class HomeControllerTest extends BaseIntegratedControllerTest<SimpleHomeController> {
 
-	private MockMvc mockMvc;
-    
-    @Before
-    public void init() {
-        mockMvc = MockMvcBuilders
-                .standaloneSetup(AuthorizationController.class)
-                .build();
-    }
-    
+
     @Test
     public void testHome() throws Exception {
     	
     	MvcResult result =
-                this.mockMvc.perform(get("/").accept(MediaType.TEXT_HTML))
+                mockMvc.perform(get("/").accept(MediaType.TEXT_HTML))
                             .andReturn();
         
         Assert.assertNotNull(result);
+    }
+
+    @Override
+    protected Class<SimpleHomeController> getControllerClass() {
+        return SimpleHomeController.class;
     }
 }

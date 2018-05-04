@@ -112,5 +112,6 @@ public class AccessTokenServiceTest extends BaseTokenServiceTest {
         Assert.assertNotNull(token.getScopes());
         Assert.assertNotNull(token.getValidUntil().isAfter(LocalDateTime.now()));
     }
-    
+
+
 }

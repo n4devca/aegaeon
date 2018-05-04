@@ -115,7 +115,7 @@ public class AuthenticationService {
                     new AccessTokenAuthentication(
                             uv, 
                             pAccessToken, 
-                            this.scopeService.parseScopeArgumentString(ScopeService.SPACE, accessToken.getScopes()), 
+                            this.scopeService.parseScopeString(ScopeService.SPACE, accessToken.getScopes()),
                             roles);
             
             return auth;

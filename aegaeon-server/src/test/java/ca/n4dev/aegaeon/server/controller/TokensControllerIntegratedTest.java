@@ -4,6 +4,7 @@ import java.util.Base64;
 
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -48,6 +49,7 @@ public class TokensControllerIntegratedTest extends BaseIntegratedControllerTest
     }
 
     @Test
+    @WithMockUser(username = CLIENT_PUBLIC_ID, roles = {"CLIENT"})
     public void invalidGrantTypeParam() throws Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "invalid");
@@ -84,7 +86,7 @@ public class TokensControllerIntegratedTest extends BaseIntegratedControllerTest
 
         MvcResult result =
                 mockMvc.perform(post(TokensController.URL)
-                                        .header("Authorization", "Basic " + authorizationHeader())
+                                        //.header("Authorization", "Basic " + authorizationHeader())
                                         .params(pParams))
                        .andExpect(MockMvcResultMatchers
                                           .status()

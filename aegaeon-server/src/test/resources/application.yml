@@ -13,6 +13,8 @@ spring:
                 physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     mvc:
         static-path-pattern: /resources/**
+    jackson:
+        default-property-inclusion: non_null
     messages:
         encoding: UTF-8
     flyway:
@@ -26,3 +28,13 @@ aegaeon:
     info:
         issuer: localhost
     jwks: /home/rguillemette/dev/jwks/aegaeon.jwks
+    modules:
+        oauth: true
+        login: true
+        createaccount: true
+        home: true
+        account: true
+        discovery: false
+        admin: true
+        introspect: true
+        information: true

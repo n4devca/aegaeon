@@ -2,6 +2,8 @@ package ca.n4dev.aegaeon.server.service;
 
 import ca.n4dev.aegaeon.api.exception.OpenIdException;
 import ca.n4dev.aegaeon.api.model.*;
+import ca.n4dev.aegaeon.api.protocol.AuthRequest;
+import ca.n4dev.aegaeon.api.protocol.FlowUtils;
 import ca.n4dev.aegaeon.api.protocol.GrantType;
 import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 import ca.n4dev.aegaeon.server.view.TokenResponse;
@@ -111,7 +113,26 @@ public class TokenServicesFacadeUnitTest {
 
     @Test
     public void successCreateTokenForImplicit() {
+        when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
+        when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
+        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(buildGrants(GrantType.IMPLICIT));
+        when(clientService.findScopeByClientId(anyLong())).thenReturn(buildScope("openid profile"));
+        mockCreateToken();
 
+        try {
+
+            AuthRequest authRequest = new AuthRequest(FlowUtils.RTYPE_IMPLICIT_FULL);
+            TokenResponse tokenResponse = facade.createTokenForImplicit(authRequest,
+                                                                        "test.1",
+                                                                        "openid profile",
+                                                                        "https://cool-place.com/",
+                                                                        buildUser());
+
+            Assert.assertNotNull(tokenResponse);
+        } catch (Exception pException) {
+
+            Assert.fail(pException.getMessage());
+        }
     }
 
     @Test(expected = OpenIdException.class)
@@ -291,6 +312,18 @@ public class TokenServicesFacadeUnitTest {
         grants.add(new ClientAuthFlow(buildClient("test.1"), pGrantCode));
 
         return grants;
+    }
+
+    private List<ClientScope> buildScope(String pScopeStr) {
+        ArrayList<ClientScope> clientScopes = new ArrayList<>();
+
+        for (String onScopeStr : pScopeStr.split(" ")) {
+            Scope scope = new Scope();
+            scope.setName(onScopeStr);
+            clientScopes.add(new ClientScope(null, scope));
+        }
+
+        return clientScopes;
     }
 
     private AuthorizationCode buildAuthCode(String pCode, String pClientId, String pRedirection) {

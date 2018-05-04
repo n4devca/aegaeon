@@ -133,7 +133,11 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
     }
 
     Client findByPublicId(String pPublicId) {
-        return this.getRepository().findByPublicId(pPublicId);
+        if (Utils.isNotEmpty(pPublicId)) {
+            return this.getRepository().findByPublicId(pPublicId);
+        }
+
+        return null;
     }
 
     List<ClientRedirection> findRedirectionsByclientId(Long pClientId) {

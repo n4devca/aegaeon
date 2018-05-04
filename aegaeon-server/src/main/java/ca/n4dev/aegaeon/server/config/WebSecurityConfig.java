@@ -101,8 +101,6 @@ public class WebSecurityConfig {
         @Override
         protected void configure(HttpSecurity pHttp) throws Exception {
             pHttp
-
-
                 .authorizeRequests()
                     .mvcMatchers(TokensController.URL, IntrospectController.URL)
                     .hasAnyAuthority(ROLE_CLIENT)
@@ -173,7 +171,7 @@ public class WebSecurityConfig {
     
     
     @Configuration
-    @Order(10)
+    //@Order(10)
     public static class FormLoginWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
         
         @Autowired

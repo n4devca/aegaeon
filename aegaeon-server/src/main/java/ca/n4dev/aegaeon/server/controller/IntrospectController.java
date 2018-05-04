@@ -59,7 +59,7 @@ public class IntrospectController {
     /**
      * Introspect (verify) a token to know if it is still valid.
      * @param pAuthentication The client authentication object.
-     * @return A userinfo json object.
+     * @return An Introspect response json object.
      */
     @RequestMapping(value = "", method = {RequestMethod.POST})
     @ResponseBody

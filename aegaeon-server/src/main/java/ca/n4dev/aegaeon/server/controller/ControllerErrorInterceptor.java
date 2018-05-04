@@ -80,7 +80,7 @@ public class ControllerErrorInterceptor extends BaseUiController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ControllerErrorInterceptor.class);
 
-    private static final String ERROR_VIEW = "errors";
+    private static final String ERROR_VIEW = "error";
     private static final String REDIRECTION_ERROR_KEY = "error";
     private static final String REDIRECTION_DESC_KEY = "error_description";
     private static final String REDIRECTION_STATE_KEY = "state";
@@ -259,7 +259,9 @@ public class ControllerErrorInterceptor extends BaseUiController {
 
         if (pOpenIdException != null) {
 
-            if (isCode(ServerExceptionCode.CLIENT_REDIRECTIONURL_INVALID, pOpenIdException.getCode()) ||
+            if (isCode(ServerExceptionCode.INTROSPECT_PARAM_INVALID, pOpenIdException.getCode())) {
+                return ErrorHandling.JSON;
+            } else if (isCode(ServerExceptionCode.CLIENT_REDIRECTIONURL_INVALID, pOpenIdException.getCode()) ||
                     isCode(ServerExceptionCode.CLIENT_EMPTY, pOpenIdException.getCode()) ||
                     isCode(ServerExceptionCode.AUTH_CODE_UNEXPECTED_CLIENT, pOpenIdException.getCode()) ||
                     isCode(ServerExceptionCode.AUTH_CODE_UNEXPECTED_REDIRECTION, pOpenIdException.getCode()) ||
