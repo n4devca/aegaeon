@@ -88,7 +88,13 @@ public class AuthorizationService {
                 }
 
                 // Check if the user has allowed this client
-                return this.userAuthorizationRepository.findByUserIdAndClientId(userDetails.getId(), client.getId()) != null;
+                if (userDetails.getId() != null) {
+                    return this.userAuthorizationRepository
+                            .findByUserIdAndClientId(userDetails.getId(), client.getId()) != null;
+                } else if (Utils.isNotEmpty(userDetails.getUsername())) {
+                    return this.userAuthorizationRepository
+                            .findByUserUserNameAndClientId(userDetails.getUsername(), client.getId()) != null;
+                }
             }
 
         }

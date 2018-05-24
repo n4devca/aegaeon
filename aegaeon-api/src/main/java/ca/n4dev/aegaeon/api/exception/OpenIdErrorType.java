@@ -99,6 +99,10 @@ public enum OpenIdErrorType {
                 case CLIENT_UNAUTHORIZED_FLOW:
                     return unauthorized_client;
 
+                case SCOPE_INVALID:
+                case SCOPE_EMPTY:
+                    return invalid_scope;
+
                 case REFRESH_TOKEN_EXPIRED:
                 case AUTH_CODE_EXPIRED:
                     return interaction_required;
@@ -106,6 +110,7 @@ public enum OpenIdErrorType {
                 case REFRESH_TOKEN_EMPTY:
                 case INTROSPECT_PARAM_INVALID:
                 case AUTH_CODE_EMPTY:
+                case REQUEST_TYPE_INVALID:
                     return invalid_request;
 
                 case AUTH_CODE_UNEXPECTED_REDIRECTION:

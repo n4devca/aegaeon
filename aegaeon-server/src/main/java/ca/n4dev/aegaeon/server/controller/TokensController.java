@@ -21,10 +21,15 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
+import ca.n4dev.aegaeon.api.exception.ErrorHandling;
 import ca.n4dev.aegaeon.api.exception.OpenIdException;
 import ca.n4dev.aegaeon.api.exception.OpenIdExceptionBuilder;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
-import ca.n4dev.aegaeon.server.utils.Utils;
+import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
+import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
+import ca.n4dev.aegaeon.api.protocol.GrantType;
+import ca.n4dev.aegaeon.server.service.TokenServicesFacade;
+import ca.n4dev.aegaeon.server.view.TokenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,12 +42,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
-import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
-import ca.n4dev.aegaeon.api.protocol.GrantType;
-import ca.n4dev.aegaeon.server.service.TokenServicesFacade;
-import ca.n4dev.aegaeon.server.view.TokenResponse;
 
 /**
  * OAuthTokensController.java
@@ -116,20 +115,12 @@ public class TokensController {
 
             return new ResponseEntity<>(response, HttpStatus.OK);
 
-        } catch (OpenIdException pOpenIdException) {
-            // Add info and rethrow
-
-            throw new OpenIdExceptionBuilder(pOpenIdException)
-                        .clientId(pClientPublicId)
-                        .redirection(pRedirectUri)
-                        .from(grantType)
-                        .build();
-
         } catch (Exception pException) {
             throw new OpenIdExceptionBuilder(pException)
                     .clientId(pClientPublicId)
                     .redirection(pRedirectUri)
                     .from(grantType)
+                    .handling(ErrorHandling.JSON)
                     .build();
         }
 

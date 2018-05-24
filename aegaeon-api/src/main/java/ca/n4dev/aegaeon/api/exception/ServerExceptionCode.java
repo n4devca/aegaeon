@@ -31,7 +31,6 @@ package ca.n4dev.aegaeon.api.exception;
  */
 public enum ServerExceptionCode {
 
-    INVALID_PARAMETER,
 
     SCOPE_INVALID,
     SCOPE_UNAUTHORIZED,
@@ -64,6 +63,7 @@ public enum ServerExceptionCode {
 
     GRANT_INVALID,
 
+    INVALID_PARAMETER,
 
     REFRESH_TOKEN_EMPTY,
     REFRESH_TOKEN_EXPIRED,
@@ -77,6 +77,7 @@ public enum ServerExceptionCode {
     USER_UNAUTHENTICATED,
 
     UNEXPECTED_ERROR,
+    ILLEGAL_ARGUMENT,
 
     INTROSPECT_PARAM_INVALID,
 

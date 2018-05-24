@@ -23,11 +23,17 @@ public class OpenIdExceptionBuilder {
 
     public OpenIdExceptionBuilder(Exception pException) {
 
-        ServerExceptionCode code = pException instanceof ServerException ?
-                ((ServerException) pException).getCode() : ServerExceptionCode.UNEXPECTED_ERROR;
-        OpenIdException openIdException = new OpenIdException(code, pException.getCause());
+        if (pException instanceof OpenIdException) {
+            exception = (OpenIdException) pException;
+        } else if (pException instanceof ServerException) {
 
-        exception = openIdException;
+            ServerExceptionCode code = ((ServerException) pException).getCode();
+            exception = new OpenIdException(code, pException.getCause());
+
+        } else {
+            ServerExceptionCode code = ServerExceptionCode.UNEXPECTED_ERROR;
+            exception = new OpenIdException(code, pException.getCause());
+        }
     }
 
     public OpenIdExceptionBuilder(OpenIdException pOpenIdException) {

@@ -272,8 +272,7 @@ public class ControllerErrorInterceptor extends BaseUiController {
             } else if (Utils.isNotEmpty(pOpenIdException.getClientUri()) &&
                     Utils.isNotEmpty(pOpenIdException.getClientPublicId())) {
 
-                if ((pOpenIdException.getRequestedGrantType() == GrantType.IMPLICIT || pOpenIdException
-                        .getRequestedGrantType() == GrantType.HYBRID)) {
+                if (pOpenIdException.getErrorHandling() == ErrorHandling.REDIRECT) {
                     return ErrorHandling.REDIRECT;
                 } else {
                     return ErrorHandling.JSON;

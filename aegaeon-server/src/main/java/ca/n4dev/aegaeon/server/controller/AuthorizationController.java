@@ -25,8 +25,20 @@ import ca.n4dev.aegaeon.api.exception.ErrorHandling;
 import ca.n4dev.aegaeon.api.exception.OpenIdException;
 import ca.n4dev.aegaeon.api.exception.OpenIdExceptionBuilder;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
-import ca.n4dev.aegaeon.api.protocol.*;
+import ca.n4dev.aegaeon.api.protocol.AuthRequest;
+import ca.n4dev.aegaeon.api.protocol.FlowUtils;
+import ca.n4dev.aegaeon.api.protocol.GrantType;
+import ca.n4dev.aegaeon.api.protocol.Prompt;
+import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
+import ca.n4dev.aegaeon.server.service.AuthorizationCodeService;
+import ca.n4dev.aegaeon.server.service.AuthorizationService;
+import ca.n4dev.aegaeon.server.service.TokenServicesFacade;
+import ca.n4dev.aegaeon.server.service.UserAuthorizationService;
 import ca.n4dev.aegaeon.server.utils.Assert;
+import ca.n4dev.aegaeon.server.utils.UriBuilder;
+import ca.n4dev.aegaeon.server.utils.Utils;
+import ca.n4dev.aegaeon.server.view.AuthorizationCodeView;
+import ca.n4dev.aegaeon.server.view.TokenResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.Authentication;
@@ -38,15 +50,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
-
-import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
-import ca.n4dev.aegaeon.server.service.AuthorizationCodeService;
-import ca.n4dev.aegaeon.server.service.AuthorizationService;
-import ca.n4dev.aegaeon.server.service.TokenServicesFacade;
-import ca.n4dev.aegaeon.server.service.UserAuthorizationService;
-import ca.n4dev.aegaeon.server.utils.UriBuilder;
-import ca.n4dev.aegaeon.server.view.AuthorizationCodeView;
-import ca.n4dev.aegaeon.server.view.TokenResponse;
 
 /**
  * OAuthAuthorizationController.java
@@ -106,10 +109,16 @@ public class AuthorizationController {
             // Validate basic info from request
             Assert.notEmpty(pClientPublicId, ServerExceptionCode.CLIENT_EMPTY);
             Assert.notEmpty(pRedirectionUrl, ServerExceptionCode.CLIENT_REDIRECTURL_EMPTY);
+
+            // Make sure the client and redirection is valid
+            if (!authorizationService.isClientInfoValid(pClientPublicId, pRedirectionUrl)) {
+                Utils.raise(ServerExceptionCode.CLIENT_REDIRECTIONURL_INVALID);
+            }
+
             Assert.notEmpty(pScope, ServerExceptionCode.SCOPE_EMPTY);
             Assert.notEmpty(pResponseType, ServerExceptionCode.CLIENT_UNAUTHORIZED_FLOW);
-            Assert.isTrue(pRequestMethod != RequestMethod.GET
-                                  && pRequestMethod != RequestMethod.POST,
+            Assert.isTrue(pRequestMethod == RequestMethod.GET
+                                  || pRequestMethod == RequestMethod.POST,
                           ServerExceptionCode.REQUEST_TYPE_INVALID);
 
             boolean isAlreadyAuthorized = this.authorizationService.isAuthorized(pAuthentication, pClientPublicId);
@@ -136,23 +145,19 @@ public class AuthorizationController {
                 redirect = authorizeCodeResponse(pAuthentication, authRequest, pClientPublicId, pScope, pRedirectionUrl, pState);
             } else if (grantType == GrantType.IMPLICIT) {
                 redirect = implicitResponse(pAuthentication, authRequest, pClientPublicId, pScope, pRedirectionUrl, pState);
+            } else {
+                Utils.raise(ServerExceptionCode.RESPONSETYPE_INVALID);
             }
 
             return new ModelAndView(redirect);
 
-        } catch (OpenIdException pOpenIdException) {
-            // Add info and rethrow
-            throw new OpenIdExceptionBuilder(pOpenIdException)
-                    .clientId(pClientPublicId)
-                    .redirection(pRedirectionUrl)
-                    .state(pState)
-                    .from(grantType).build();
-
         } catch (Exception pException) {
+            // Add info and rethrow
             throw new OpenIdExceptionBuilder(pException)
                     .clientId(pClientPublicId)
                     .redirection(pRedirectionUrl)
                     .state(pState)
+                    .handling(ErrorHandling.REDIRECT)
                     .from(grantType).build();
         }
 
@@ -178,15 +183,6 @@ public class AuthorizationController {
             this.userAuthorizationService.createOneUserAuthorization(userDetails, pClientPublicId, pScope);
             
             return authorize(pResponseType, pClientPublicId, pScope, pRedirectionUrl, pState, null, pPrompt, pDisplay, pIdTokenHint, pAuthentication, RequestMethod.POST);
-
-        } catch (OpenIdException pOpenIdException) {
-
-            throw new OpenIdExceptionBuilder(pOpenIdException)
-                    .clientId(pClientPublicId)
-                    .redirection(pRedirectionUrl)
-                    .state(pState)
-                    .from(FlowUtils.getAuthorizationType(pResponseType))
-                    .build();
 
         } catch (Exception pException) {
 

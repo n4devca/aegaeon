@@ -26,12 +26,11 @@ import java.util.Map;
 
 import ca.n4dev.aegaeon.api.exception.OpenIdErrorType;
 import ca.n4dev.aegaeon.api.exception.OpenIdException;
+import ca.n4dev.aegaeon.server.view.TokenResponse;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import ca.n4dev.aegaeon.server.view.TokenResponse;
 
 /**
  * UriBuilder.java
@@ -52,6 +51,10 @@ public class UriBuilder {
     public static final String PARAM_REDIRECTION_URL = "redirection_url";
     public static final String PARAM_RESPONSE_TYPE = "response_type";
     public static final String PARAM_NONCE = "nonce";
+    public static final String PARAM_SCOPE = "scope";
+    public static final String PARAM_DISPLAY = "display";
+    public static final String PARAM_IDTOKENHINT = "id_token_hint";
+
 
     public static String build(String pUrl, TokenResponse pTokenResponse, String pState) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();

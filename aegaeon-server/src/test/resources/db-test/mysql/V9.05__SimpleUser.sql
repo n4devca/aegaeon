@@ -19,28 +19,22 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.repository;
 
-import java.util.List;
 
-import ca.n4dev.aegaeon.api.model.UserAuthorization;
-import org.springframework.data.jpa.repository.JpaRepository;
+insert into users(username, name, uniqueIdentifier, passwd, enabled)
+values('user@localhost', 'Remi Guillemette', uuid(), '$2a$10$5I2.hpEdy7NYvjS/GdWAKujreLRCLxHY/kFmtItf3SZjToRDvpUzy', 1);
+select last_insert_id() into @uid;
 
-/**
- * UserAuthorizationRepository.java
- * 
- * Provide db access to UserAuthorization.
- *
- * @author by rguillemette
- * @since May 13, 2017
- */
-public interface UserAuthorizationRepository extends JpaRepository<UserAuthorization, Long> {
+insert into user_authority(user_id, authority_id)
+select @uid, id
+from authority
+where code = 'ROLE_USER';
 
-    UserAuthorization findByUserIdAndClientId(Long pUserId, Long pClientId);
+-- Get ca.n4dev.auth.client
+select id into @clientid from client where public_id = 'ca.n4dev.auth.client';
 
-    UserAuthorization findByUserUserNameAndClientId(String pUserName, Long pClientId);
-    
-    List<UserAuthorization> findByUserId(Long pUserId);
-    
-    List<UserAuthorization> findByClientId(Long pClientId);
-}
+-- Allow ca.n4dev.auth.client to do implicit
+insert into client_auth_flow(client_id, flow) values(@clientid, 'IMPLICIT');
+
+-- user@localhost authorized ca.n4dev.auth.client
+insert into users_authorization(user_id, client_id, scopes) values(@uid, @clientid, 'openid profile offline_access');
