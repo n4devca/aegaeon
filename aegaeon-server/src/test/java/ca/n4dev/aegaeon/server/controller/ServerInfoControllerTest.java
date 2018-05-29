@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * ServerInfoControllerTest.java
- *
+ * <p>
  * Test ServerInfoController.
  *
  * @author rguillemette
@@ -63,15 +63,16 @@ public class ServerInfoControllerTest {
                     .andExpect(jsonPath("$.ui_locales_supported", items("fr_CA", "en")))
                     .andExpect(jsonPath("$.token_endpoint_auth_methods_supported", items("client_secret_basic")))
                     .andExpect(jsonPath("$.response_types_supported", items("token",
-                                                                                            "code id_token",
-                                                                                            "id_token",
-                                                                                            "client_credentials")));
+                                                                            "code id_token",
+                                                                            "id_token",
+                                                                            "client_credentials")));
 
     }
 
     private Matcher items(String... pValues) {
         return containsInAnyOrder(asArray(pValues));
     }
+
     private String[] asArray(String... pValues) {
         return pValues;
     }

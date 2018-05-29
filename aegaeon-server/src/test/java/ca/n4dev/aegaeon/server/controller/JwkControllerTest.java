@@ -1,7 +1,6 @@
 package ca.n4dev.aegaeon.server.controller;
 
 import ca.n4dev.aegaeon.server.token.key.KeysProvider;
-import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import org.junit.Test;
@@ -24,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * JwkControllerTest.java
- *
+ * <p>
  * Test PublicJwkController.
  *
  * @author rguillemette
