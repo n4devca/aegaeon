@@ -23,9 +23,8 @@ package ca.n4dev.aegaeon.api.repository;
 
 import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import ca.n4dev.aegaeon.api.model.UserAuthorization;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
  * UserAuthorizationRepository.java
@@ -38,6 +37,8 @@ import ca.n4dev.aegaeon.api.model.UserAuthorization;
 public interface UserAuthorizationRepository extends JpaRepository<UserAuthorization, Long> {
 
     UserAuthorization findByUserIdAndClientId(Long pUserId, Long pClientId);
+
+    UserAuthorization findByUserUserNameAndClientId(String pUserName, Long pClientId);
     
     List<UserAuthorization> findByUserId(Long pUserId);
     

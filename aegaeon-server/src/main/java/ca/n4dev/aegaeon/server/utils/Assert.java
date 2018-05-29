@@ -21,11 +21,9 @@
  */
 package ca.n4dev.aegaeon.server.utils;
 
+import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ca.n4dev.aegaeon.api.exception.ServerException;
-import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 
 /**
  * Assert.java
@@ -39,7 +37,37 @@ import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 public class Assert {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(Assert.class);
-    
+
+    public static void notNull(Object pObj) {
+        if (pObj == null) {
+            Utils.raise(ServerExceptionCode.ILLEGAL_ARGUMENT);
+        }
+    }
+
+    public static void notNull(Object pObj, String pLogMsg) {
+        if (pObj == null) {
+            Utils.raise(ServerExceptionCode.ILLEGAL_ARGUMENT, pLogMsg);
+        }
+    }
+
+    public static void notEmpty(String pObj) {
+        if (pObj == null || pObj.isEmpty()) {
+            Utils.raise(ServerExceptionCode.ILLEGAL_ARGUMENT);
+        }
+    }
+
+    public static void isTrue(Boolean pValue) {
+        if (pValue == null || !pValue) {
+            Utils.raise(ServerExceptionCode.ILLEGAL_ARGUMENT);
+        }
+    }
+
+    public static void isFalse(Boolean pValue) {
+        if (pValue == null || pValue) {
+            Utils.raise(ServerExceptionCode.ILLEGAL_ARGUMENT);
+        }
+    }
+
     public static void notNull(Object pObj, ServerExceptionCode pCode) {
         if (pObj == null) {
             Utils.raise(pCode);

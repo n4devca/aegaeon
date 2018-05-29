@@ -56,9 +56,14 @@ public class InvalidScopeException extends ServerException {
     }
     
     /**
-     * @param pInvalidScopes the invalidScope to add
+     * @param pInvalidScope the invalidScope to add
      */
     public void addInvalidScope(String pInvalidScope) {
         invalidScopes.add(pInvalidScope);
+    }
+
+    @Override
+    public ServerExceptionCode getCode() {
+        return ServerExceptionCode.SCOPE_INVALID;
     }
 }

@@ -21,20 +21,19 @@
  */
 package ca.n4dev.aegaeon.api.exception;
 
+import ca.n4dev.aegaeon.api.protocol.AuthRequest;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import ca.n4dev.aegaeon.api.protocol.Flow;
 
 /**
  * BaseOAuthException.java
  * 
- * TODO(rguillemette) Add description
+ * A base class to all errors.
  *
  * @author by rguillemette
  * @since May 24, 2017
  */
-public abstract class BaseOAuthException extends ServerException {
+public class BaseOAuthException extends ServerException {
 
     private static final long serialVersionUID = 3676269645498864982L;
 
@@ -42,10 +41,10 @@ public abstract class BaseOAuthException extends ServerException {
     
     protected String userId;
     
-    protected OAuthErrorType error;
+    protected OpenIdErrorType error;
     
     @JsonIgnore
-    protected Flow flow;
+    protected AuthRequest authRequest;
     
     @JsonProperty("error_description")
     protected String errorDescription;
@@ -58,32 +57,42 @@ public abstract class BaseOAuthException extends ServerException {
     
     @JsonIgnore
     protected String clientPublicId;
-    
-    public BaseOAuthException(Class<?> pSource, Flow pFlow, OAuthErrorType pError) {
-        this.error = pError;
-        this.flow = pFlow;
-    }
-    
 
+    public BaseOAuthException(Class<?> pSource, OpenIdErrorType pError) {
+        this(pSource, pError, null);
+    }
+
+
+    public BaseOAuthException(Class<?> pSource, OpenIdErrorType pError, AuthRequest pAuthRequest) {
+        this.source = pSource;
+        this.error = pError;
+        this.authRequest = pAuthRequest;
+    }
+
+
+    /**
+     * @return This error as String.
+     */
     public String toString() {
+
         return new StringBuilder()
-                        .append(this.flow.toString())
-                        .append(",")
-                        .append(this.error)
-                        .toString();
+                    .append(authRequest.getResponseTypeParam())
+                    .append(",")
+                    .append(this.error)
+                    .toString();
     }
 
     /**
      * @return the error
      */
-    public OAuthErrorType getError() {
+    public OpenIdErrorType getError() {
         return error;
     }
 
     /**
      * @param pError the error to set
      */
-    public void setError(OAuthErrorType pError) {
+    public void setError(OpenIdErrorType pError) {
         error = pError;
     }
 
@@ -173,20 +182,17 @@ public abstract class BaseOAuthException extends ServerException {
         userId = pUserId;
     }
 
-
     /**
-     * @return the flow
+     * @return the authRequest
      */
-    public Flow getFlow() {
-        return flow;
+    public AuthRequest getAuthRequest() {
+        return authRequest;
     }
 
-
     /**
-     * @param pFlow the flow to set
+     * @param pAuthRequest the authRequest to set
      */
-    public void setFlow(Flow pFlow) {
-        flow = pFlow;
+    public void setAuthRequest(AuthRequest pAuthRequest) {
+        authRequest = pAuthRequest;
     }
-
 }

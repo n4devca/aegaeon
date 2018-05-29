@@ -72,7 +72,7 @@ public class ScopeService extends BaseService<Scope, ScopeRepository> {
         }
         
         // Split on space
-        List<String> scopes = parseScopeArgumentString(SPACE, pScopeStr);
+        List<String> scopes = parseScopeString(SPACE, pScopeStr);
         
         return findScopeFromStringList(scopes, pExcluded);
     }
@@ -85,7 +85,7 @@ public class ScopeService extends BaseService<Scope, ScopeRepository> {
         }
         
         // Split on space
-        List<String> scopes = parseScopeArgumentString(SPACE, pScopeString);
+        List<String> scopes = parseScopeString(SPACE, pScopeString);
         List<Scope> lst = this.getRepository().findByNameIn(scopes);
         
         // They all exist in the db.
@@ -131,8 +131,12 @@ public class ScopeService extends BaseService<Scope, ScopeRepository> {
     public List<Scope> findScopeFromStringList(List<String> pScopeStrs) throws InvalidScopeException {
         return findScopeFromStringList(pScopeStrs, null);
     }
-    
-    public List<String> parseScopeArgumentString(String pSeparator, String pScopeStr) {
+
+    public List<String> parseScopeString(String pScopeStr) {
+        return parseScopeString(SPACE, pScopeStr);
+    }
+
+    public List<String> parseScopeString(String pSeparator, String pScopeStr) {
      
         if (Utils.isEmpty(pScopeStr)) {
             return Collections.emptyList();

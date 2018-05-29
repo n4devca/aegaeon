@@ -24,7 +24,7 @@ package ca.n4dev.aegaeon.server.service;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import ca.n4dev.aegaeon.api.model.User;
-import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
+import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 
 /**
  * BaseTokenServiceTest.java
@@ -54,7 +54,7 @@ public abstract class BaseTokenServiceTest extends BaseServiceTest {
     protected SpringAuthUserDetailsService userService;
     
     protected User getUser(String pUsername) {
-        SpringAuthUserDetails userDetails = (SpringAuthUserDetails) this.userService.loadUserByUsername(pUsername);
+        AegaeonUserDetails userDetails = (AegaeonUserDetails) this.userService.loadUserByUsername(pUsername);
         User u = new User();
         
         u.setId(userDetails.getId());
@@ -62,5 +62,9 @@ public abstract class BaseTokenServiceTest extends BaseServiceTest {
         u.setEnabled(userDetails.isEnabled());
         
         return u;
+    }
+
+    protected AegaeonUserDetails getSpringAuthUserDetails(String pUsername) {
+        return (AegaeonUserDetails) this.userService.loadUserByUsername(pUsername);
     }
 }

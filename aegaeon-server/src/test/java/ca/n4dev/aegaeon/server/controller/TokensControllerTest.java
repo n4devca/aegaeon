@@ -4,6 +4,7 @@ import java.util.Base64;
 
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -15,12 +16,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 /**
  * TokensControllerIntegratedTest.java
- * TODO(rguillemette) Add description.
+ *
+ *
  *
  * @author rguillemette
  * @since 2.0.0 - Feb 08 - 2018
  */
-public class TokensControllerIntegratedTest extends BaseIntegratedControllerTest<TokensController> {
+public class TokensControllerTest extends BaseIntegratedControllerTest<TokensController> {
 
     private static final String CLIENT_PUBLIC_ID = "ca.n4dev.auth.client";
     private static final String CLIENT_PASSWD = "ca.n4dev.auth.client";
@@ -29,15 +31,6 @@ public class TokensControllerIntegratedTest extends BaseIntegratedControllerTest
     protected Class<TokensController> getControllerClass() {
         return TokensController.class;
     }
-
-    /*
-    * @RequestParam(value = "grant_type", required = false) String pGrantType,
-                    @RequestParam(value = "code", required = false) String pCode,
-                    @RequestParam(value = "redirect_uri", required = false) String pRedirectUri,
-                    @RequestParam(value = "client_id", required = false) String pClientPublicId,
-                    @RequestParam(value = "scope", required = false) String pScope,
-                    @RequestParam(value = "refresh_token", required = false) String pRefreshToken,
-    * */
 
     @Test
     public void isUnauthorized() throws Exception {
@@ -48,6 +41,7 @@ public class TokensControllerIntegratedTest extends BaseIntegratedControllerTest
     }
 
     @Test
+    @WithMockUser(username = CLIENT_PUBLIC_ID, roles = {"CLIENT"})
     public void invalidGrantTypeParam() throws Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "invalid");
@@ -84,7 +78,7 @@ public class TokensControllerIntegratedTest extends BaseIntegratedControllerTest
 
         MvcResult result =
                 mockMvc.perform(post(TokensController.URL)
-                                        .header("Authorization", "Basic " + authorizationHeader())
+                                        //.header("Authorization", "Basic " + authorizationHeader())
                                         .params(pParams))
                        .andExpect(MockMvcResultMatchers
                                           .status()

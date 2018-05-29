@@ -25,18 +25,16 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
+import ca.n4dev.aegaeon.api.protocol.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.model.Client;
-import ca.n4dev.aegaeon.api.model.GrantType;
 import ca.n4dev.aegaeon.api.model.RefreshToken;
 import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.api.model.User;
-import ca.n4dev.aegaeon.api.protocol.Flow;
-import ca.n4dev.aegaeon.api.protocol.FlowFactory;
 import ca.n4dev.aegaeon.api.repository.RefreshTokenRepository;
 import ca.n4dev.aegaeon.api.token.Token;
 import ca.n4dev.aegaeon.api.token.TokenProviderType;
@@ -86,7 +84,7 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#createManagedToken(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    RefreshToken createManagedToken(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
+    RefreshToken createManagedToken(AuthRequest pAuthRequest, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
 
         Token token = this.tokenFactory.createToken(pUser, pClient, 
                                                     TokenProviderType.UUID, 
@@ -111,10 +109,11 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#validate(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    void validate(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
+    void validate(AuthRequest pAuthRequest, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
         
-        if (!this.clientService.hasScope(pClient.getId(), OFFLINE_SCOPE) 
-                || !this.clientService.hasGrantType(pClient.getId(), GrantType.CODE_AUTH_CODE)) {
+        if (!Utils.isOneTrue(pScopes, pScope -> OFFLINE_SCOPE.equals(pScope.getName()))
+                || !this.clientService.hasScope(pClient.getId(), OFFLINE_SCOPE)
+                || !this.clientService.hasGrantType(pClient.getId(), GrantType.AUTHORIZATION_CODE)) {
             throw new ServerException(ServerExceptionCode.SCOPE_UNAUTHORIZED_OFFLINE);            
         }
     }
@@ -131,15 +130,17 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#isTokenToCreate(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    boolean isTokenToCreate(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) {
-        
-        if (Utils.contains(pFlow.getResponseType(), FlowFactory.PARAM_CODE)
-                && this.clientService.hasScope(pClient.getId(), OFFLINE_SCOPE) 
-                && this.clientService.hasGrantType(pClient.getId(), GrantType.CODE_AUTH_CODE)) {
-            
-            return true;            
+    boolean isTokenToCreate(AuthRequest pAuthRequest, User pUser, Client pClient, List<Scope> pScopes) {
+
+        // No need to do all these check if the offline_access has not been requested.
+        if (Utils.isOneTrue(pScopes, pScope -> OFFLINE_SCOPE.equals(pScope.getName()))) {
+            boolean isRequestAuthCode = Utils.contains(pAuthRequest.getResponseTypes(), ResponseType.code);
+            boolean hasClientOffline = this.clientService.hasScope(pClient.getId(), OFFLINE_SCOPE);
+            boolean hasClientAuthCode = this.clientService.hasGrantType(pClient.getId(), GrantType.AUTHORIZATION_CODE);
+
+            return isRequestAuthCode && hasClientOffline && hasClientAuthCode;
         }
-        
+
         return false;
     }
 }

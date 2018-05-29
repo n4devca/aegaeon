@@ -1,7 +1,6 @@
 package ca.n4dev.aegaeon.server.view.mapper;
 
 import ca.n4dev.aegaeon.api.model.ClientGrantType;
-import ca.n4dev.aegaeon.api.model.GrantType;
 import ca.n4dev.aegaeon.server.view.SelectableItemView;
 import java.util.ArrayList;
 import java.util.List;

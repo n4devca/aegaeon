@@ -34,33 +34,37 @@ from authority;
 select id into @gt_auth from grant_type where code = 'authorization_code';
 select id into @gt_implicit from grant_type where code = 'implicit';
 
--- 'AUTHORIZATIONCODE', 
+-- 'AUTHORIZATION_CODE',
 insert into client( name, logourl, public_id, secret, provider_name)
 values('ca.n4dev.auth.client', 'https://n4dev.ca/aegaeon/logo1.jpg', 'ca.n4dev.auth.client', 'kjaskas8993jnskajksj', 'RSA_RS512');
 select last_insert_id() into @client_auth;
 
-insert into client_grant_type(client_id, grant_type_id) values(@client_auth, @gt_auth);
+-- insert into client_grant_type(client_id, grant_type_id) values(@client_auth, @gt_auth);
+insert into client_auth_flow(client_id, flow) values(@client_auth, 'AUTHORIZATION_CODE');
 
--- 'AUTHORIZATIONCODE', 
+-- 'AUTHORIZATION_CODE',
 insert into client( name, logourl, public_id, secret, provider_name)
 values('ca.n4dev.auth.client2', 'https://n4dev.ca/aegaeon/logo1.jpg', 'ca.n4dev.auth.client2', 'kjaskas8993jnskajksj', 'RSA_RS512');
 select last_insert_id() into @client_auth2;
 
-insert into client_grant_type(client_id, grant_type_id) values(@client_auth2, @gt_auth);
+-- insert into client_grant_type(client_id, grant_type_id) values(@client_auth2, @gt_auth);
+insert into client_auth_flow(client_id, flow) values(@client_auth2, 'AUTHORIZATION_CODE');
 
--- 'AUTHORIZATIONCODE', 
+-- 'AUTHORIZATION_CODE',
 insert into client( name, logourl, public_id, secret, provider_name)
 values('ca.n4dev.auth.client3', 'https://n4dev.ca/aegaeon/logo1.jpg', 'ca.n4dev.auth.client3', 'kjaskas8993jnskajksj', 'HMAC_HS512');
 select last_insert_id() into @client_auth3;
 
-insert into client_grant_type(client_id, grant_type_id) values(@client_auth3, @gt_auth);
+-- insert into client_grant_type(client_id, grant_type_id) values(@client_auth3, @gt_auth);
+insert into client_auth_flow(client_id, flow) values(@client_auth3, 'AUTHORIZATION_CODE');
 
 -- 'IMPLICIT', 
 insert into client( name, logourl, public_id, secret, provider_name)
 values('ca.n4dev.auth.client.impl', 'https://n4dev.ca/aegaeon/logo2.jpg', 'ca.n4dev.auth.client.impl', 'kjaskas8993jnskajksj', 'RSA_RS512');
 select last_insert_id() into @client_impl;
 
-insert into client_grant_type(client_id, grant_type_id) values(@client_impl, @gt_implicit);
+-- insert into client_grant_type(client_id, grant_type_id) values(@client_impl, @gt_implicit);
+insert into client_auth_flow(client_id, flow) values(@client_impl, 'IMPLICIT');
 
 insert into client_scope(client_id, scope_id)
 select @client_impl, id

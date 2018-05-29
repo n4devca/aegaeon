@@ -19,45 +19,41 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.server.service;
-
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import ca.n4dev.aegaeon.api.model.GrantType;
-import ca.n4dev.aegaeon.api.repository.GrantTypeRepository;
+package ca.n4dev.aegaeon.api.protocol;
 
 /**
- * GrantService.java
+ * GrantType.java
  * 
  * TODO(rguillemette) Add description
  *
  * @author by rguillemette
- * @since Nov 23, 2017
+ * @since May 24, 2017
  */
-@Service
-public class GrantTypeService  extends BaseService<GrantType, GrantTypeRepository>{
-
-    /**
-     * Default Constructor.
-     * @param pRepository GrantType repository.
-     */
-    @Autowired
-    public GrantTypeService(GrantTypeRepository pRepository) {
-        super(pRepository);
+public enum GrantType {
+    AUTHORIZATION_CODE,
+    IMPLICIT,
+    CLIENT_CREDENTIALS,
+    REFRESH_TOKEN,
+    PASSWORD, // Not implemented
+    HYBRID
+    ;
+    
+    public static GrantType from(String pGrantString) {
+        for (GrantType grant : GrantType.values()) {
+            if (grant.toString().equals(pGrantString)) {
+                return grant;
+            }
+        }
+        
+        return null;
     }
-
-
-    /**
-     * Find all grants.
-     * @return A list of grants.
-     */
-    @Transactional(readOnly = true)
-    public List<GrantType> findAll() {
-        return this.getRepository().findAll();
+    
+    public static boolean is(String pParameter, GrantType pGrant) {
+        if (pGrant != null && pParameter != null && !pParameter.isEmpty()) {
+            return pGrant == from(pParameter);            
+        }
+        
+        return false;
     }
 
 }

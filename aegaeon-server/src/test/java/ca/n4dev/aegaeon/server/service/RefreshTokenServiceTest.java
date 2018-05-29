@@ -23,6 +23,10 @@ package ca.n4dev.aegaeon.server.service;
 
 import java.util.List;
 
+import ca.n4dev.aegaeon.api.protocol.AuthRequest;
+import ca.n4dev.aegaeon.api.protocol.FlowUtils;
+import ca.n4dev.aegaeon.api.protocol.GrantType;
+import ca.n4dev.aegaeon.api.protocol.ResponseType;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,10 +63,9 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         List<Scope> scopes = scopeService.findScopeFromString("openid profile offline_access");
         Assert.assertNotNull(scopes);
         Assert.assertTrue(scopes.size() == 3);
-        
-        Flow flow = FlowFactory.authCode();
-        
-        RefreshToken token = refreshTokenService.createToken(flow, user.getId(), CLIENT_AUTH, scopes);
+
+        AuthRequest authRequest = new AuthRequest(ResponseType.code.toString());
+        RefreshToken token = refreshTokenService.createToken(authRequest, user.getId(), CLIENT_AUTH, scopes);
         Assert.assertNotNull(token);
     }
     
@@ -76,14 +79,13 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         Assert.assertNotNull(scopes);
         Assert.assertTrue(scopes.size() == 2);
         
-        Flow flow = FlowFactory.authCode();
+        AuthRequest authRequest = new AuthRequest(FlowUtils.RTYPE_AUTH_CODE);
         
-        RefreshToken token = refreshTokenService.createToken(flow, user.getId(), CLIENT_AUTH, scopes);
+        RefreshToken token = refreshTokenService.createToken(authRequest, user.getId(), CLIENT_AUTH, scopes);
         // Creation is skipped, so should be null
         Assert.assertNull(token);
     }
     
-    @Test(expected = ServerException.class)
     @WithMockUser(username = CLIENT_IMPL, roles = {"CLIENT"})
     public void testErrorImplicitClient() {
         User user = getUser(USERNAME);
@@ -93,15 +95,13 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         Assert.assertNotNull(scopes);
         Assert.assertTrue(scopes.size() == 3);
         
-        Flow flow = FlowFactory.implicit();
+        AuthRequest authRequest = new AuthRequest(FlowUtils.RTYPE_IMPLICIT_FULL);
         
-        RefreshToken token = refreshTokenService.createToken(flow, user.getId(), CLIENT_IMPL, scopes);
+        RefreshToken token = refreshTokenService.createToken(authRequest, user.getId(), CLIENT_IMPL, scopes);
         
-        // Exception throwed before getting here
         Assert.assertNull(token);
     }
     
-    @Test(expected = ServerException.class)
     @WithMockUser(username = CLIENT_AUTH_2, roles = {"CLIENT"})
     public void testErrorNotAuthorizedClient() {
         User user = getUser(USERNAME);
@@ -111,11 +111,10 @@ public class RefreshTokenServiceTest extends BaseTokenServiceTest {
         Assert.assertNotNull(scopes);
         Assert.assertTrue(scopes.size() == 3);
         
-        Flow flow = FlowFactory.authCode();
+        AuthRequest authRequest = new AuthRequest(FlowUtils.RTYPE_AUTH_CODE);
         
-        RefreshToken token = refreshTokenService.createToken(flow, user.getId(), CLIENT_AUTH_2, scopes);
+        RefreshToken token = refreshTokenService.createToken(authRequest, user.getId(), CLIENT_AUTH_2, scopes);
         
-        // Exception throwed before getting here
         Assert.assertNull(token);
     }
 }

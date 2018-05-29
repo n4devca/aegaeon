@@ -43,7 +43,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import ca.n4dev.aegaeon.server.controller.dto.UserFormDto;
 import ca.n4dev.aegaeon.server.controller.dto.UserInfoGroupDto;
-import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
+import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 import ca.n4dev.aegaeon.server.service.UserInfoService;
 import ca.n4dev.aegaeon.server.service.UserInfoTypeService;
 import ca.n4dev.aegaeon.server.service.UserService;
@@ -106,7 +106,7 @@ public class SimpleUserAccountController extends BaseUiController {
 
 
     @RequestMapping("")
-    public ModelAndView account(@AuthenticationPrincipal SpringAuthUserDetails pUser, Locale pLocale) {
+    public ModelAndView account(@AuthenticationPrincipal AegaeonUserDetails pUser, Locale pLocale) {
         return createUserView(pUser.getId(), pLocale);
     }
     
@@ -171,7 +171,7 @@ public class SimpleUserAccountController extends BaseUiController {
     
     @PostMapping("")
     public ModelAndView saveAccount(@ModelAttribute("user") UserFormDto pModel, 
-                                    @AuthenticationPrincipal SpringAuthUserDetails pUser,
+                                    @AuthenticationPrincipal AegaeonUserDetails pUser,
                                     BindingResult pResult,
                                     Locale pLocale) {
 

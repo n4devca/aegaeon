@@ -22,7 +22,6 @@
 package ca.n4dev.aegaeon.server.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -30,36 +29,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ca.n4dev.aegaeon.api.model.Authority;
-import ca.n4dev.aegaeon.api.repository.AuthorityRepository;
-import ca.n4dev.aegaeon.api.validation.PasswordEvaluator;
-import ca.n4dev.aegaeon.server.utils.StringRandomizer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
 import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
+import ca.n4dev.aegaeon.api.model.Authority;
 import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.model.UserInfo;
 import ca.n4dev.aegaeon.api.model.UserInfoType;
+import ca.n4dev.aegaeon.api.repository.AuthorityRepository;
 import ca.n4dev.aegaeon.api.repository.UserInfoRepository;
 import ca.n4dev.aegaeon.api.repository.UserRepository;
 import ca.n4dev.aegaeon.api.token.OAuthClient;
 import ca.n4dev.aegaeon.api.token.OAuthUser;
 import ca.n4dev.aegaeon.api.token.payload.Claims;
 import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
+import ca.n4dev.aegaeon.api.validation.PasswordEvaluator;
 import ca.n4dev.aegaeon.server.security.AccessTokenAuthentication;
 import ca.n4dev.aegaeon.server.utils.Assert;
+import ca.n4dev.aegaeon.server.utils.StringRandomizer;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import ca.n4dev.aegaeon.server.view.UserInfoResponseView;
 import ca.n4dev.aegaeon.server.view.UserInfoView;
 import ca.n4dev.aegaeon.server.view.UserView;
 import ca.n4dev.aegaeon.server.view.mapper.UserMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * UserService.java
@@ -279,7 +276,7 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
      * #createPayload(ca.n4dev.aegaeon.api.token.OAuthUser, ca.n4dev.aegaeon.api.token.OAuthClient, java.util.List)
      */
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('CLIENT') or principal.id = pOAuthUser.id")
+    @PreAuthorize("hasRole('CLIENT') or principal.id == #pOAuthUser.id")
     public Map<String, String> createPayload(OAuthUser pOAuthUser, OAuthClient pOAuthClient, List<String> pRequestedScopes) {
         Map<String, String> payload = new LinkedHashMap<>();
         
@@ -290,6 +287,6 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
             payload.put(Claims.USERNAME, u.getUserName());
         }
 
-        return Collections.unmodifiableMap(payload);
+        return payload;
     }
 }

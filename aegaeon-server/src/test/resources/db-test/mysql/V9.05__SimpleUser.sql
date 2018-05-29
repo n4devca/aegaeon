@@ -19,28 +19,22 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.repository;
 
-import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+insert into users(username, name, uniqueIdentifier, passwd, enabled)
+values('user@localhost', 'Remi Guillemette', uuid(), '$2a$10$5I2.hpEdy7NYvjS/GdWAKujreLRCLxHY/kFmtItf3SZjToRDvpUzy', 1);
+select last_insert_id() into @uid;
 
-import ca.n4dev.aegaeon.api.model.ClientGrantType;
+insert into user_authority(user_id, authority_id)
+select @uid, id
+from authority
+where code = 'ROLE_USER';
 
-/**
- * ClientGrantTypeRepository.java
- * 
- * ClientGrantType repository.
- *
- * @author by rguillemette
- * @since Dec 9, 2017
- */
-public interface ClientGrantTypeRepository extends JpaRepository<ClientGrantType, Long> {
+-- Get ca.n4dev.auth.client
+select id into @clientid from client where public_id = 'ca.n4dev.auth.client';
 
-    /**
-     * Find client's grant.
-     * @param pClientId The client's id.
-     * @return A list of grants.
-     */
-    List<ClientGrantType> findByClientId(Long pClientId);
-}
+-- Allow ca.n4dev.auth.client to do implicit
+insert into client_auth_flow(client_id, flow) values(@clientid, 'IMPLICIT');
+
+-- user@localhost authorized ca.n4dev.auth.client
+insert into users_authorization(user_id, client_id, scopes) values(@uid, @clientid, 'openid profile offline_access');

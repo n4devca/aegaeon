@@ -21,7 +21,7 @@
  */
 package ca.n4dev.aegaeon.api.exception;
 
-import ca.n4dev.aegaeon.api.protocol.Flow;
+import ca.n4dev.aegaeon.api.protocol.AuthRequest;
 
 /**
  * OAuthPublicRedirectionException.java
@@ -34,32 +34,21 @@ import ca.n4dev.aegaeon.api.protocol.Flow;
  * @author by rguillemette
  * @since May 22, 2017
  */
+@Deprecated
 public class OAuthPublicRedirectionException extends BaseOAuthException {
 
     private static final long serialVersionUID = -8734236117353192521L;
 
-    private String state;
-    
     /**
      * Create an OAuthServerException with an error code.
      * @param pError The error code.
      */
-    public OAuthPublicRedirectionException(Class<?> pSource, Flow pFlow, OAuthErrorType pError, String pRedirectUrl) {
-        super(pSource, pFlow, pError);
+    public OAuthPublicRedirectionException(Class<?> pSource,
+                                           OpenIdErrorType pError,
+                                           AuthRequest pAuthRequest,
+                                           String pRedirectUrl) {
+        super(pSource, pError, pAuthRequest);
         setRedirectUrl(pRedirectUrl);
     }
-    
-    /**
-     * @return the state
-     */
-    public String getState() {
-        return state;
-    }
 
-    /**
-     * @param pState the state to set
-     */
-    public void setState(String pState) {
-        state = pState;
-    }
 }

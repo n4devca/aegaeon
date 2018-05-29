@@ -24,6 +24,9 @@ package ca.n4dev.aegaeon.server.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import ca.n4dev.aegaeon.api.protocol.AuthRequest;
+import ca.n4dev.aegaeon.api.protocol.FlowUtils;
+import ca.n4dev.aegaeon.api.protocol.GrantType;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +43,7 @@ import ca.n4dev.aegaeon.api.protocol.FlowFactory;
 /**
  * AccessTokenServiceTest.java
  * 
- * TODO(rguillemette) Add description
+ * AccessTokenService integrated tests.
  *
  * @author by rguillemette
  * @since May 30, 2017
@@ -81,9 +84,9 @@ public class AccessTokenServiceTest extends BaseTokenServiceTest {
         
         User user = getUser(USERNAME);
         Assert.assertNotNull(user);
-        Flow flow = FlowFactory.implicit();
+        AuthRequest authRequest = new AuthRequest(FlowUtils.RTYPE_AUTH_CODE);
         
-        AccessToken token = this.accessTokenService.createToken(flow, user, client, scopes);
+        AccessToken token = this.accessTokenService.createToken(authRequest, user, client, scopes);
         Assert.assertNotNull(token);
         Assert.assertNotNull(token.getScopes());
         Assert.assertNotNull(token.getValidUntil().isAfter(LocalDateTime.now()));
@@ -102,12 +105,13 @@ public class AccessTokenServiceTest extends BaseTokenServiceTest {
         User user = getUser(USERNAME);
         Assert.assertNotNull(user);
         
-        Flow flow = FlowFactory.implicit();
+        AuthRequest authRequest = new AuthRequest(FlowUtils.RTYPE_IMPLICIT_FULL);
         
-        AccessToken token = this.accessTokenService.createToken(flow, user, client, scopes);
+        AccessToken token = this.accessTokenService.createToken(authRequest, user, client, scopes);
         Assert.assertNotNull(token);
         Assert.assertNotNull(token.getScopes());
         Assert.assertNotNull(token.getValidUntil().isAfter(LocalDateTime.now()));
     }
-    
+
+
 }

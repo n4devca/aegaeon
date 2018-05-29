@@ -25,6 +25,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
+import ca.n4dev.aegaeon.api.protocol.AuthRequest;
+import ca.n4dev.aegaeon.api.protocol.ResponseType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +59,7 @@ import ca.n4dev.aegaeon.server.view.mapper.TokenMapper;
 @Service
 public class IdTokenService extends BaseTokenService<IdToken, IdTokenRepository> {
 
+    private static final String OPENID_SCOPE = "openid";
     /**
      * @param pRepository
      * @param pTokenFactory
@@ -78,15 +81,15 @@ public class IdTokenService extends BaseTokenService<IdToken, IdTokenRepository>
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#createManagedToken(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    IdToken createManagedToken(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
+    IdToken createManagedToken(AuthRequest pAuthRequest, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
 
         // Create Payload.
         List<String> scopes = Utils.convert(pScopes, s -> s.getName());
         Map<String, String> payload = this.userService.createPayload(pUser, pClient, scopes);
         
         // If we need to include nonce param to prevent replay attack
-        if (Utils.isNotEmpty(pFlow.getNonce())) {
-            payload.put(Claims.NONCE, pFlow.getNonce());
+        if (Utils.isNotEmpty(pAuthRequest.getNonce())) {
+            payload.put(Claims.NONCE, pAuthRequest.getNonce());
         }
 
         // Create Token.
@@ -113,9 +116,9 @@ public class IdTokenService extends BaseTokenService<IdToken, IdTokenRepository>
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#validate(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    void validate(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
+    void validate(AuthRequest pAuthRequest, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
         // Must have the right scope
-        if (!contains(pScopes, FlowFactory.PARAM_ID_TOKEN)) {
+        if (!containsOpenIdScope(pScopes)) {
             throw new ServerException(ServerExceptionCode.SCOPE_INVALID);
         }
         
@@ -133,8 +136,11 @@ public class IdTokenService extends BaseTokenService<IdToken, IdTokenRepository>
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#isTokenToCreate(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    boolean isTokenToCreate(Flow pFlow, User pUser, Client pClient, List<Scope> pScopes) {
-        return contains(pScopes, FlowFactory.PARAM_ID_TOKEN);
+    boolean isTokenToCreate(AuthRequest pAuthRequest, User pUser, Client pClient, List<Scope> pScopes) {
+        return containsOpenIdScope(pScopes);
     }
 
+    private boolean containsOpenIdScope(List<Scope> pScopes) {
+        return Utils.isOneTrue(pScopes, pScope -> Utils.equals(pScope.getName(), OPENID_SCOPE));
+    }
 }

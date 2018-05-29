@@ -106,6 +106,7 @@ public class AccessTokenAuthenticationFilter extends GenericFilterBean {
         pFilterChain.doFilter(pServletRequest, pServletResponse);
     }
 
+
     private Authentication attemptAuthentication(String pAccessToken, ServletRequest pServletRequest, ServletResponse pServletResponse) throws AuthenticationException {
         
         Authentication auth = new AccessTokenAuthentication(pAccessToken);

@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import ca.n4dev.aegaeon.server.controller.*;
+import ca.n4dev.aegaeon.server.service.AuthorizationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -69,6 +70,9 @@ import ca.n4dev.aegaeon.server.service.ClientService;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig {
 
+    private static final String BCRYPT_PREFIX = "bcrypt";
+    private static final String ROLE_CLIENT = "ROLE_CLIENT";
+    private static final String ROLE_USER = "ROLE_USER";
 
     @Bean
     @Primary
@@ -76,7 +80,7 @@ public class WebSecurityConfig {
         PasswordEncoder bcryptPasswordEncoder =  new BCryptPasswordEncoder();
 
         Map<String, PasswordEncoder> encoders = new HashMap<>();
-        encoders.put("bcrypt", bcryptPasswordEncoder);
+        encoders.put(BCRYPT_PREFIX, bcryptPasswordEncoder);
 
         DelegatingPasswordEncoder delegatingPasswordEncoder = new DelegatingPasswordEncoder("bcrypt", encoders);
         delegatingPasswordEncoder.setDefaultPasswordEncoderForMatches(bcryptPasswordEncoder);
@@ -97,11 +101,9 @@ public class WebSecurityConfig {
         @Override
         protected void configure(HttpSecurity pHttp) throws Exception {
             pHttp
-
-
                 .authorizeRequests()
                     .mvcMatchers(TokensController.URL, IntrospectController.URL)
-                    .hasAnyAuthority("ROLE_CLIENT")
+                    .hasAnyAuthority(ROLE_CLIENT)
                 .and()
                     .httpBasic()
                         .authenticationEntryPoint(authenticationEntryPoint)
@@ -114,7 +116,7 @@ public class WebSecurityConfig {
         }
         
     }
-    
+
     @Configuration
     @Order(30)
     public static class UserInfoWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
@@ -157,8 +159,8 @@ public class WebSecurityConfig {
             pHttp
                 .csrf().disable()
                 .authorizeRequests()
-                    .mvcMatchers(UserInfoController.URL)
-                    .hasAnyAuthority("ROLE_USER")
+                    .antMatchers(UserInfoController.URL)
+                    .hasAnyAuthority(ROLE_USER)
                 .and()
                 .addFilterBefore(accessTokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                     .sessionManagement()
@@ -169,6 +171,7 @@ public class WebSecurityConfig {
     
     
     @Configuration
+    //@Order(10)
     public static class FormLoginWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
         
         @Autowired
@@ -178,14 +181,14 @@ public class WebSecurityConfig {
         private ControllerErrorInterceptor controllerErrorInterceptor;
 
         @Autowired
-        private ClientService clientService;
+        private AuthorizationService authorizationService;
         
         @Autowired
         private PasswordEncoder passwordEncoder;
 
         
         public PromptAwareAuthenticationFilter promptAwareAuthenticationFilter() {
-            return new PromptAwareAuthenticationFilter(this.clientService, this.controllerErrorInterceptor);
+            return new PromptAwareAuthenticationFilter(this.authorizationService, this.controllerErrorInterceptor);
         }
         
         @Override
@@ -199,7 +202,7 @@ public class WebSecurityConfig {
                         .antMatchers(SimpleHomeController.URL).permitAll()
                         .antMatchers(SimpleCreateAccountController.URL).permitAll()
                         .antMatchers(SimpleCreateAccountController.URL_ACCEPT).permitAll()
-                    .anyRequest().hasAnyAuthority("ROLE_USER")
+                    .anyRequest().hasAuthority(ROLE_USER)
                     .and()
                     .addFilterBefore(promptAwareAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                     .formLogin()
@@ -214,7 +217,6 @@ public class WebSecurityConfig {
 
         @Autowired
         public void configureGlobal(AuthenticationManagerBuilder pAuth) throws Exception {
-            
             pAuth.userDetailsService(userDetailsService)
                  .passwordEncoder(passwordEncoder);
             

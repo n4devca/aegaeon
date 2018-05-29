@@ -35,7 +35,7 @@ import java.util.Set;
 public class Flow {
 
     
-    private Set<RequestedGrant> requestedGrant;
+    private Set<GrantType> requestedGrant;
     
     private String[] responseType;
     
@@ -46,8 +46,8 @@ public class Flow {
     }
     
     
-    public boolean has(RequestedGrant pGrant) {
-        for (RequestedGrant rg : this.requestedGrant) {
+    public boolean has(GrantType pGrant) {
+        for (GrantType rg : this.requestedGrant) {
             if (rg == pGrant) {
                 return true;
             }
@@ -58,14 +58,14 @@ public class Flow {
     /**
      * @return the requestedGrant
      */
-    public Set<RequestedGrant> getRequestedGrant() {
+    public Set<GrantType> getRequestedGrant() {
         return requestedGrant;
     }
 
     /**
      * @param pRequestedGrant the requestedGrant to set
      */
-    public void setRequestedGrant(Set<RequestedGrant> pRequestedGrant) {
+    public void setRequestedGrant(Set<GrantType> pRequestedGrant) {
         requestedGrant = pRequestedGrant;
     }
 
@@ -86,7 +86,7 @@ public class Flow {
     public String toString() {
         StringBuilder b = new StringBuilder();
         
-        for (RequestedGrant g : this.requestedGrant) {
+        for (GrantType g : this.requestedGrant) {
             if (b.length() > 0) {
                 b.append(" ");
             }

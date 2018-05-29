@@ -37,7 +37,7 @@ import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.model.UserAuthorization;
 import ca.n4dev.aegaeon.api.repository.UserAuthorizationRepository;
-import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
+import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
 
@@ -75,7 +75,7 @@ public class UserAuthorizationService extends BaseSecuredService<UserAuthorizati
 
     @Transactional
     @PreAuthorize("#pUserDetails.id == principal.id")
-    public void createOneUserAuthorization(SpringAuthUserDetails pUserDetails, String pClientPublicId, String pScopes) {
+    public void createOneUserAuthorization(AegaeonUserDetails pUserDetails, String pClientPublicId, String pScopes) {
         
         Assert.notNull(pUserDetails, ServerExceptionCode.USER_EMPTY);
         

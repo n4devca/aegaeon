@@ -21,6 +21,15 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
+import ca.n4dev.aegaeon.api.exception.ErrorHandling;
+import ca.n4dev.aegaeon.api.exception.OpenIdException;
+import ca.n4dev.aegaeon.api.exception.OpenIdExceptionBuilder;
+import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
+import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
+import ca.n4dev.aegaeon.api.protocol.GrantType;
+import ca.n4dev.aegaeon.server.service.TokenServicesFacade;
+import ca.n4dev.aegaeon.server.view.TokenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,16 +42,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import ca.n4dev.aegaeon.api.exception.OAuthErrorType;
-import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
-import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
-import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
-import ca.n4dev.aegaeon.api.protocol.Flow;
-import ca.n4dev.aegaeon.api.protocol.FlowFactory;
-import ca.n4dev.aegaeon.api.protocol.RequestedGrant;
-import ca.n4dev.aegaeon.server.service.TokenServicesFacade;
-import ca.n4dev.aegaeon.server.view.TokenResponse;
 
 /**
  * OAuthTokensController.java
@@ -63,11 +62,11 @@ public class TokensController {
     
     private TokenServicesFacade tokenServicesFacade;
     private OpenIdEventLogger openIdEventLogger;
-    
+
     /**
      * Default Constructor.
-     * @param pClientService Service used to access client config.
-     * @param pAuthorizationCodeService Service used to access auth code.
+     * @param pTokenServicesFacade The token service facade.
+     * @param pOpenIdEventLogger The event logger.
      */
     @Autowired
     public TokensController(TokenServicesFacade pTokenServicesFacade,
@@ -77,28 +76,6 @@ public class TokensController {
         this.openIdEventLogger = pOpenIdEventLogger;
     }
 
-
-    /*
-    * /Token
-    * >>>> grant_type
-    * > openid
-    * authorization_code
-    * refresh_token
-    * > oauth
-    * password
-    * client_credentials
-    * refresh_token
-    * authorization_code
-    *
-    * /authorize
-    * >>>> response_type
-    * > openid
-    * code = auth flow
-    * id_token [token] = implicit flow
-    * > oauth
-    * code = auth flow
-    * token = implicit flow
-    */
 
     /**
      * 
@@ -119,29 +96,35 @@ public class TokensController {
                     @RequestParam(value = "refresh_token", required = false) String pRefreshToken,
                     Authentication pAuthentication) {
         
-        Flow flow = FlowFactory.of(pGrantType);
         TokenResponse response = null;
+        GrantType grantType = GrantType.from(pGrantType);
 
-        // Use flow for test
-        
-        if (flow.has(RequestedGrant.AUTHORIZATIONCODE)) {
-            response = authorizationCodeResponse(pCode, pRedirectUri, pClientPublicId, pAuthentication);
-        } else if (flow.has(RequestedGrant.CLIENTCREDENTIALS)) {
-            response = clientCredentialResponse(pAuthentication, pScope, pRedirectUri);
-        } else if (flow.has(RequestedGrant.REFRESH_TOKEN)) {
-            response = refreshTokenResponse(pAuthentication, pRefreshToken);
-        } else {
-            throw new OauthRestrictedException(getClass(),
-                    flow, 
-                    OAuthErrorType.invalid_request, 
-                    pClientPublicId, 
-                    pRedirectUri,
-                    "Wrong grant_type.");
+        try {
+
+            if (grantType == GrantType.AUTHORIZATION_CODE) {
+                response = authorizationCodeResponse(pCode, pRedirectUri, pClientPublicId, pAuthentication);
+            } else if (grantType == GrantType.CLIENT_CREDENTIALS) {
+                response = clientCredentialResponse(pAuthentication, pScope, pRedirectUri);
+            } else if (grantType == GrantType.REFRESH_TOKEN) {
+                response = refreshTokenResponse(pAuthentication, pRefreshToken);
+            } else {
+                throw new OpenIdException(ServerExceptionCode.GRANT_INVALID);
+            }
+
+            this.openIdEventLogger.log(OpenIdEvent.TOKEN_GRANTING, getClass(), pAuthentication.getName(), response);
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (Exception pException) {
+            throw new OpenIdExceptionBuilder(pException)
+                    .clientId(pClientPublicId)
+                    .redirection(pRedirectUri)
+                    .from(grantType)
+                    .handling(ErrorHandling.JSON)
+                    .build();
         }
-        
-        this.openIdEventLogger.log(OpenIdEvent.TOKEN_GRANTING, getClass(), pAuthentication.getName(), response);
-        
-        return new ResponseEntity<>(response, HttpStatus.OK);
+
+
     }
     
     private TokenResponse clientCredentialResponse(Authentication pAuthentication,
@@ -163,7 +146,6 @@ public class TokensController {
     
     /**
      * Check and build an authorization code response.
-     * @param pGrantType
      * @param pCode
      * @param pRedirectUri
      * @param pClientPublicId

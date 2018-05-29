@@ -21,18 +21,25 @@
  */
 package ca.n4dev.aegaeon.api.repository;
 
+import java.util.List;
+
+import ca.n4dev.aegaeon.api.model.ClientAuthFlow;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import ca.n4dev.aegaeon.api.model.GrantType;
-
 /**
- * GrantTypeRepository.java
+ * ClientGrantTypeRepository.java
  * 
- * GrantType repository.
+ * ClientGrantType repository.
  *
  * @author by rguillemette
- * @since May 8, 2017
+ * @since Dec 9, 2017
  */
-public interface GrantTypeRepository extends JpaRepository<GrantType, Long> {
+public interface ClientAuthFlowRepository extends JpaRepository<ClientAuthFlow, Long> {
 
+    /**
+     * Find client's grant.
+     * @param pClientId The client's id.
+     * @return A list of grants.
+     */
+    List<ClientAuthFlow> findByClientId(Long pClientId);
 }

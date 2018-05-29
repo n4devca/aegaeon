@@ -41,6 +41,11 @@ public class ServerException extends RuntimeException {
         super(pThrowable);
         this.code = ServerExceptionCode.UNEXPECTED_ERROR;
     }
+
+    public ServerException(ServerExceptionCode pCode, Throwable pThrowable) {
+        super(pThrowable);
+        this.code = pCode;
+    }
     
     public ServerException(ServerExceptionCode pCode) {
         this.code = pCode;

@@ -84,12 +84,12 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
     
     @Transactional
     @PreAuthorize("isAuthenticated() and principal.id == #pUserId")
-    public AuthorizationCodeView createCode(Long pUserId, String pClientPublicId, String pScopes, String pRedirectUrl) {
+    public AuthorizationCodeView createCode(Long pUserId, String pClientPublicId, String pResponseType, String pScopes, String pRedirectUrl) {
         // Get Scopes
         List<Scope> scopes = this.scopeService.findScopeFromString(pScopes);
         
         // Create Code
-        AuthorizationCode code = createCode(pUserId, pClientPublicId, scopes, pRedirectUrl);
+        AuthorizationCode code = createCode(pUserId, pClientPublicId, pResponseType, scopes, pRedirectUrl);
         
         // Return view
         return this.viewMapper.toView(code);
@@ -102,11 +102,16 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
      * @return An {@link AuthorizationCode} or null.
      */
     AuthorizationCode findByCode(String pCode) {
-        return this.getRepository().findByCode(pCode);
+
+        if (Utils.isNotEmpty(pCode)) {
+            return this.getRepository().findByCode(pCode);
+        }
+
+        return null;
     }
     
     
-    AuthorizationCode createCode(Long pUserId, String pClientPublicId, List<Scope> pScopes, String pRedirectUrl) {
+    AuthorizationCode createCode(Long pUserId, String pClientPublicId, String pResponseType, List<Scope> pScopes, String pRedirectUrl) {
         
         Assert.notNull(pUserId, ServerExceptionCode.USER_EMPTY);
         Assert.notEmpty(pClientPublicId, ServerExceptionCode.CLIENT_EMPTY);
@@ -115,7 +120,7 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
         Optional<User> u = this.userRepository.findById(pUserId);
         Client client = this.clientRepository.findByPublicId(pClientPublicId);
         
-        return createCode(u.orElse(null), client, pScopes, pRedirectUrl);
+        return createCode(u.orElse(null), client, pResponseType, pScopes, pRedirectUrl);
     }
     
     
@@ -125,15 +130,17 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
      * @param pClient The client.
      * @return A code or null.
      */
-    AuthorizationCode createCode(User pUser, Client pClient, List<Scope> pScopes, String pRedirectUrl) {
+    AuthorizationCode createCode(User pUser, Client pClient, String pResponseType, List<Scope> pScopes, String pRedirectUrl) {
         Assert.notNull(pUser, ServerExceptionCode.USER_EMPTY);
         Assert.notNull(pClient, ServerExceptionCode.CLIENT_EMPTY);
         Assert.notEmpty(pRedirectUrl, ServerExceptionCode.CLIENT_REDIRECTURL_EMPTY);
+        Assert.notEmpty(pResponseType, ServerExceptionCode.RESPONSETYPE_INVALID);
 
         AuthorizationCode c = new AuthorizationCode();
         c.setClient(pClient);
         c.setUser(pUser);
         c.setCode(this.tokenFactory.uniqueCode());
+        c.setResponseType(pResponseType);
         c.setValidUntil(LocalDateTime.now().plus(3L, ChronoUnit.MINUTES));
         c.setRedirectUrl(pRedirectUrl);
         
@@ -146,7 +153,7 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
     
     /**
      * Delete an auth code.
-     * @param pAuthorizationCode 
+     * @param pAuthorizationCodeId The auth code id.
      */
     @Transactional
     @PreAuthorize("hasRole('ADMIN') or @authorizationCodeService.hasPermissionTo(principal.id, #pAuthorizationCodeId, 'DELETE')")
@@ -156,7 +163,7 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
 
     /**
      * Check if a user is allowed to do an operation.
-     * @param pAuth
+     * @param pAuthUserId
      * @param pId
      * @param pOperation
      * @return

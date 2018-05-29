@@ -1,16 +1,17 @@
 package ca.n4dev.aegaeon.server.service;
 
-import ca.n4dev.aegaeon.api.exception.OAuthPublicRedirectionException;
-import ca.n4dev.aegaeon.api.exception.OauthRestrictedException;
+import ca.n4dev.aegaeon.api.exception.OpenIdException;
 import ca.n4dev.aegaeon.api.model.*;
-import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
+import ca.n4dev.aegaeon.api.protocol.AuthRequest;
+import ca.n4dev.aegaeon.api.protocol.FlowUtils;
+import ca.n4dev.aegaeon.api.protocol.GrantType;
+import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 import ca.n4dev.aegaeon.server.view.TokenResponse;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -76,7 +77,7 @@ public class TokenServicesFacadeUnitTest {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
         when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findGrantTypesByclientId(anyLong())).thenReturn(buildGrants(GrantType.CODE_AUTH_CODE));
+        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(buildGrants(GrantType.AUTHORIZATION_CODE));
         when(this.authorizationCodeService.findByCode(anyString())).thenReturn(buildAuthCode("auth-code-0xff",
                                                                                                              "test.1",
                                                                                                              "https://cool-place.com/"));
@@ -112,10 +113,29 @@ public class TokenServicesFacadeUnitTest {
 
     @Test
     public void successCreateTokenForImplicit() {
+        when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
+        when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
+        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(buildGrants(GrantType.IMPLICIT));
+        when(clientService.findScopeByClientId(anyLong())).thenReturn(buildScope("openid profile"));
+        mockCreateToken();
 
+        try {
+
+            AuthRequest authRequest = new AuthRequest(FlowUtils.RTYPE_IMPLICIT_FULL);
+            TokenResponse tokenResponse = facade.createTokenForImplicit(authRequest,
+                                                                        "test.1",
+                                                                        "openid profile",
+                                                                        "https://cool-place.com/",
+                                                                        buildUser());
+
+            Assert.assertNotNull(tokenResponse);
+        } catch (Exception pException) {
+
+            Assert.fail(pException.getMessage());
+        }
     }
 
-    @Test(expected = OauthRestrictedException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseNoAuth() {
 
         facade.createTokenForAuthCode("test.1",
@@ -124,7 +144,7 @@ public class TokenServicesFacadeUnitTest {
                                       null);
     }
 
-    @Test(expected = OauthRestrictedException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseMissingClientId() {
         facade.createTokenForAuthCode(null,
                                       "auth-code-0xff",
@@ -132,7 +152,7 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OauthRestrictedException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseMissingAuthCode() {
         facade.createTokenForAuthCode("test.1",
                                       null,
@@ -140,7 +160,7 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OauthRestrictedException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseMissingRedirect() {
         facade.createTokenForAuthCode("test.1",
                                       "auth-code-0xff",
@@ -148,7 +168,7 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OauthRestrictedException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseUnkownClient() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(null);
@@ -159,7 +179,7 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OauthRestrictedException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseNoRedirection() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
@@ -171,7 +191,7 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OauthRestrictedException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseInvalidRedirection() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
@@ -183,12 +203,12 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OAuthPublicRedirectionException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseNoGrant() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
         when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findGrantTypesByclientId(anyLong())).thenReturn(null);
+        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(null);
 
         facade.createTokenForAuthCode("test.1",
                                       "auth-code-0xff",
@@ -196,12 +216,12 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OAuthPublicRedirectionException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseGrantNotAuthorized() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
         when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findGrantTypesByclientId(anyLong())).thenReturn(buildGrants(GrantType.CODE_IMPLICIT));
+        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(buildGrants(GrantType.IMPLICIT));
 
         facade.createTokenForAuthCode("test.1",
                                       "auth-code-0xff",
@@ -209,12 +229,12 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OAuthPublicRedirectionException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseBadAuthCode() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
         when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findGrantTypesByclientId(anyLong())).thenReturn(buildGrants(GrantType.CODE_AUTH_CODE));
+        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(buildGrants(GrantType.AUTHORIZATION_CODE));
         when(authorizationCodeService.findByCode(anyString())).thenReturn(buildAuthCode("other-auth-code-0xff",
                                                                                                         "test.1",
                                                                                                         "https://cool-place.com/"));
@@ -225,12 +245,12 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OauthRestrictedException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseNotSameClient() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
         when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findGrantTypesByclientId(anyLong())).thenReturn(buildGrants(GrantType.CODE_AUTH_CODE));
+        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(buildGrants(GrantType.AUTHORIZATION_CODE));
         when(authorizationCodeService.findByCode(anyString())).thenReturn(buildAuthCode("auth-code-0xff",
                                                                                                         "test.2",
                                                                                                         "https://cool-place.com/"));
@@ -241,12 +261,12 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OauthRestrictedException.class)
+    @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseNotRedirect() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
         when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findGrantTypesByclientId(anyLong())).thenReturn(buildGrants(GrantType.CODE_AUTH_CODE));
+        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(buildGrants(GrantType.AUTHORIZATION_CODE));
         when(authorizationCodeService.findByCode(anyString())).thenReturn(buildAuthCode("auth-code-0xff",
                                                                                                         "test.1",
                                                                                                         "https://not-a-cool-place.com/"));
@@ -264,12 +284,12 @@ public class TokenServicesFacadeUnitTest {
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
 
-        SpringAuthUserDetails userDetails = new SpringAuthUserDetails(1L,
-                                                                      "tester",
-                                                                      "passwd",
-                                                                      true,
-                                                                      true,
-                                                                      authorities);
+        AegaeonUserDetails userDetails = new AegaeonUserDetails(1L,
+                                                                "tester",
+                                                                "passwd",
+                                                                true,
+                                                                true,
+                                                                authorities);
 
 
         return new UsernamePasswordAuthenticationToken(userDetails, "passwd", authorities);
@@ -286,15 +306,24 @@ public class TokenServicesFacadeUnitTest {
         return client;
     }
 
-    private List<ClientGrantType> buildGrants(String pGrantCode) {
-        List<ClientGrantType> grants = new ArrayList<>();
+    private List<ClientAuthFlow> buildGrants(GrantType pGrantCode) {
+        List<ClientAuthFlow> grants = new ArrayList<>();
 
-        GrantType g = new GrantType();
-        g.setCode(pGrantCode);
-
-        grants.add(new ClientGrantType(buildClient("test.1"), g, true));
+        grants.add(new ClientAuthFlow(buildClient("test.1"), pGrantCode));
 
         return grants;
+    }
+
+    private List<ClientScope> buildScope(String pScopeStr) {
+        ArrayList<ClientScope> clientScopes = new ArrayList<>();
+
+        for (String onScopeStr : pScopeStr.split(" ")) {
+            Scope scope = new Scope();
+            scope.setName(onScopeStr);
+            clientScopes.add(new ClientScope(null, scope));
+        }
+
+        return clientScopes;
     }
 
     private AuthorizationCode buildAuthCode(String pCode, String pClientId, String pRedirection) {

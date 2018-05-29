@@ -22,12 +22,11 @@ package ca.n4dev.aegaeon.server.controller;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
-import ca.n4dev.aegaeon.api.model.GrantType;
 import ca.n4dev.aegaeon.api.model.Scope;
+import ca.n4dev.aegaeon.api.protocol.GrantType;
 import ca.n4dev.aegaeon.server.controller.dto.PageDto;
 import ca.n4dev.aegaeon.server.controller.validator.ClientViewValidator;
 import ca.n4dev.aegaeon.server.service.ClientService;
-import ca.n4dev.aegaeon.server.service.GrantTypeService;
 import ca.n4dev.aegaeon.server.service.ScopeService;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import ca.n4dev.aegaeon.server.view.ClientView;
@@ -43,6 +42,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -64,7 +65,6 @@ public class SimpleClientAdminController extends BaseUiController {
 
     private ClientService clientService;
     private ScopeService scopeService;
-    private GrantTypeService grantTypeService;
 
     private ClientViewValidator clientViewValidator;
 
@@ -72,17 +72,15 @@ public class SimpleClientAdminController extends BaseUiController {
      *
      * @param pClientService
      * @param pScopeService
-     * @param pGrantTypeService
      * @param pMessages
      * @param pClientViewValidator
      */
     @Autowired
-    public SimpleClientAdminController(ClientService pClientService, ScopeService pScopeService, GrantTypeService pGrantTypeService,
+    public SimpleClientAdminController(ClientService pClientService, ScopeService pScopeService,
                                        MessageSource pMessages, ClientViewValidator pClientViewValidator) {
         super(pMessages);
         this.clientService = pClientService;
         this.scopeService = pScopeService;
-        this.grantTypeService = pGrantTypeService;
         this.clientViewValidator = pClientViewValidator;
     }
 
@@ -101,7 +99,7 @@ public class SimpleClientAdminController extends BaseUiController {
     public ModelAndView createOne() {
 
         ModelAndView mv = getEditViewAndDependencies(null);
-        ClientView clientView = this.clientService.instanciateOne();
+        ClientView clientView = this.clientService.instantiateOne();
         clientView.setId(-1L);
 
         mv.addObject("client", clientView);
@@ -197,11 +195,11 @@ public class SimpleClientAdminController extends BaseUiController {
     private ModelAndView getEditViewAndDependencies(BindingResult pResult) {
         ModelAndView mv = pResult != null && pResult.hasErrors() ? new ModelAndView(VIEW_EDIT, pResult.getModel()) : new ModelAndView(VIEW_EDIT);
 
-        List<GrantType> grants = this.grantTypeService.findAll();
+        List<GrantType> grants = Arrays.asList(GrantType.values());
         List<Scope> scopes = this.scopeService.findAll();
 
         mv.addObject("scopes", Utils.convert(scopes, s -> new SelectableItemView(s.getId(), s.getName(), null, false)));
-        mv.addObject("grants", Utils.convert(grants, g -> new SelectableItemView(g.getId(), g.getCode(), null, false)));
+        mv.addObject("grants", Utils.convert(grants, g -> new SelectableItemView(null, g.toString(), null, false)));
 
         return mv;
     }

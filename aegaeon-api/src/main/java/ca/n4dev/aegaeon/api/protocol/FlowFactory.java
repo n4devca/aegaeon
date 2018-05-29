@@ -66,15 +66,15 @@ public class FlowFactory {
     		
     		for (String r : f.getResponseType()) {
     			if (r.equals(PARAM_CODE)) {
-    				f.getRequestedGrant().add(RequestedGrant.AUTHORIZATIONCODE);
+    				f.getRequestedGrant().add(GrantType.AUTHORIZATION_CODE);
     			} else if (r.equals(PARAM_TOKEN) || r.equals(PARAM_ID_TOKEN)) {
-    				f.getRequestedGrant().add(RequestedGrant.IMPLICIT);
+    				f.getRequestedGrant().add(GrantType.IMPLICIT);
     			} else if (r.equals(PARAM_CLIENTCREDENTIALS)) { // OAuth
     				f.getRequestedGrant().clear();
-    				f.getRequestedGrant().add(RequestedGrant.CLIENTCREDENTIALS);
+    				f.getRequestedGrant().add(GrantType.CLIENT_CREDENTIALS);
     			} else if (r.equals(PARAM_REFRESH_TOKEN)) { // OAuth
     				f.getRequestedGrant().clear();
-    				f.getRequestedGrant().add(RequestedGrant.REFRESH_TOKEN);
+    				f.getRequestedGrant().add(GrantType.REFRESH_TOKEN);
     			}
     		}
     	}

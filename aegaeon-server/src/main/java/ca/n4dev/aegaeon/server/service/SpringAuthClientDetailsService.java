@@ -33,7 +33,7 @@ import org.springframework.stereotype.Service;
 
 import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.repository.ClientRepository;
-import ca.n4dev.aegaeon.server.security.SpringAuthUserDetails;
+import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 
 /**
  * SpringAuthClientDetailsService.java
@@ -63,7 +63,7 @@ public class SpringAuthClientDetailsService implements UserDetailsService {
         if (client != null) {
             List<SimpleGrantedAuthority> auths = new ArrayList<>();
             auths.add(new SimpleGrantedAuthority("ROLE_CLIENT"));
-            return new SpringAuthUserDetails(client.getId(), pUsername, client.getSecret(), true, true, auths);
+            return new AegaeonUserDetails(client.getId(), pUsername, client.getSecret(), true, true, auths);
         }
         
         throw new UsernameNotFoundException(pUsername + " not found");
