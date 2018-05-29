@@ -57,41 +57,6 @@ public class AuthorizationControllerTest {
     private static final String SCOPE = "openid profile";
     private static final String DISPLAY = "desktop";
 
-
-
-    /*
-    * private UserAuthorizationService userAuthorizationService;
-    private AuthorizationCodeService authorizationCodeService;
-    private AuthorizationService authorizationService;
-    private TokenServicesFacade tokenServicesFacade;
-
-    @RequestMapping(value = "")
-    public ModelAndView authorize(@RequestParam(value = "response_type", required = false) String pResponseType,
-                                  @RequestParam(value = "client_id", required = false) String pClientPublicId,
-                                  @RequestParam(value = "scope", required = false) String pScope,
-                                  @RequestParam(value = "redirection_url", required = false) String pRedirectionUrl,
-                                  @RequestParam(value = "state", required = false) String pState,
-                                  @RequestParam(value = "nonce", required = false) String pNonce,
-                                  @RequestParam(value = "prompt", required = false) String pPrompt,
-                                  @RequestParam(value = "display", required = false) String pDisplay,
-                                  @RequestParam(value = "id_token_hint", required = false) String pIdTokenHint,
-                                  Authentication pAuthentication,
-                                  RequestMethod pRequestMethod) {
-
-
-        this.mockMvc
-                .perform(post(IntrospectController.URL).params(introspectParams(true))
-                                                       .with(user(USER_NAME)
-                                                                     .password(CLIENT_PASSWD)
-                                                                     .authorities(new SimpleGrantedAuthority(
-                                                                             "ROLE_CLIENT"))))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andReturn();
-    * */
-
-
     @Autowired
     private MockMvc mockMvc;
 
@@ -173,7 +138,23 @@ public class AuthorizationControllerTest {
         Assert.assertTrue("Location header does not contain scope list.", locationHeader.contains("scope=openid%20profile"));
         Assert.assertTrue("Location header does not contain request state.", locationHeader.contains("state=state1"));
         Assert.assertTrue("Location header does not contain request state.", locationHeader.contains("token_type=bearer"));
+    }
 
+    @Test
+    public void getAuthCodeToken() throws Exception {
+        final MvcResult mvcResult = this.mockMvc.perform(post(AuthorizationController.URL)
+                                                                 .params(asMultiMap(
+                                                                         authorizationParams(FlowUtils.RTYPE_AUTH_CODE).build()))
+                                                                 .with(user(userDetails())))
+                                                .andDo(print())
+                                                .andExpect(status().isFound())
+                                                .andExpect(redirectedUrlPattern("http://localhost/login.html*"))
+                                                .andReturn();
+
+        final String locationHeader = mvcResult.getResponse().getHeader(HttpHeaders.LOCATION);
+        Assert.assertNotNull("Location header is null", locationHeader);
+        Assert.assertTrue("Location header does not contain an code.", locationHeader.matches(".*[\\?&]code=.*"));
+        Assert.assertTrue("Location header does not contain request state.", locationHeader.contains("state=state1"));
 
     }
 

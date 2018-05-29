@@ -25,6 +25,7 @@ import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -56,7 +57,9 @@ public class PublicJwkController {
         this.tokenFactory = pTokenFactory;
     }
 
-    @RequestMapping(value = "", method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value = "",
+                    method = {RequestMethod.GET, RequestMethod.POST},
+                    produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public String jwk() {
         try {
