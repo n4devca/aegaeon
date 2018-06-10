@@ -34,18 +34,15 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
-import ca.n4dev.aegaeon.api.exception.OpenIdException;
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * ObjectUtils.java
- *
+ * <p>
  * Static functions to check various state of object (empty, null, etc)
  *
  * @author by rguillemette
@@ -266,6 +263,7 @@ public class Utils {
     /**
      * return a String from the input.
      * If the object is not null, it will be convert to string, else an empty string is returned.
+     *
      * @param pObject The object to convert.
      * @return A String.
      */
@@ -320,6 +318,7 @@ public class Utils {
 
     /**
      * Get a positive id.
+     *
      * @return next positive id.
      */
     public static Long nextPositiveId() {
@@ -328,6 +327,7 @@ public class Utils {
 
     /**
      * Get a negative id.
+     *
      * @return next negative id.
      */
     public static Long nextNegativeId() {
@@ -336,6 +336,7 @@ public class Utils {
 
     /**
      * Raise a {@link ServerException}
+     *
      * @param pServerExceptionCode the {@link ServerExceptionCode}
      */
     public static void raise(ServerExceptionCode pServerExceptionCode) {
@@ -344,8 +345,9 @@ public class Utils {
 
     /**
      * Raise a {@link ServerException}
+     *
      * @param pServerExceptionCode the {@link ServerExceptionCode}
-     * @param pMessage A message.
+     * @param pMessage             A message.
      */
     public static void raise(ServerExceptionCode pServerExceptionCode, String pMessage) {
         if (pServerExceptionCode != null) {
@@ -424,10 +426,10 @@ public class Utils {
     }
 
     public static <V, E, C> List<V> combine(List<C> pManagedList,
-                                         List<E> pOriginalList,
-                                         BiFunction<C, E, Boolean> pEqualsFunc,
-                                         Function<E, V> pCreatorFunc,
-                                         Function<C, V> pAddFunc) {
+                                            List<E> pOriginalList,
+                                            BiFunction<C, E, Boolean> pEqualsFunc,
+                                            Function<E, V> pCreatorFunc,
+                                            Function<C, V> pAddFunc) {
         List<V> combined = new ArrayList<>();
 
         for (E original : pOriginalList) {

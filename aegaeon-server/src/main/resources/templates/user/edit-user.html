@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{basepage}">
+<head>
+
+</head>
+<body>
+<section layout:fragment="content">
+    <div class="normal-content page-edit-user">
+        <form th:action="@{/user/edit}" th:object="${user}" method="post">
+            <div class="page-edit-user-ctr">
+                <div class="page-edit-user-item">
+
+                        <div class="tab-section">
+                            <div class="tab-header">
+
+                                <div th:classappend="${#strings.equals('user', tab)} ? 'tab-header-item-active'"
+                                     class="tab-header-item">
+                                    <a href="#" th:href="@{/user/edit(tab=${'user'})}" th:text="#{entity.userinfotype.userinfo}"></a>
+                                </div>
+
+                                <div th:each="type : ${typemap}"
+                                     th:classappend="${#strings.equals(type.key, tab)} ? 'tab-header-item-active'"
+                                     class="tab-header-item">
+
+                                    <a href="#edit-user-info-email"
+                                       th:href="'#edit-user-info-' + ${type.key}"
+                                       th:text="#{'entity.userinfotype.' + ${type.key}}">Email</a>
+                                </div>
+
+                            </div>
+                            <div class="tab-content">
+
+                                <div id="edit-user-info" th:if="${#strings.equals(tab, 'user')}">
+                                    <div th:replace="user/edit-user-main :: editusermain(${user.userView})"></div>
+                                </div>
+
+                                <div th:each="type : ${typemap}"
+                                     th:id="'edit-user-info-' + ${type.key}">
+                                    <div th:replace="user/edit-user-info :: edituserinfo(${type.value})"></div>
+                                </div>
+
+                                <input type="hidden" name="tab" th:value="${tab}">
+
+                            </div>
+                        </div>
+                </div>
+                <div class="page-edit-user-menu">
+                    <div class="tab-section">
+                        <div class="tab-header">
+                            <div class="tab-header-item full right">
+                                <input type="submit" class="btn btn-ok btn-sm" th:value="#{action.save}"></input>
+                            </div>
+                        </div>
+                        <div class="tab-content">
+                            <div class="box">
+                                <div class="body">
+                                    <a href="#" class="link">Change User Name</a>
+                                    <br />
+                                    <a href="#" class="link">Change Password</a>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+
+
+    </div>
+</section>
+</body>
+</html>

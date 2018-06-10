@@ -82,14 +82,14 @@ public class WebSecurityConfig {
         Map<String, PasswordEncoder> encoders = new HashMap<>();
         encoders.put(BCRYPT_PREFIX, bcryptPasswordEncoder);
 
-        DelegatingPasswordEncoder delegatingPasswordEncoder = new DelegatingPasswordEncoder("bcrypt", encoders);
+        DelegatingPasswordEncoder delegatingPasswordEncoder = new DelegatingPasswordEncoder(BCRYPT_PREFIX, encoders);
         delegatingPasswordEncoder.setDefaultPasswordEncoderForMatches(bcryptPasswordEncoder);
 
         return delegatingPasswordEncoder;
     }
 
     @Configuration
-    @Order(20)
+    @Order(1)
     public static class ClientAuthWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
         
         @Autowired
@@ -101,9 +101,9 @@ public class WebSecurityConfig {
         @Override
         protected void configure(HttpSecurity pHttp) throws Exception {
             pHttp
+                .antMatcher(TokensController.URL).antMatcher(IntrospectController.URL)
                 .authorizeRequests()
-                    .mvcMatchers(TokensController.URL, IntrospectController.URL)
-                    .hasAnyAuthority(ROLE_CLIENT)
+                    .anyRequest().hasAnyAuthority(ROLE_CLIENT)
                 .and()
                     .httpBasic()
                         .authenticationEntryPoint(authenticationEntryPoint)
@@ -118,7 +118,7 @@ public class WebSecurityConfig {
     }
 
     @Configuration
-    @Order(30)
+    @Order(2)
     public static class UserInfoWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
         
         @Autowired
@@ -158,9 +158,9 @@ public class WebSecurityConfig {
         protected void configure(HttpSecurity pHttp) throws Exception {
             pHttp
                 .csrf().disable()
+                .antMatcher(UserInfoController.URL)
                 .authorizeRequests()
-                    .antMatchers(UserInfoController.URL)
-                    .hasAnyAuthority(ROLE_USER)
+                    .anyRequest().hasAnyAuthority(ROLE_USER)
                 .and()
                 .addFilterBefore(accessTokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                     .sessionManagement()
@@ -171,7 +171,7 @@ public class WebSecurityConfig {
     
     
     @Configuration
-    //@Order(10)
+    @Order(3)
     public static class FormLoginWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
         
         @Autowired
@@ -194,6 +194,7 @@ public class WebSecurityConfig {
         @Override
         protected void configure(HttpSecurity pHttp) throws Exception {
             pHttp
+                    .antMatcher("/**")
                     .authorizeRequests()
                         // public
                         .antMatchers("/resources/**").permitAll()
@@ -206,8 +207,8 @@ public class WebSecurityConfig {
                     .and()
                     .addFilterBefore(promptAwareAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                     .formLogin()
-                    .loginPage("/login")
-                    .permitAll()
+                        .loginPage("/login")
+                        .permitAll()
                     .defaultSuccessUrl(SimpleUserAccountController.URL)
                     .and()
                     .userDetailsService(userDetailsService)

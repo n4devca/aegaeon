@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head></head>
+<body>
+    <section th:fragment="editusermain(user)">
+
+        <div class="box">
+            <div class="body">
+                <div class="form-group">
+                    <label for="user-account-name" th:text="#{page.useraccount.form.label.name}"></label>
+                    <input type="text" id="user-account-name" class="form-input"
+                           maxlength="100" required="required"
+                           th:field="*{userView.name}"
+                           th:errorclass="input-error" />
+                    <p class="error-text" id="user-account-name-error"
+                       th:classappend="${#fields.hasErrors('userView.name')} ? 'show-error'">Name cannot be empty.</p>
+                </div>
+            </div>
+        </div>
+
+    </section>
+</body>
+</html>

@@ -52,7 +52,8 @@ public class LazyList<E> extends ArrayList<E> {
         extendTo(pIndex);
         super.add(pIndex, pElement);
     }
-    
+
+
     private void extendTo(int pIndex) {
         if (pIndex > size()) {
             for (int i = size() - 1; i < pIndex; i ++) {

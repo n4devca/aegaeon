@@ -23,6 +23,7 @@ package ca.n4dev.aegaeon.server.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -36,9 +37,11 @@ import org.springframework.context.MessageSource;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import ca.n4dev.aegaeon.server.controller.dto.UserFormDto;
@@ -66,9 +69,14 @@ public class SimpleUserAccountController extends BaseUiController {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleUserAccountController.class);
     
-    public static final String URL = "/user-account";
-    public static final String VIEW = "/user/user-account";
-    
+    public static final String URL = "/user";
+    public static final String VIEW_OLD = "/user/user-account";
+
+    public static final String URL_EDIT = "/edit";
+    public static final String URL_PROFILE = "/profile";
+    public static final String VIEW_PROFILE = "/user/profile";
+    public static final String VIEW_EDIT = "/user/edit-user";
+
     private static final String CODE_SAVESTATE_NORMAL = "normal";
     private static final String CODE_SAVESTATE_MODIFIED = "modified";
     private static final String CODE_SAVESTATE_SAVED = "saved";
@@ -103,8 +111,166 @@ public class SimpleUserAccountController extends BaseUiController {
         this.userFormDtoValidator = pUserFormDtoValidator;
     }
 
+    @GetMapping({"", URL_PROFILE})
+    public ModelAndView viewProfile(@AuthenticationPrincipal AegaeonUserDetails pUser, Locale pLocale) {
+        ModelAndView profileView = new ModelAndView(VIEW_EDIT);
+
+        UserView userView = this.userService.findOne(pUser.getId());
+        List<UserInfoView> types = this.userInfoTypeService.findAll();
+
+        profileView.addObject("user", userView);
+        profileView.addObject("types", types);
+
+        return profileView;
+    }
+
+    @GetMapping(value = URL_EDIT)
+    public ModelAndView getEditUser(@AuthenticationPrincipal AegaeonUserDetails pUser,
+                                    Locale pLocale) {
+        UserView userView = this.userService.findOne(pUser.getId());
+        return editUserPage(userView);
+    }
 
 
+
+
+    @PostMapping(value = URL_EDIT)
+    public ModelAndView saveUser(@ModelAttribute("user") UserFormDto pDto,
+                                 @AuthenticationPrincipal AegaeonUserDetails pUser,
+                                 Locale pLocale) {
+
+        UserView userView = userService.update(pUser.getId(), pDto.getUserView());
+        return editUserPage(userView);
+    }
+
+    private ModelAndView editUserPage(UserView pUserView) {
+        ModelAndView editView = new ModelAndView(VIEW_EDIT);
+
+        // All UserInfoType
+        List<UserInfoView> types = this.userInfoTypeService.findAll();
+
+        // Split user info by tab
+        Map<String, List<UserInfoView>> combineTypeValues = split(pUserView, types);
+
+        UserFormDto dto = new UserFormDto();
+        dto.setUserView(pUserView);
+
+        editView.addObject("user", dto);
+        editView.addObject("types", types);
+        editView.addObject("tab", "user");
+        editView.addObject("typemap", combineTypeValues);
+
+        return editView;
+    }
+
+    private Map<String, List<UserInfoView>> split(UserView pUserView, List<UserInfoView> pUserInfoViews) {
+        Map<String, List<UserInfoView>> infoViews = new LinkedHashMap<>();
+
+        // Start by creating a Map from parent
+        pUserInfoViews.forEach(pUserInfoView -> {
+            if (Utils.isEmpty(pUserInfoView.getCategory())) {
+                infoViews.put(pUserInfoView.getCode().toLowerCase(), new ArrayList<>());
+            }
+        });
+
+        int idx = 0;
+
+        // Add children
+        for (UserInfoView pUserInfoView : pUserInfoViews) {
+            if (Utils.isNotEmpty(pUserInfoView.getCategory())) {
+
+                UserInfoView userValue = Utils.find(pUserView.getUserInfos(), pUv -> pUv.getCode().toLowerCase().equals(pUserInfoView.getCode().toLowerCase()));
+
+                // Add user's values
+                if (userValue != null) {
+                    pUserInfoView.setName(userValue.getName());
+                    pUserInfoView.setValue(userValue.getValue());
+                }
+                pUserInfoView.setIndex(idx++);
+                infoViews.get(pUserInfoView.getCategory().toLowerCase()).add(pUserInfoView);
+            }
+
+        }
+
+        return infoViews;
+    }
+
+
+
+    private List<UserInfoGroupDto> combine(List<UserInfoView> pTypes, List<UserInfoView> pUserInfos, Locale pLocale) {
+
+        List<UserInfoGroupDto> groups = new ArrayList<>();
+        Map<String, UserInfoGroupDto> groupsMap = new HashMap<>();
+
+        // Parents
+        for (UserInfoView type : pTypes) {
+            if (Utils.isEmpty(type.getCategory())) {
+                UserInfoGroupDto cat = new UserInfoGroupDto();
+                cat.setCode(type.getName());
+                cat.setLabelName(getLabel("entity.userinfotype." + type.getCode(), pLocale));
+
+                groupsMap.put(type.getCode(), cat);
+            }
+        }
+
+        // Childs
+        for (UserInfoView type : pTypes) {
+            if (type.getCategory() != null) {
+
+                UserInfoGroupDto parent = groupsMap.get(type.getCategory());
+
+                // User Values
+                UserInfoView userValue = Utils.find(pUserInfos, ui -> ui.getRefTypeId().equals(type.getRefTypeId()));
+
+                if (userValue != null) {
+                    parent.addUserInfoTypeDto(userValue);
+                } else {
+                    parent.addUserInfoTypeDto(type);
+                }
+
+            }
+        }
+
+        groups.addAll(groupsMap.values());
+
+        return groups;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*
+
+
+
+
+
+    // --- OLD ---
     @RequestMapping("")
     public ModelAndView account(@AuthenticationPrincipal AegaeonUserDetails pUser, Locale pLocale) {
         return createUserView(pUser.getId(), pLocale);
@@ -129,46 +295,7 @@ public class SimpleUserAccountController extends BaseUiController {
         
         return mv;
     }
-    
-    private List<UserInfoGroupDto> combine(List<UserInfoView> pTypes, List<UserInfoView> pUserInfos, Locale pLocale) {
-        
-        List<UserInfoGroupDto> groups = new ArrayList<>();
-        Map<String, UserInfoGroupDto> groupsMap = new HashMap<>();
-        
-        // Parents
-        for (UserInfoView type : pTypes) {
-            if (Utils.isEmpty(type.getCategory())) {
-                UserInfoGroupDto cat = new UserInfoGroupDto();
-                cat.setCode(type.getName());
-                cat.setLabelName(getLabel("entity.userinfotype." + type.getCode(), pLocale));
-                
-                groupsMap.put(type.getCode(), cat);
-            }
-        }
-        
-        // Childs
-        for (UserInfoView type : pTypes) {
-            if (type.getCategory() != null) {
-                
-                UserInfoGroupDto parent = groupsMap.get(type.getCategory());
 
-                // User Values
-                UserInfoView userValue = Utils.find(pUserInfos, ui -> ui.getRefTypeId().equals(type.getRefTypeId()));
-                
-                if (userValue != null) {
-                    parent.addUserInfoTypeDto(userValue);                    
-                } else {
-                    parent.addUserInfoTypeDto(type);
-                }
-                
-            }
-        }
-
-        groups.addAll(groupsMap.values());
-        
-        return groups;
-    }
-    
     @PostMapping("")
     public ModelAndView saveAccount(@ModelAttribute("user") UserFormDto pModel, 
                                     @AuthenticationPrincipal AegaeonUserDetails pUser,
@@ -202,5 +329,5 @@ public class SimpleUserAccountController extends BaseUiController {
         
         return account(pUser, pLocale);
     }
-
+    */
 }

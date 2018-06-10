@@ -59,8 +59,6 @@ header.site-header .site-header-content .site-header-nav {
 }
 
 header.site-header .site-header-content .site-header-nav .link, header.site-header .site-header-content .site-header-nav .btn-link {
-    font-weight: bold;
-    color: #444;
     margin-left: 2em;
     text-transform: uppercase;
 }
@@ -85,7 +83,6 @@ footer {
     padding: 0.5em 1em;
     margin-top: 1em;
 }
-
 
 @media (min-width: 800px) {
     .main-content {
@@ -123,6 +120,28 @@ footer {
         display: inline-block;
         width: auto;
     }
+
+
+    .page-edit-user-ctr {
+        box-sizing: border-box;
+    }
+
+    .page-edit-user-ctr:after {
+        content: ' ';
+        clear: both;
+        display: block;
+    }
+
+    .page-edit-user-ctr .page-edit-user-item {
+        float: left;
+        width: 80%;
+    }
+
+    .page-edit-user-ctr .page-edit-user-menu {
+        float: left;
+        width: 20%;
+    }
+
 }
 
 @media (min-width: 1024px) {
@@ -229,7 +248,7 @@ div.box div.footer {
     text-align: center;
     display: inline-block;
     /* margin: 0.3em 0 0.7em 0; */
-    padding: 0.4em 0.5em;
+    padding: 0.3em 0.5em;
     font-size: 1em;
 }
 
@@ -312,11 +331,14 @@ select {
 }
 
 .link {
+    font-weight: bold;
+    color: #444;
     text-decoration: none;
     cursor: pointer;
 }
 
 .link:hover, .btn-link:hover {
+    color: #0d5f94;
     text-decoration: underline;
 }
 
@@ -353,6 +375,49 @@ div.input-group-element.btnop {
     width:40px;
 }
 
+.tab-section {
+    margin: 0 10px;
+}
+
+.tab-section .tab-header {
+    display: table;
+    table-layout: fixed;
+}
+
+.tab-section .tab-header .tab-header-item {
+    display: table-cell;
+    text-align: center;
+    padding: 5px 10px;
+    border-bottom: 2px solid transparent;
+}
+
+.tab-section .tab-header .tab-header-item a {
+    font-weight: bold;
+    text-decoration: none;
+    color: #0d5f94;
+}
+
+.tab-section .tab-header .tab-header-item a:hover {
+    text-decoration: none;
+}
+
+.tab-section .tab-header .tab-header-item:hover {
+    border-bottom: 2px solid #0d5f94;
+}
+
+.tab-section .tab-header .tab-header-item:hover {
+    border-bottom: 2px solid #0d5f94;
+}
+
+.tab-section .tab-header .tab-header-item.tab-header-item-active {
+    border-bottom: 2px solid #0d5f94;
+}
+
+.tab-section .tab-content {
+    border-top: 1px solid #ddd;
+    padding: 10px;
+}
+
 
 /* Utils */
 .center {
@@ -361,6 +426,10 @@ div.input-group-element.btnop {
 
 .right {
     text-align: right;
+}
+
+.full {
+    width: 100%;
 }
 
 /* Specifics */

@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
@@ -182,8 +183,15 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
         // Update userinfo
         Set<Long> idsToDelete = new HashSet<>();
         List<UserInfo> uiToSave = new ArrayList<>();
+
+        // Filter null entry and value
+        List<UserInfoView> userInfoViews = pUserView.getUserInfos()
+                                                    .stream()
+                                                    .filter(pUserInfoView -> pUserInfoView != null && Utils.isNotEmpty(pUserInfoView.getValue()))
+                                                    .collect(Collectors.toList());
         
-        for (UserInfoView uiv : pUserView.getUserInfos()) {
+        for (UserInfoView uiv : userInfoViews) {
+
             boolean found = false;
             UserInfo ui = null;
             Iterator<UserInfo> it = uis.iterator();
@@ -216,7 +224,7 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
                 Assert.notNull(type, ServerExceptionCode.INVALID_PARAMETER, "Unable to find type: " + uiv.getCode());
 
                 UserInfo newUserInfo = new UserInfo();
-                newUserInfo.setValue(ui.getValue());
+                newUserInfo.setValue(uiv.getValue());
                 newUserInfo.setType(type);
                 newUserInfo.setUser(u);
                 

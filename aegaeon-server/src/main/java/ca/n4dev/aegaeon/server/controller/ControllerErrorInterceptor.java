@@ -140,7 +140,7 @@ public class ControllerErrorInterceptor extends BaseUiController {
         return internalErrorPage(Severity.INFO,
                                  pLocale,
                                  "notfound",
-                                 getLabel("notfound", new String[]{pNoHandlerFoundException.getRequestURL()}, pLocale),
+                                 getLabel("page.error.list.notfound", new String[]{pNoHandlerFoundException.getRequestURL()}, pLocale),
                                  pHttpServletRequest,
                                  pHttpServletResponse);
 
@@ -168,7 +168,7 @@ public class ControllerErrorInterceptor extends BaseUiController {
 
         return internalErrorPage(Severity.DANGER,
                                  pLocale,
-                                 "page.error.list.unexpected",
+                                 "unexpected",
                                  null,
                                  pHttpServletRequest,
                                  pHttpServletResponse);
