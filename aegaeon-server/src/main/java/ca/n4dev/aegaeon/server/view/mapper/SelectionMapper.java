@@ -2,17 +2,14 @@ package ca.n4dev.aegaeon.server.view.mapper;
 
 import java.util.List;
 
-import ca.n4dev.aegaeon.api.model.BaseEntity;
 import ca.n4dev.aegaeon.api.model.ClientAuthFlow;
 import ca.n4dev.aegaeon.api.model.ClientScope;
+import ca.n4dev.aegaeon.api.model.Scope;
+import ca.n4dev.aegaeon.api.protocol.GrantType;
+import ca.n4dev.aegaeon.server.utils.Utils;
 import ca.n4dev.aegaeon.server.view.SelectableItemView;
 import ca.n4dev.aegaeon.server.view.Selection;
-import org.mapstruct.AfterMapping;
-import org.mapstruct.InheritInverseConfiguration;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.Mappings;
+import org.springframework.stereotype.Component;
 
 /**
  * SelectionMapper.java
@@ -21,47 +18,86 @@ import org.mapstruct.Mappings;
  * @author rguillemette
  * @since 2.0.0 - Feb 22 - 2018
  */
-@Mapper(componentModel = "spring")
-public interface SelectionMapper {
+@Component
+public class SelectionMapper {
 
-    @Mappings({
-        @Mapping(target = "id", source = "entity.id"),
-        @Mapping(target = "name", source = "entity.flow")
-    })
-    SelectableItemView clientAuthFlowToSelectableItemView(Selection<ClientAuthFlow> pSelection);
+    public SelectableItemView clientAuthFlowToSelectableItemView(Selection<ClientAuthFlow> pSelection) {
+        SelectableItemView selectableItemView = new SelectableItemView();
 
-    @Mappings({
-            @Mapping(target = "id", source = "entity.scope.id"),
-            @Mapping(target = "name", source = "entity.scope.name"),
-    })
-    SelectableItemView clientScopeToSelectableItemView(Selection<ClientScope> pSelection);
+        if (pSelection != null) {
 
-    @InheritInverseConfiguration
-    Selection<ClientScope> viewToClientScope(SelectableItemView pSelectableItemView);
+            if (pSelection.getEntity() != null) {
 
-    @InheritInverseConfiguration
-    Selection<ClientAuthFlow> viewToClientAuthFlow(SelectableItemView pSelectableItemView);
+                selectableItemView.setId(pSelection.getEntity().getId());
 
-    List<Selection<ClientScope>> selectableItemViewsToClientScopes(List<SelectableItemView> pSelectableItemViews);
+                if (pSelection.getEntity().getFlow() != null) {
+                    selectableItemView.setName(pSelection.getEntity().getFlow().toString());
+                }
+            }
 
-    List<Selection<ClientAuthFlow>> selectableItemViewsToClientAuthFlows(List<SelectableItemView> pSelectableItemViews);
+            selectableItemView.setSelected(pSelection.isSelected());
+        }
 
-//
-//    @AfterMapping
-//    default void mapName(Selection<? extends BaseEntity> pSelection, @MappingTarget SelectableItemView pSelectableItemView ) {
-//        if (pSelection.getEntity() != null) {
-//            BaseEntity entity = pSelection.getEntity();
-//            if (entity instanceof ClientAuthFlow) {
-//                ClientAuthFlow clientAuthFlow = (ClientAuthFlow) entity;
-//                if (clientAuthFlow.getFlow() != null) {
-//                    pSelectableItemView.setName(clientAuthFlow.getFlow().toString());
-//                }
-//            } else if (entity instanceof ClientScope) {
-//                ClientScope clientScope = (ClientScope) entity;
-//                if (clientScope.getScope() != null) {
-//                    pSelectableItemView.setName(clientScope.getScope().getName());
-//                }
-//            }
-//        }
-//    }
+
+        return selectableItemView;
+    }
+
+    public SelectableItemView clientScopeToSelectableItemView(Selection<ClientScope> pSelection) {
+        SelectableItemView selectableItemView = new SelectableItemView();
+
+        if (pSelection != null) {
+
+            if (pSelection.getEntity() != null && pSelection.getEntity().getScope() != null) {
+                selectableItemView.setId(pSelection.getEntity().getScope().getId());
+                selectableItemView.setName(pSelection.getEntity().getScope().getName());
+
+            }
+            selectableItemView.setSelected(pSelection.isSelected());
+        }
+
+
+        return selectableItemView;
+    }
+
+
+    public Selection<ClientScope> viewToClientScope(SelectableItemView pSelectableItemView) {
+        Selection<ClientScope> selection = new Selection<>();
+
+        if (pSelectableItemView != null) {
+            selection.setEntity(new ClientScope());
+            selection.getEntity().setScope(new Scope());
+            selection.getEntity().getScope().setId(pSelectableItemView.getId());
+            selection.getEntity().getScope().setName(pSelectableItemView.getName());
+        }
+
+        selection.setSelected(pSelectableItemView.isSelected());
+
+        return selection;
+    }
+
+
+    public Selection<ClientAuthFlow> viewToClientAuthFlow(SelectableItemView pSelectableItemView) {
+        Selection<ClientAuthFlow> selection = new Selection<>();
+
+        if (pSelectableItemView != null) {
+            selection.setEntity(new ClientAuthFlow());
+            selection.getEntity().setId(pSelectableItemView.getId());
+            selection.getEntity().setFlow(GrantType.from(pSelectableItemView.getName()));
+        }
+
+        selection.setSelected(pSelectableItemView.isSelected());
+
+        return selection;
+    }
+
+    public List<Selection<ClientScope>> selectableItemViewsToClientScopes(List<SelectableItemView> pSelectableItemViews) {
+        return Utils.convert(pSelectableItemViews, this::viewToClientScope);
+    }
+
+
+    public List<Selection<ClientAuthFlow>> selectableItemViewsToClientAuthFlows(List<SelectableItemView> pSelectableItemViews) {
+        return Utils.convert(pSelectableItemViews, this::viewToClientAuthFlow);
+    }
+
+
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2017 Remi Guillemette - n4dev.ca
+ * Copyright 2019 Remi Guillemette - n4dev.ca
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -8,9 +8,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -20,31 +20,16 @@
  *
  */
 
-package ca.n4dev.aegaeon.api.repository;
+alter table user_info_type drop foreign key usr_ift_parentid_fk;
+alter table user_info_type drop index usr_ift_parentid_idx;
+alter table user_info_type drop column parent_id;
 
-import java.util.List;
+delete from user_info_type;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+insert into user_info_type(code) values('PERSONAL');
+insert into user_info_type(code) values('ADDRESS');
+insert into user_info_type(code) values('EMAIL');
+insert into user_info_type(code) values('PHONE');
+insert into user_info_type(code) values('SOCIALMEDIA');
 
-import ca.n4dev.aegaeon.api.model.UserInfoType;
-
-/**
- * UserInfoTypeRepository
- * 
- * Repository managing UserInfoType.
- * 
- * @author by rguillemette
- * @since Sep 4, 2017
- *
- */
-public interface UserInfoTypeRepository extends JpaRepository<UserInfoType, Long> {
-
-	/**
-	 * Find user info type by code.
-	 * @param pCode The code to search.
-	 * @return A userinfotype or null.
-	 */
-	UserInfoType findByCode(String pCode);
-
-	
-}
+alter table user_info change other_name description varchar(250);
