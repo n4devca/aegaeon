@@ -48,7 +48,7 @@ public enum ServerExceptionCode {
 
     USER_EMPTY,
     USER_INVALID_PASSWORD,
-
+    USER_INVALID_USERNAME,
 
     // -- New
     AUTH_CODE_EMPTY,

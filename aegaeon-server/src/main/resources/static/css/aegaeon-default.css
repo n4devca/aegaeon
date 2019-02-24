@@ -134,12 +134,12 @@ footer {
 
     .page-edit-user-ctr .page-edit-user-item {
         float: left;
-        width: 80%;
+        width: 70%;
     }
 
     .page-edit-user-ctr .page-edit-user-menu {
         float: left;
-        width: 20%;
+        width: 30%;
     }
 
 }
@@ -188,6 +188,12 @@ div.box div.heading {
     padding: 0.5em;
     background-color: #f6f8fa;
     border-bottom: 1px solid #ccc;
+}
+
+div.box div.heading h1 {
+    font-size: 1.4em;
+    font-weight: bold;
+    margin: 5px 0;
 }
 
 div.box div.body {
@@ -261,6 +267,8 @@ div.box div.footer {
     background-color: transparent;
     text-decoration: none;
     cursor: pointer;
+    color: #444;
+    font-weight: bold;
 }
 
 .frm {

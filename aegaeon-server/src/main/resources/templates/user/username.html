@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{basepage}">
+<head>
+
+</head>
+<body>
+<section layout:fragment="content">
+    <div class="normal-content page-user-username">
+        <th:block th:unless="${completed}">
+            <form th:action="@{/user/name}" th:object="${dto}" method="post">
+                <div class="box">
+                    <div class="heading">
+                        <h1 th:text="#{page.chgusername.title}"></h1>
+                    </div>
+                    <div class="body">
+
+
+                            <div class="form-group">
+                                <label for="user-new-username" th:text="#{page.chgusername.newusername}"></label>
+                                <input type="text" id="user-new-username" class="form-input"
+                                       maxlength="64" required="required"
+                                       th:field="*{newUsername}"
+                                       th:errorclass="input-error"
+                                       th:placeholder="#{page.chgusername.placeholder.newusername}"/>
+                                <p th:each="err : ${#fields.errors('newUsername')}" class="error-text show-error" th:text="${err}"></p>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="user-new-username-confirm" th:text="#{page.chgusername.newusernameconfirm}"></label>
+                                <input type="text" id="user-new-username-confirm" class="form-input"
+                                       maxlength="64" required="required"
+                                       th:field="*{newUsernameConfirm}"
+                                       th:errorclass="input-error"
+                                       th:placeholder="#{page.chgusername.placeholder.newusernameconfirm}"/>
+                                <p th:each="err : ${#fields.errors('newUsernameConfirm')}" class="error-text show-error" th:text="${err}"></p>
+                            </div>
+
+                    </div>
+                    <div class="footer right">
+                        <input type="submit" class="btn btn-ok" name="submit" value="save" th:value="#{action.save}" />
+                    </div>
+                </div>
+            </form>
+        </th:block>
+        <th:block th:if="${completed}">
+            <div class="box">
+                <div class="body">
+                    <p th:text="#{page.chgusername.completed}"></p>
+                    <th:block sec:authorize="hasRole('ROLE_USER')">
+                        <a href="/user-account" th:href="@{/user-account}" class="link">My Account</a>
+                        <form action="/logout" th:action="@{/logout}" method="post">
+                            <button type="submit" class="btn-link" th:text="#{action.logout.now}">Logout Now</button>
+                        </form>
+                    </th:block>
+
+                </div>
+            </div>
+        </th:block>
+    </div>
+</section>
+</body>
+</html>

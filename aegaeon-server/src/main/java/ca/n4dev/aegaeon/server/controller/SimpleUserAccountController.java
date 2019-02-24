@@ -1,6 +1,6 @@
 /**
  * Copyright 2017 Remi Guillemette - n4dev.ca
- *
+ * <p>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -8,16 +8,15 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 package ca.n4dev.aegaeon.server.controller;
 
@@ -28,7 +27,18 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import ca.n4dev.aegaeon.server.controller.validator.UserFormDtoValidator;
+import ca.n4dev.aegaeon.server.controller.dto.ChangePasswdDto;
+import ca.n4dev.aegaeon.server.controller.dto.ChangeUsernameDto;
+import ca.n4dev.aegaeon.server.controller.dto.UserFormDto;
+import ca.n4dev.aegaeon.server.controller.dto.UserInfoGroupDto;
+import ca.n4dev.aegaeon.server.controller.validator.ChangePasswordValidator;
+import ca.n4dev.aegaeon.server.controller.validator.ChangeUsernameValidator;
+import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
+import ca.n4dev.aegaeon.server.service.UserInfoTypeService;
+import ca.n4dev.aegaeon.server.service.UserService;
+import ca.n4dev.aegaeon.server.utils.Utils;
+import ca.n4dev.aegaeon.server.view.UserInfoView;
+import ca.n4dev.aegaeon.server.view.UserView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,22 +51,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
-
-import ca.n4dev.aegaeon.server.controller.dto.UserFormDto;
-import ca.n4dev.aegaeon.server.controller.dto.UserInfoGroupDto;
-import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
-import ca.n4dev.aegaeon.server.service.UserInfoService;
-import ca.n4dev.aegaeon.server.service.UserInfoTypeService;
-import ca.n4dev.aegaeon.server.service.UserService;
-import ca.n4dev.aegaeon.server.utils.Utils;
-import ca.n4dev.aegaeon.server.view.UserInfoView;
-import ca.n4dev.aegaeon.server.view.UserView;
 
 /**
  * SimpleUserProfileController.java
- * 
+ *
  * A simple controller managing user account.
  *
  * @author by rguillemette
@@ -66,75 +65,48 @@ import ca.n4dev.aegaeon.server.view.UserView;
 @RequestMapping(value = SimpleUserAccountController.URL)
 @ConditionalOnProperty(prefix = "aegaeon.modules", name = "account", havingValue = "true", matchIfMissing = true)
 public class SimpleUserAccountController extends BaseUiController {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleUserAccountController.class);
-    
+
     public static final String URL = "/user";
-    public static final String VIEW_OLD = "/user/user-account";
-
-    public static final String URL_EDIT = "/edit";
     public static final String URL_PROFILE = "/profile";
+    public static final String URL_PASSWD = "/password";
+    public static final String URL_USERNAME = "/name";
     public static final String VIEW_PROFILE = "/user/profile";
-    public static final String VIEW_EDIT = "/user/edit-user";
-
-    private static final String CODE_SAVESTATE_NORMAL = "normal";
-    private static final String CODE_SAVESTATE_MODIFIED = "modified";
-    private static final String CODE_SAVESTATE_SAVED = "saved";
-    
-    private static final String ACTION_ADD = "add_";
-    private static final String ACTION_REMOVE = "remove_";
-    private static final String ACTION_SAVE = "update";
-    
+    public static final String VIEW_USERNAME = "/user/username";
+    public static final String VIEW_PASSWORD = "/user/password";
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleUserAccountController.class);
     private UserService userService;
-    private UserInfoService userInfoService;
     private UserInfoTypeService userInfoTypeService;
-    private UserFormDtoValidator userFormDtoValidator;
-    
-    
+    private ChangePasswordValidator changePasswordValidator;
+    private ChangeUsernameValidator changeUsernameValidator;
+
     /**
      * Default Constructor.
      * @param pUserService Service to access user's informations
-     * @param pUserInfoService User info service.
      * @param pUserInfoTypeService The service to get all userinfotype.
      * @param pMessages The message label source.
      */
     @Autowired
-    public SimpleUserAccountController(UserService pUserService, 
-                                       UserInfoService pUserInfoService, 
-                                       UserInfoTypeService pUserInfoTypeService, 
-                                       UserFormDtoValidator pUserFormDtoValidator,
+    public SimpleUserAccountController(UserService pUserService,
+                                       UserInfoTypeService pUserInfoTypeService,
+                                       ChangePasswordValidator pChangePasswordValidator,
+                                       ChangeUsernameValidator pChangeUsernameValidator,
                                        MessageSource pMessages) {
         super(pMessages);
-        this.userService = pUserService;
-        this.userInfoService = pUserInfoService;
-        this.userInfoTypeService = pUserInfoTypeService;
-        this.userFormDtoValidator = pUserFormDtoValidator;
+        userService = pUserService;
+        userInfoTypeService = pUserInfoTypeService;
+        changePasswordValidator = pChangePasswordValidator;
+        changeUsernameValidator = pChangeUsernameValidator;
     }
+
 
     @GetMapping({"", URL_PROFILE})
-    public ModelAndView viewProfile(@AuthenticationPrincipal AegaeonUserDetails pUser, Locale pLocale) {
-        ModelAndView profileView = new ModelAndView(VIEW_EDIT);
-
-        UserView userView = this.userService.findOne(pUser.getId());
-        List<UserInfoView> types = this.userInfoTypeService.findAll();
-
-        profileView.addObject("user", userView);
-        profileView.addObject("types", types);
-
-        return profileView;
-    }
-
-    @GetMapping(value = URL_EDIT)
     public ModelAndView getEditUser(@AuthenticationPrincipal AegaeonUserDetails pUser,
                                     Locale pLocale) {
         UserView userView = this.userService.findOne(pUser.getId());
         return editUserPage(userView);
     }
 
-
-
-
-    @PostMapping(value = URL_EDIT)
+    @PostMapping(value = URL_PROFILE)
     public ModelAndView saveUser(@ModelAttribute("user") UserFormDto pDto,
                                  @AuthenticationPrincipal AegaeonUserDetails pUser,
                                  Locale pLocale) {
@@ -143,8 +115,77 @@ public class SimpleUserAccountController extends BaseUiController {
         return editUserPage(userView);
     }
 
+    @GetMapping(URL_USERNAME)
+    public ModelAndView getEditUsername(@AuthenticationPrincipal AegaeonUserDetails pUser,
+                                        Locale pLocale) {
+        ModelAndView mv = new ModelAndView(VIEW_USERNAME);
+        mv.addObject("completed", false);
+        mv.addObject("dto", new ChangeUsernameDto());
+
+        return mv;
+    }
+
+    @PostMapping(URL_USERNAME)
+    public ModelAndView updateUsername(@ModelAttribute("dto") ChangeUsernameDto pDto,
+                                      @AuthenticationPrincipal AegaeonUserDetails pUser,
+                                      BindingResult pResult,
+                                      Locale pLocale) {
+
+        // Basic validations
+        changeUsernameValidator.validate(pDto, pResult);
+        ModelAndView mv;
+
+        if (pResult.hasErrors()) {
+            mv = new ModelAndView(VIEW_USERNAME, pResult.getModel());
+            mv.addObject("dto", pDto);
+            mv.addObject("completed", false);
+        } else {
+            userService.updateUsername(pUser.getId(), pDto.getNewUsername());
+            mv = new ModelAndView(VIEW_USERNAME);
+            mv.addObject("completed", true);
+        }
+
+
+        return mv;
+    }
+
+    @GetMapping(URL_PASSWD)
+    public ModelAndView getEditPassword(@AuthenticationPrincipal AegaeonUserDetails pUser,
+                                        Locale pLocale) {
+        ModelAndView mv = new ModelAndView(VIEW_PASSWORD);
+        mv.addObject("completed", false);
+        mv.addObject("dto", new ChangePasswdDto());
+
+        return mv;
+    }
+
+    @PostMapping(URL_PASSWD)
+    public ModelAndView updatePassword(@ModelAttribute("dto") ChangePasswdDto pDto,
+                                       @AuthenticationPrincipal AegaeonUserDetails pUser,
+                                       BindingResult pResult,
+                                       Locale pLocale) {
+        ModelAndView mv = null;
+
+        this.changePasswordValidator.validate(pDto, pResult);
+
+        if (pResult.hasErrors()) {
+            mv = new ModelAndView(VIEW_PASSWORD, pResult.getModel());
+            mv.addObject("dto", new ChangePasswdDto());
+
+        } else {
+
+            // update
+            mv = new ModelAndView(VIEW_PASSWORD);
+            mv.addObject("completed", true);
+            userService.updatePassword(pUser.getId(), pDto.getNewPassword());
+        }
+
+
+        return mv;
+    }
+
     private ModelAndView editUserPage(UserView pUserView) {
-        ModelAndView editView = new ModelAndView(VIEW_EDIT);
+        ModelAndView editView = new ModelAndView(VIEW_PROFILE);
 
         // All UserInfoType
         List<UserInfoView> types = this.userInfoTypeService.findAll();
@@ -179,7 +220,8 @@ public class SimpleUserAccountController extends BaseUiController {
         for (UserInfoView pUserInfoView : pUserInfoViews) {
             if (Utils.isNotEmpty(pUserInfoView.getCategory())) {
 
-                UserInfoView userValue = Utils.find(pUserView.getUserInfos(), pUv -> pUv.getCode().toLowerCase().equals(pUserInfoView.getCode().toLowerCase()));
+                UserInfoView userValue = Utils.find(pUserView.getUserInfos(),
+                                                    pUv -> pUv.getCode().toLowerCase().equals(pUserInfoView.getCode().toLowerCase()));
 
                 // Add user's values
                 if (userValue != null) {
@@ -194,7 +236,6 @@ public class SimpleUserAccountController extends BaseUiController {
 
         return infoViews;
     }
-
 
 
     private List<UserInfoGroupDto> combine(List<UserInfoView> pTypes, List<UserInfoView> pUserInfos, Locale pLocale) {

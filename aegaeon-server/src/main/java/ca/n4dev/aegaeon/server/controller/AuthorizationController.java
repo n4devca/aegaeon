@@ -85,16 +85,20 @@ public class AuthorizationController {
         
         this.tokenServicesFacade = pTokenServicesFacade;
     }
-    
+
+    /*
+    *
+    * */
     @RequestMapping(value = "")
-    public ModelAndView authorize(@RequestParam(value = "response_type", required = false) String pResponseType,
-                                  @RequestParam(value = "client_id", required = false) String pClientPublicId,
+    public ModelAndView authorize(
                                   @RequestParam(value = "scope", required = false) String pScope,
-                                  @RequestParam(value = "redirection_url", required = false) String pRedirectionUrl,
+                                  @RequestParam(value = "response_type", required = false) String pResponseType,
+                                  @RequestParam(value = "client_id", required = false) String pClientPublicId,
+                                  @RequestParam(value = "redirect_uri", required = false) String pRedirectUri,
                                   @RequestParam(value = "state", required = false) String pState,
                                   @RequestParam(value = "nonce", required = false) String pNonce,
-                                  @RequestParam(value = "prompt", required = false) String pPrompt,
                                   @RequestParam(value = "display", required = false) String pDisplay,
+                                  @RequestParam(value = "prompt", required = false) String pPrompt,
                                   @RequestParam(value = "id_token_hint", required = false) String pIdTokenHint,
                                   Authentication pAuthentication,
                                   RequestMethod pRequestMethod) {
@@ -108,10 +112,10 @@ public class AuthorizationController {
         try {
             // Validate basic info from request
             Assert.notEmpty(pClientPublicId, ServerExceptionCode.CLIENT_EMPTY);
-            Assert.notEmpty(pRedirectionUrl, ServerExceptionCode.CLIENT_REDIRECTURL_EMPTY);
+            Assert.notEmpty(pRedirectUri, ServerExceptionCode.CLIENT_REDIRECTURL_EMPTY);
 
             // Make sure the client and redirection is valid
-            if (!authorizationService.isClientInfoValid(pClientPublicId, pRedirectionUrl)) {
+            if (!authorizationService.isClientInfoValid(pClientPublicId, pRedirectUri)) {
                 Utils.raise(ServerExceptionCode.CLIENT_REDIRECTIONURL_INVALID);
             }
 
@@ -123,7 +127,7 @@ public class AuthorizationController {
 
             boolean isAlreadyAuthorized = this.authorizationService.isAuthorized(pAuthentication, pClientPublicId);
 
-            ModelAndView authPage = authorizationPage(pResponseType, pClientPublicId, pRedirectionUrl, pScope, pState, pPrompt, pDisplay);
+            ModelAndView authPage = authorizationPage(pResponseType, pClientPublicId, pRedirectUri, pScope, pState, pPrompt, pDisplay);
 
 
             if (p != null) {
@@ -142,9 +146,9 @@ public class AuthorizationController {
             grantType = FlowUtils.getAuthorizationType(authRequest);
 
             if (grantType == GrantType.AUTHORIZATION_CODE) {
-                redirect = authorizeCodeResponse(pAuthentication, authRequest, pClientPublicId, pScope, pRedirectionUrl, pState);
+                redirect = authorizeCodeResponse(pAuthentication, authRequest, pClientPublicId, pScope, pRedirectUri, pState);
             } else if (grantType == GrantType.IMPLICIT) {
-                redirect = implicitResponse(pAuthentication, authRequest, pClientPublicId, pScope, pRedirectionUrl, pState);
+                redirect = implicitResponse(pAuthentication, authRequest, pClientPublicId, pScope, pRedirectUri, pState);
             } else {
                 Utils.raise(ServerExceptionCode.RESPONSETYPE_INVALID);
             }
@@ -155,7 +159,7 @@ public class AuthorizationController {
             // Add info and rethrow
             throw new OpenIdExceptionBuilder(pException)
                     .clientId(pClientPublicId)
-                    .redirection(pRedirectionUrl)
+                    .redirection(pRedirectUri)
                     .state(pState)
                     .handling(ErrorHandling.REDIRECT)
                     .from(grantType).build();

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2018-01-03T09:24:39-0500",
+    date = "2018-06-12T14:42:09-0400",
     comments = "version: 1.2.0.Final, compiler: Eclipse JDT (IDE) 3.12.2.v20161117-1814, environment: Java 1.8.0_92 (Oracle Corporation)"
 )
 @Component
@@ -31,6 +31,7 @@ public class UserMapperImpl implements UserMapper {
             userView.setPicture( pUser.getPictureUrl() );
             userView.setRoles( authorityListToStringList( pUser.getAuthorities() ) );
             userView.setName( pUser.getName() );
+            userView.setUserName( pUser.getUserName() );
         }
         if ( pUserInfos != null ) {
             userView.setUserInfos( userInfoListToUserInfoViewList( pUserInfos ) );
@@ -51,6 +52,7 @@ public class UserMapperImpl implements UserMapper {
         user.setPictureUrl( pUserView.getPicture() );
         user.setId( pUserView.getId() );
         user.setName( pUserView.getName() );
+        user.setUserName( pUserView.getUserName() );
 
         return user;
     }

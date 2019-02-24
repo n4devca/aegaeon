@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import ca.n4dev.aegaeon.api.exception.OpenIdException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
 import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
@@ -253,7 +254,42 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
         //return findOne(pUserView.getId());
         return this.userMapper.toView(u, uiToSave);
     }
-    
+
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN') or principal.id == #pUserId")
+    public void updatePassword(Long pUserId, String pRawPasswd) {
+        Assert.isTrue(this.passwordEvaluator.evaluate(pRawPasswd).isValid(), ServerExceptionCode.USER_INVALID_PASSWORD);
+
+        User u = this.findById(pUserId);
+
+        if (u != null) {
+            u.setPasswd(passwordEncoder.encode(pRawPasswd));
+            this.save(u);
+        }
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN') or principal.id == #pUserId")
+    public void updateUsername(Long pUserId, String pNewUsername) {
+        User u = findById(pUserId);
+
+        if (u != null) {
+
+            // Check to make sure this username is not already used
+            if (existsByUserName(pNewUsername)) {
+                throw new OpenIdException(ServerExceptionCode.USER_INVALID_USERNAME);
+            }
+
+            u.setUserName(pNewUsername);
+            save(u);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    // @PreAuthorize("hasRole('USER') or isAnonymous()")
+    public boolean existsByUserName(String pUsername) {
+        return getRepository().existsByUserName(pUsername);
+    }
     
     /*
      *  sub  string  Subject - Identifier for the End-User at the Issuer.

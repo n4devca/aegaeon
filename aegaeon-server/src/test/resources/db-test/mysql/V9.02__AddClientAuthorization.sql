@@ -24,5 +24,8 @@ select id into @client_auth from client where public_id = 'ca.n4dev.auth.client'
 select id into @client_impl from client where public_id = 'ca.n4dev.auth.client.impl';
 select id into @user from users where username = 'admin@localhost';
 
-insert into authorization_code(client_id, user_id, code, validuntil, redirecturl, scopes) values(@client_auth, @user, '0xffA', DATE_ADD(now(), INTERVAL 30 DAY), 'http://localhost/login.html', 'openid profile offline_access');
-insert into authorization_code(client_id, user_id, code, validuntil, redirecturl, scopes) values(@client_auth, @user, '0xffB', DATE_ADD(now(), INTERVAL 30 DAY), 'http://localhost/login.html', 'openid profile');
+insert into authorization_code(client_id, user_id, code, validuntil, redirecturl, scopes, response_type)
+values(@client_auth, @user, '0xffA', DATE_ADD(now(), INTERVAL 30 DAY), 'http://localhost/login.html', 'openid profile offline_access', 'code');
+
+insert into authorization_code(client_id, user_id, code, validuntil, redirecturl, scopes, response_type)
+values(@client_auth, @user, '0xffB', DATE_ADD(now(), INTERVAL 30 DAY), 'http://localhost/login.html', 'openid profile', 'code');

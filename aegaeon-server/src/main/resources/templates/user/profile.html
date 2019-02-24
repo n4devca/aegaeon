@@ -10,7 +10,7 @@
 <body>
 <section layout:fragment="content">
     <div class="normal-content page-edit-user">
-        <form th:action="@{/user/edit}" th:object="${user}" method="post">
+        <form th:action="@{/user/profile}" th:object="${user}" method="post">
             <div class="page-edit-user-ctr">
                 <div class="page-edit-user-item">
 
@@ -35,12 +35,12 @@
                             <div class="tab-content">
 
                                 <div id="edit-user-info" th:if="${#strings.equals(tab, 'user')}">
-                                    <div th:replace="user/edit-user-main :: editusermain(${user.userView})"></div>
+                                    <div th:replace="user/user-main :: usermain(${user.userView})"></div>
                                 </div>
 
                                 <div th:each="type : ${typemap}"
                                      th:id="'edit-user-info-' + ${type.key}">
-                                    <div th:replace="user/edit-user-info :: edituserinfo(${type.value})"></div>
+                                    <div th:replace="user/user-info :: userinfo(${type.value})"></div>
                                 </div>
 
                                 <input type="hidden" name="tab" th:value="${tab}">
@@ -58,9 +58,11 @@
                         <div class="tab-content">
                             <div class="box">
                                 <div class="body">
-                                    <a href="#" class="link">Change User Name</a>
-                                    <br />
-                                    <a href="#" class="link">Change Password</a>
+                                    <a href="/aegaeon-server/user/name" class="btn btn-ok btn-sm btn-full"
+                                       th:href="@{/user/name}">Change UserName</a>
+
+                                    <a href="/aegaeon-server/user/password" class="btn btn-ok btn-sm btn-full"
+                                       th:href="@{/user/password}">Change Password</a>
                                 </div>
                             </div>
 
