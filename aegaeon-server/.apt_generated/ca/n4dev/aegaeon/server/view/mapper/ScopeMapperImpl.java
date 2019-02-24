@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2018-01-03T09:24:39-0500",
+    date = "2018-06-12T14:42:09-0400",
     comments = "version: 1.2.0.Final, compiler: Eclipse JDT (IDE) 3.12.2.v20161117-1814, environment: Java 1.8.0_92 (Oracle Corporation)"
 )
 @Component
@@ -47,7 +47,6 @@ public class ScopeMapperImpl implements ScopeMapper {
         if ( id != null ) {
             selectableItemView.setId( id );
         }
-        selectableItemView.setSelected( pClientScope.isSelected() );
 
         return selectableItemView;
     }
@@ -62,7 +61,6 @@ public class ScopeMapperImpl implements ScopeMapper {
 
         clientScope.setScope( selectableItemViewToScope( pSelectableItemView ) );
         clientScope.setId( pSelectableItemView.getId() );
-        clientScope.setSelected( pSelectableItemView.isSelected() );
 
         return clientScope;
     }

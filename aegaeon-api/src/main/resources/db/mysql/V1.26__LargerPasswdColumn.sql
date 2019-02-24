@@ -19,33 +19,9 @@
  * under the License.
  *
  */
-package ca.n4dev.aegaeon.api.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+alter table users modify passwd varchar(200) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL;
 
-import ca.n4dev.aegaeon.api.model.User;
-
-/**
- * UserRepository.java
- * 
- * User repository.
- *
- * @author by rguillemette
- * @since May 8, 2017
- */
-public interface UserRepository extends JpaRepository<User, Long> {
-
-    /**
-     * Find a user by username. 
-     * @param pUsername The username to find.
-     * @return A user or null.
-     */
-    User findByUserName(String pUsername);
-
-    /**
-     * Check if a user with this provided username already exists
-     * @param pUserName The username
-     * @return true if exists
-     */
-    boolean existsByUserName(String pUserName);
-}
+-- Add prefix
+update users set passwd = concat('{bcrypt}', passwd)
+where passwd not like '{bcrypt}%';

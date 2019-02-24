@@ -31,6 +31,8 @@ package ca.n4dev.aegaeon.server.view;
  */
 public class UserInfoView {
 
+    private int index;
+
     private Long refId;
     
     private Long refTypeId;
@@ -121,6 +123,20 @@ public class UserInfoView {
      */
     public void setRefId(Long pRefId) {
         refId = pRefId;
+    }
+
+    /**
+     * @return the index
+     */
+    public int getIndex() {
+        return index;
+    }
+
+    /**
+     * @param pIndex the index to set
+     */
+    public void setIndex(int pIndex) {
+        index = pIndex;
     }
 
     /**

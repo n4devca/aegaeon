@@ -33,34 +33,28 @@
             </div>
 
             <div class="site-header-nav"  layout:fragment="header-nav">
-                    <div id="ag-user-menu" class="user-menu">
-                        <th:block sec:authorize="!hasRole('ROLE_USER')">
-                            <form action="/create-account" th:action="@{/create-account}" method="post" class="frm">
-                                <button type="submit" class="btn-link">
-                                    <span>Create Account</span>
-                                </button>
-                            </form>
-                        </th:block>
+                <div id="ag-user-menu" class="user-menu">
 
-                        <th:block sec:authorize="hasRole('ROLE_ADMIN')">
-                            <a href="/admin/clients" th:href="@{/admin/clients}" class="link">Clients</a>
-                        </th:block>
+                    <th:block sec:authorize="!hasRole('ROLE_USER')">
+                        <form action="/create-account" th:action="@{/create-account}" method="post" class="frm">
+                            <button type="submit" class="btn-link">
+                                <span>Create Account</span>
+                            </button>
+                        </form>
+                    </th:block>
 
-                        <th:block sec:authorize="hasRole('ROLE_USER')">
-                            <a href="/user-account" th:href="@{/user-account}" class="link">My Account</a>
-                            <form action="/logout" th:action="@{/logout}" method="post">
-                                <button type="submit" class="btn-link">Logout</button>
-                            </form>
-                        </th:block>
+                    <th:block sec:authorize="hasRole('ROLE_ADMIN')">
+                        <a href="/admin/clients" th:href="@{/admin/clients}" class="link">Clients</a>
+                    </th:block>
 
-                    </div>
+                    <th:block sec:authorize="hasRole('ROLE_USER')">
+                        <a href="/user-account" th:href="@{/user}" class="link">My Account</a>
+                        <form action="/logout" th:action="@{/logout}" method="post">
+                            <button type="submit" class="btn-link" th:text="#{action.logout}">Logout</button>
+                        </form>
+                    </th:block>
 
-
-                    <!--<a href="/user-account" th:href="@{/user-account}">-->
-                        <!--<img src="/resources/images/user.png" th:src="@{/resources/images/user.png}" />-->
-                    <!--</a>-->
-
-
+                </div>
             </div>
         </div>
 

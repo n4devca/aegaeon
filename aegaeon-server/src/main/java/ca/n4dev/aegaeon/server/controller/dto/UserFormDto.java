@@ -25,6 +25,7 @@ package ca.n4dev.aegaeon.server.controller.dto;
 import java.util.List;
 
 import ca.n4dev.aegaeon.api.utils.LazyList;
+import ca.n4dev.aegaeon.server.view.UserInfoView;
 import ca.n4dev.aegaeon.server.view.UserView;
 
 /**
@@ -36,8 +37,9 @@ import ca.n4dev.aegaeon.server.view.UserView;
 public class UserFormDto {
     
     private UserView userView;
-    
-    private List<UserInfoGroupDto> groupInfo = new LazyList<>();
+
+    private List<UserInfoView> userInfoViews = new LazyList<>();
+
 
     /**
      * @return the userView
@@ -54,23 +56,16 @@ public class UserFormDto {
     }
 
     /**
-     * @return the groupInfo
+     * @return the userInfoViews
      */
-    public List<UserInfoGroupDto> getGroupInfo() {
-        return groupInfo;
+    public List<UserInfoView> getUserInfoViews() {
+        return userInfoViews;
     }
 
     /**
-     * @param pGroupInfo the groupInfo to set
+     * @param pUserInfoViews the userInfoViews to set
      */
-    public void setGroupInfo(List<UserInfoGroupDto> pGroupInfo) {
-        groupInfo = pGroupInfo;
-    }
-
-    /**
-     * @param pGroupInfo the groupInfo to set
-     */
-    public void addGroupInfo(UserInfoGroupDto pGroupInfo) {
-        groupInfo.add(pGroupInfo);
+    public void setUserInfoViews(List<UserInfoView> pUserInfoViews) {
+        userInfoViews = pUserInfoViews;
     }
 }

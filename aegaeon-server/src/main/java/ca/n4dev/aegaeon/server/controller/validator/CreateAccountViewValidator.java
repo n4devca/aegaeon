@@ -32,14 +32,6 @@ public class CreateAccountViewValidator implements Validator {
         return CreateAccountView.class.equals(pClass);
     }
 
-    /*
-    page.signup.error.username.empty=Username is required
-page.signup.error.username.notunique=This username is already used. Please select another one.
-page.signup.error.passwordconfirm.empty=Password confirmation is required
-page.signup.error.passwd.notequals=Password are not the same.
-page.signup.error.passwd.insecured=This password is insecured. Try to have an upper case letter, a number and/or a special character.
-    * */
-
     @Override
     public void validate(Object pCreateAccountView, Errors pErrors) {
         CreateAccountView createAccountView = (CreateAccountView) pCreateAccountView;

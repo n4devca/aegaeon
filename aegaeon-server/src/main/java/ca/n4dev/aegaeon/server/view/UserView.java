@@ -24,6 +24,7 @@ package ca.n4dev.aegaeon.server.view;
 import java.util.List;
 
 import ca.n4dev.aegaeon.api.token.OAuthUser;
+import ca.n4dev.aegaeon.api.utils.LazyList;
 
 /**
  * UserView.java
@@ -49,7 +50,7 @@ public class UserView implements OAuthUser  {
     
     private String locale;
     
-    private List<UserInfoView> userInfos;
+    private List<UserInfoView> userInfos = new LazyList<>();
 
     /**
      * @return the name

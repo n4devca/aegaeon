@@ -22,9 +22,14 @@
 
 package ca.n4dev.aegaeon.server.service;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
+import ca.n4dev.aegaeon.api.model.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +47,16 @@ import ca.n4dev.aegaeon.server.view.UserInfoView;
 @Service
 public class UserInfoTypeService extends BaseSecuredService<UserInfoType, UserInfoTypeRepository> {
 
+    private Comparator<UserInfoView> viewComparator = (pView1, pView2) -> {
+        // Other always last
+        if (pView1.getCode().contains("OTHER")) {
+            return 1;
+        }
+
+        // by code
+        return pView1.getCode().compareTo(pView2.getCode());
+    };
+
 	/**
 	 * @param pRepository
 	 */
@@ -57,19 +72,25 @@ public class UserInfoTypeService extends BaseSecuredService<UserInfoType, UserIn
 	@Transactional(readOnly = true)
 	public List<UserInfoView> findAll() {
 	    List<UserInfoType> uit = getRepository().findAll();
-		return Utils.convert(uit, t -> {
-		    UserInfoView userInfoTypeView = new UserInfoView();
-		    
-		    userInfoTypeView.setCode(t.getCode());
-		    userInfoTypeView.setCategory(t.getParent() != null ? t.getParent().getCode() : null);
-		    userInfoTypeView.setRefTypeId(t.getId());
-		    
-		    return userInfoTypeView;
-		});
-	}
-	
+        List<UserInfoView> userInfoViews = Utils.convert(uit, t -> {
+            UserInfoView userInfoTypeView = new UserInfoView();
+
+            userInfoTypeView.setCode(t.getCode());
+            userInfoTypeView.setCategory(t.getParent() != null ? t.getParent().getCode() : null);
+            userInfoTypeView.setRefTypeId(t.getId());
+
+            return userInfoTypeView;
+        });
+
+        Collections.sort(userInfoViews, viewComparator);
+
+        return userInfoViews;
+    }
+
+
 	List<UserInfoType> findAllType() {
 	    List<UserInfoType> uit = getRepository().findAll();
 	    return uit;
 	}
+
 }

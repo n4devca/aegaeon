@@ -28,7 +28,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import ca.n4dev.aegaeon.api.exception.OpenIdException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
 import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
@@ -182,8 +184,15 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
         // Update userinfo
         Set<Long> idsToDelete = new HashSet<>();
         List<UserInfo> uiToSave = new ArrayList<>();
+
+        // Filter null entry and value
+        List<UserInfoView> userInfoViews = pUserView.getUserInfos()
+                                                    .stream()
+                                                    .filter(pUserInfoView -> pUserInfoView != null && Utils.isNotEmpty(pUserInfoView.getValue()))
+                                                    .collect(Collectors.toList());
         
-        for (UserInfoView uiv : pUserView.getUserInfos()) {
+        for (UserInfoView uiv : userInfoViews) {
+
             boolean found = false;
             UserInfo ui = null;
             Iterator<UserInfo> it = uis.iterator();
@@ -216,7 +225,7 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
                 Assert.notNull(type, ServerExceptionCode.INVALID_PARAMETER, "Unable to find type: " + uiv.getCode());
 
                 UserInfo newUserInfo = new UserInfo();
-                newUserInfo.setValue(ui.getValue());
+                newUserInfo.setValue(uiv.getValue());
                 newUserInfo.setType(type);
                 newUserInfo.setUser(u);
                 
@@ -245,7 +254,42 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
         //return findOne(pUserView.getId());
         return this.userMapper.toView(u, uiToSave);
     }
-    
+
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN') or principal.id == #pUserId")
+    public void updatePassword(Long pUserId, String pRawPasswd) {
+        Assert.isTrue(this.passwordEvaluator.evaluate(pRawPasswd).isValid(), ServerExceptionCode.USER_INVALID_PASSWORD);
+
+        User u = this.findById(pUserId);
+
+        if (u != null) {
+            u.setPasswd(passwordEncoder.encode(pRawPasswd));
+            this.save(u);
+        }
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN') or principal.id == #pUserId")
+    public void updateUsername(Long pUserId, String pNewUsername) {
+        User u = findById(pUserId);
+
+        if (u != null) {
+
+            // Check to make sure this username is not already used
+            if (existsByUserName(pNewUsername)) {
+                throw new OpenIdException(ServerExceptionCode.USER_INVALID_USERNAME);
+            }
+
+            u.setUserName(pNewUsername);
+            save(u);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    // @PreAuthorize("hasRole('USER') or isAnonymous()")
+    public boolean existsByUserName(String pUsername) {
+        return getRepository().existsByUserName(pUsername);
+    }
     
     /*
      *  sub  string  Subject - Identifier for the End-User at the Issuer.
