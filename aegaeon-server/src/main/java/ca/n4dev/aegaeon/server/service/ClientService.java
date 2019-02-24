@@ -276,7 +276,7 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
         validateUpdatedView(client, pEntity, isNew);
 
         // update client entity
-        this.clientMapper.clientViewToclient(pEntity, client);
+        this.clientMapper.clientViewToClient(pEntity, client);
         // Re-set default value if empty
         enforceProperValues(client);
         // Save client
@@ -385,7 +385,7 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
 
         Utils.isNotEmptyThen(pClientView.getGrants(), grants -> {
             grants.forEach(g -> {
-                Assert.notNull(g.getId(), ServerExceptionCode.CLIENT_ATTR_INVALID, "ClientGrant (view) without id.");
+                Assert.notNull(g.getName(), ServerExceptionCode.CLIENT_ATTR_INVALID, "ClientGrant (view) without name.");
             });
         });
 
