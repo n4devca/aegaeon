@@ -30,8 +30,8 @@ The goal of this project is not to support all aspects of OpenID and OAuth.
 
 ## Notable Technologies
 
-- Spring Framework 4.3.8
-- Spring Boot 1.5.3
-- Hibernate 5.0.12
-- Thymeleaf 3.0.5
-- Nimbus 4.23
+- Spring Framework 5.1
+- Spring Boot 2.1
+- Hibernate 5.3
+- Thymeleaf 3.0
+- Nimbus 7.0
