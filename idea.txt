@@ -1,0 +1,23 @@
+# User Account
+# Double check auth
+# Doc
+# Translations
+# Styling
+# Theme keys
+# SQL combine
+## Logs
+## Postgresql
+## Perfo
+### Resources
+
+- Resource Server can add or remove available resources
+- Resource is named res://rs_public_id/path_or_uri
+
+- Team leader can create team
+- Team leader can add user to team
+- Team leader can add resources to team
+- Team leader can define a role (editor or observer) for each user in team
+- Team leader can override the role for one user on one resource
+
+- Add scope team
+- Add endpoint user_resources

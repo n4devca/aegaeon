@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{basepage}">
 <head>
@@ -10,70 +9,129 @@
 <body>
 <section layout:fragment="content">
     <div class="normal-content page-edit-user">
-        <form th:action="@{/user/profile}" th:object="${user}" method="post">
+        <form th:action="@{/user/profile}" th:object="${dto}" method="post">
+
             <div class="page-edit-user-ctr">
-                <div class="page-edit-user-item">
+                <div class="page-edit-user-general">
 
-                        <div class="tab-section">
-                            <div class="tab-header">
+                    <div class="right">
+                        <button class="btn btn-sm btn-ok" name="submit" type="submit" value="save" th:text="#{action.save}">
+                            Save
+                        </button>
+                    </div>
+                    <div class="box">
 
-                                <div th:classappend="${#strings.equals('user', tab)} ? 'tab-header-item-active'"
-                                     class="tab-header-item">
-                                    <a href="#" th:href="@{/user/edit(tab=${'user'})}" th:text="#{entity.userinfotype.userinfo}"></a>
-                                </div>
+                        <div class="body">
 
-                                <div th:each="type : ${typemap}"
-                                     th:classappend="${#strings.equals(type.key, tab)} ? 'tab-header-item-active'"
-                                     class="tab-header-item">
-
-                                    <a href="#edit-user-info-email"
-                                       th:href="'#edit-user-info-' + ${type.key}"
-                                       th:text="#{'entity.userinfotype.' + ${type.key}}">Email</a>
-                                </div>
-
+                            <div class="form-group">
+                                <label for="user-account-name" th:text="#{page.useraccount.form.label.name}"></label>
+                                <input type="text" id="user-account-name" class="form-input"
+                                       maxlength="100" required="required"
+                                       th:field="*{userView.name}"
+                                       th:errorclass="input-error"/>
+                                <p class="error-text" id="user-account-name-error"
+                                   th:classappend="${#fields.hasErrors('userView.name')} ? 'show-error'">Name cannot be empty.</p>
                             </div>
-                            <div class="tab-content">
 
-                                <div id="edit-user-info" th:if="${#strings.equals(tab, 'user')}">
-                                    <div th:replace="user/user-main :: usermain(${user.userView})"></div>
-                                </div>
-
-                                <div th:each="type : ${typemap}"
-                                     th:id="'edit-user-info-' + ${type.key}">
-                                    <div th:replace="user/user-info :: userinfo(${type.value})"></div>
-                                </div>
-
-                                <input type="hidden" name="tab" th:value="${tab}">
-
+                            <div class="form-group">
+                                <label for="user-account-name" th:text="#{page.useraccount.form.label.uniqueid}"></label>
+                                <input type="text" id="user-account-uniqueIdentifier" class="form-input read-only"
+                                       maxlength="100" readonly="readonly"
+                                       th:field="*{userView.uniqueIdentifier}"/>
                             </div>
-                        </div>
-                </div>
-                <div class="page-edit-user-menu">
-                    <div class="tab-section">
-                        <div class="tab-header">
-                            <div class="tab-header-item full right">
-                                <input type="submit" class="btn btn-ok btn-sm" th:value="#{action.save}"></input>
-                            </div>
-                        </div>
-                        <div class="tab-content">
-                            <div class="box">
-                                <div class="body">
-                                    <a href="/aegaeon-server/user/name" class="btn btn-ok btn-sm btn-full"
-                                       th:href="@{/user/name}">Change UserName</a>
 
-                                    <a href="/aegaeon-server/user/password" class="btn btn-ok btn-sm btn-full"
-                                       th:href="@{/user/password}">Change Password</a>
-                                </div>
+                            <div class="form-group">
+                                <label for="user-account-name" th:text="#{page.useraccount.form.label.username}"></label>
+                                <input type="text" id="user-account-username" class="form-input read-only read-only"
+                                       maxlength="100" readonly="readonly"
+                                       th:field="*{userView.userName}"/>
                             </div>
 
                         </div>
                     </div>
                 </div>
+                <div class="page-edit-user-info">
+
+                    <div class="box">
+
+                        <div class="heading">
+                            <div class="right">
+
+                                <select name="userInfoType">
+                                    <option th:each="uit : ${types}"
+                                            th:value="${uit.code}"
+                                            th:text="#{${'entity.userinfotype.' + #strings.toLowerCase(uit.code) + '.name'}}"></option>
+                                </select>
+
+                                <button class="btn btn-sm btn-ok" name="action" type="submit" value="add" th:text="#{action.add}">
+                                    Add
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="body">
+
+                            <div class="input-group">
+
+                                <div class="input-group-element" style="width: 20%;">
+                                    <h3 th:text="#{page.useraccount.userinfotype.type}">Type</h3>
+                                </div>
+                                <div class="input-group-element" style="width: 35%;">
+                                    <h3 th:text="#{page.useraccount.userinfotype.desc}">Description</h3>
+                                </div>
+                                <div class="input-group-element" style="width: 35%;">
+                                    <h3 th:text="#{page.useraccount.userinfotype.value}">Value</h3>
+                                </div>
+                                <div class="input-group-element right" style="width: 10%;">
+
+                                </div>
+
+                            </div>
+
+                            <th:block th:each="ui,stats : *{userView.userInfos}">
+
+                                <div class="input-group">
+
+                                    <div class="input-group-element" style="width: 20%;">
+                                        <label class="pill pill-message"
+                                               th:text="#{${'entity.userinfotype.' + #strings.toLowerCase(ui.code) + '.name'}}"></label>
+
+                                    </div>
+                                    <div class="input-group-element" style="width: 35%;">
+                                        <div class="form-group">
+                                            <input class="form-input" type="text" style="margin-right: 3px;"
+                                                   th:field="*{userView.userInfos[__${stats.index}__].name}"
+                                                   th:placeholder="#{${'page.useraccount.userinfotype.' + #strings.toLowerCase(ui.code) + '.placeholder'}}"/>
+                                        </div>
+                                    </div>
+                                    <div class="input-group-element" style="width: 35%;">
+                                        <div class="form-group">
+                                            <input class="form-input" type="text" style="margin-right: 3px;"
+                                                   th:field="*{userView.userInfos[__${stats.index}__].value}"
+                                                   th:placeholder="#{${'page.useraccount.userinfotype.' + #strings.toLowerCase(ui.code) + '.value.placeholder'}}"/>
+
+                                        </div>
+
+                                    </div>
+                                    <div class="input-group-element right" style="width: 10%;">
+                                        <button class="btn btn-sm btn-danger" name="action" type="submit"
+                                                value="remove" th:value="'remove_' + ${ui.refId}"
+                                                th:text="#{action.remove}">
+                                            Remove
+                                        </button>
+                                    </div>
+
+                                </div>
+                                <input type="hidden" th:field="*{userView.userInfos[__${stats.index}__].code}"/>
+                                <input type="hidden" th:field="*{userView.userInfos[__${stats.index}__].refId}"/>
+                                <input type="hidden" th:field="*{userView.userInfos[__${stats.index}__].refTypeId}"/>
+                            </th:block>
+
+                        </div>
+                    </div>
+                </div>
             </div>
-
         </form>
-
-
     </div>
 </section>
 </body>

@@ -44,6 +44,8 @@ public class UserMapper {
     public UserView toView(User pUser, List<UserInfo> pUserInfos) {
         UserView uv = new UserView();
 
+        uv.setId(pUser.getId());
+        uv.setUniqueIdentifier(pUser.getUniqueIdentifier());
         uv.setName(pUser.getName());
         uv.setUserName(pUser.getUserName());
 
@@ -69,10 +71,11 @@ public class UserMapper {
 
         uiv.setRefId(pUserInfo.getId());
         uiv.setName(pUserInfo.getDescription());
+        uiv.setValue(pUserInfo.getValue());
 
         if (pUserInfo.getType() != null) {
             uiv.setCode(pUserInfo.getType().getCode());
-            uiv.setRefId(pUserInfo.getType().getId());
+            uiv.setRefTypeId(pUserInfo.getType().getId());
         }
 
         return uiv;

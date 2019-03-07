@@ -166,6 +166,8 @@ public class ControllerErrorInterceptor extends BaseUiController {
                                   HttpServletRequest pHttpServletRequest,
                                   HttpServletResponse pHttpServletResponse) {
 
+        LOGGER.error("Unhandled exception:", pThrowable);
+
         return internalErrorPage(Severity.DANGER,
                                  pLocale,
                                  "unexpected",

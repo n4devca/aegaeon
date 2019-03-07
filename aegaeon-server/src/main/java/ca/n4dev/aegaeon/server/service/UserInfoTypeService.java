@@ -25,8 +25,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.model.UserInfoType;
 import ca.n4dev.aegaeon.api.repository.UserInfoTypeRepository;
+import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import ca.n4dev.aegaeon.server.view.UserInfoView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,4 +80,15 @@ public class UserInfoTypeService extends BaseSecuredService<UserInfoType, UserIn
         return uit;
     }
 
+    public UserInfoView findByCode(String pCode) {
+        Assert.notEmpty(pCode, ServerExceptionCode.ILLEGAL_ARGUMENT);
+        final UserInfoType infoType = getRepository().findByCode(pCode);
+
+        UserInfoView userInfoView = new UserInfoView();
+
+        userInfoView.setRefTypeId(infoType.getId());
+        userInfoView.setCode(pCode);
+
+        return userInfoView;
+    }
 }

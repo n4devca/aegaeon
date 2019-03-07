@@ -20,9 +20,6 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -30,9 +27,9 @@ import java.util.Map;
 import ca.n4dev.aegaeon.server.controller.dto.ChangePasswdDto;
 import ca.n4dev.aegaeon.server.controller.dto.ChangeUsernameDto;
 import ca.n4dev.aegaeon.server.controller.dto.UserFormDto;
-import ca.n4dev.aegaeon.server.controller.dto.UserInfoGroupDto;
 import ca.n4dev.aegaeon.server.controller.validator.ChangePasswordValidator;
 import ca.n4dev.aegaeon.server.controller.validator.ChangeUsernameValidator;
+import ca.n4dev.aegaeon.server.controller.validator.UserFormDtoValidator;
 import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 import ca.n4dev.aegaeon.server.service.UserInfoTypeService;
 import ca.n4dev.aegaeon.server.service.UserService;
@@ -74,10 +71,13 @@ public class SimpleUserAccountController extends BaseUiController {
     public static final String VIEW_USERNAME = "/user/username";
     public static final String VIEW_PASSWORD = "/user/password";
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleUserAccountController.class);
+    private static final String ACTION_ADD = "add";
+    private static final String ACTION_REMOVE = "remove";
     private UserService userService;
     private UserInfoTypeService userInfoTypeService;
     private ChangePasswordValidator changePasswordValidator;
     private ChangeUsernameValidator changeUsernameValidator;
+    private UserFormDtoValidator userFormDtoValidator;
 
     /**
      * Default Constructor.
@@ -90,29 +90,68 @@ public class SimpleUserAccountController extends BaseUiController {
                                        UserInfoTypeService pUserInfoTypeService,
                                        ChangePasswordValidator pChangePasswordValidator,
                                        ChangeUsernameValidator pChangeUsernameValidator,
+                                       UserFormDtoValidator pUserFormDtoValidator,
                                        MessageSource pMessages) {
         super(pMessages);
         userService = pUserService;
         userInfoTypeService = pUserInfoTypeService;
         changePasswordValidator = pChangePasswordValidator;
         changeUsernameValidator = pChangeUsernameValidator;
+        userFormDtoValidator = pUserFormDtoValidator;
     }
 
 
     @GetMapping({"", URL_PROFILE})
     public ModelAndView getEditUser(@AuthenticationPrincipal AegaeonUserDetails pUser,
                                     Locale pLocale) {
+        final ModelAndView modelAndView = getBasicProfilePage(null);
+
         UserView userView = this.userService.findOne(pUser.getId());
-        return editUserPage(userView);
+        modelAndView.addObject("dto", new UserFormDto(userView));
+
+        return modelAndView;
     }
 
     @PostMapping(value = URL_PROFILE)
-    public ModelAndView saveUser(@ModelAttribute("user") UserFormDto pDto,
+    public ModelAndView saveUser(@ModelAttribute("dto") UserFormDto pUserFormDto,
                                  @AuthenticationPrincipal AegaeonUserDetails pUser,
+                                 BindingResult pResult,
                                  Locale pLocale) {
 
-        UserView userView = userService.update(pUser.getId(), pDto.getUserView());
-        return editUserPage(userView);
+        // Validate the dto
+        userFormDtoValidator.validate(pUserFormDto, pResult);
+
+        final ModelAndView modelAndView = getBasicProfilePage(pResult.getModel());
+
+        // Adding new info
+        if (hasAction(pUserFormDto)) {
+
+            final String action = removeIdFromAction(pUserFormDto.getAction());
+
+            switch (action) {
+                case ACTION_ADD:
+                    addNewTypeToDto(pUserFormDto);
+                    break;
+                case ACTION_REMOVE:
+                    removeTypeToDto(pUserFormDto);
+                    break;
+            }
+
+            modelAndView.addObject("dto", pUserFormDto);
+            return modelAndView;
+        }
+
+        // If we have some error, return
+        if (pResult.hasErrors()) {
+            modelAndView.addObject("dto", pUserFormDto);
+            return modelAndView;
+        }
+
+        // Or Save
+        UserView userView = userService.update(pUser.getId(), pUserFormDto.getUserView());
+        modelAndView.addObject("dto", new UserFormDto(userView));
+
+        return modelAndView;
     }
 
     @GetMapping(URL_USERNAME)
@@ -184,98 +223,135 @@ public class SimpleUserAccountController extends BaseUiController {
         return mv;
     }
 
-    private ModelAndView editUserPage(UserView pUserView) {
-        ModelAndView editView = new ModelAndView(VIEW_PROFILE);
+    private ModelAndView getBasicProfilePage(Map<String, Object> pModel) {
+        ModelAndView view = new ModelAndView(VIEW_PROFILE, pModel);
 
-        // All UserInfoType
         List<UserInfoView> types = this.userInfoTypeService.findAll();
+        view.addObject("types", types);
 
-        // Split user info by tab
-        Map<String, List<UserInfoView>> combineTypeValues = split(pUserView, types);
-
-        UserFormDto dto = new UserFormDto();
-        dto.setUserView(pUserView);
-
-        editView.addObject("user", dto);
-        editView.addObject("types", types);
-        editView.addObject("tab", "user");
-        editView.addObject("typemap", combineTypeValues);
-
-        return editView;
+        return view;
     }
 
-    private Map<String, List<UserInfoView>> split(UserView pUserView, List<UserInfoView> pUserInfoViews) {
-        Map<String, List<UserInfoView>> infoViews = new LinkedHashMap<>();
+    private boolean hasAction(UserFormDto pUserFormDto) {
+        return Utils.isNotEmpty(pUserFormDto.getAction());
+    }
 
-        // Start by creating a Map from parent
-        pUserInfoViews.forEach(pUserInfoView -> {
-            if (Utils.isEmpty(pUserInfoView.getCategory())) {
-                infoViews.put(pUserInfoView.getCode().toLowerCase(), new ArrayList<>());
-            }
-        });
-
-        int idx = 0;
-
-        // Add children
-        for (UserInfoView pUserInfoView : pUserInfoViews) {
-            if (Utils.isNotEmpty(pUserInfoView.getCategory())) {
-
-                UserInfoView userValue = Utils.find(pUserView.getUserInfos(),
-                                                    pUv -> pUv.getCode().toLowerCase().equals(pUserInfoView.getCode().toLowerCase()));
-
-                // Add user's values
-                if (userValue != null) {
-                    pUserInfoView.setName(userValue.getName());
-                    pUserInfoView.setValue(userValue.getValue());
-                }
-                pUserInfoView.setIndex(idx++);
-                infoViews.get(pUserInfoView.getCategory().toLowerCase()).add(pUserInfoView);
-            }
-
+    private String removeIdFromAction(String pAction) {
+        if (pAction.contains("_")) {
+            return pAction.substring(0, pAction.indexOf("_"));
+        } else {
+            return pAction;
         }
 
-        return infoViews;
+    }
+
+    private void addNewTypeToDto(UserFormDto pUserFormDto) {
+        final String userInfoTypeCode = pUserFormDto.getUserInfoType();
+        final UserInfoView userInfoTypeView = this.userInfoTypeService.findByCode(userInfoTypeCode);
+        pUserFormDto.getUserView().getUserInfos().add(userInfoTypeView);
+    }
+
+    private void removeTypeToDto(UserFormDto pUserFormDto) {
+        String action = pUserFormDto.getAction();
+        String refId = action.substring(action.indexOf("_") + 1);
+
+        pUserFormDto.getUserView().getUserInfos().removeIf(pUserInfoView -> Utils.equals(pUserInfoView.getRefId(), Long.valueOf(refId)));
     }
 
 
-    private List<UserInfoGroupDto> combine(List<UserInfoView> pTypes, List<UserInfoView> pUserInfos, Locale pLocale) {
+//
+//    private ModelAndView editUserPage(UserView pUserView) {
+//        ModelAndView editView = new ModelAndView(VIEW_PROFILE);
+//
+//        // All UserInfoType
+//        List<UserInfoView> types = this.userInfoTypeService.findAll();
+//
+//        // Split user info by tab
+//        Map<String, List<UserInfoView>> combineTypeValues = split(pUserView, types);
+//
+//        UserFormDto dto = new UserFormDto();
+//        dto.setUserView(pUserView);
+//
+//        editView.addObject("user", dto);
+//        editView.addObject("types", types);
+//        editView.addObject("tab", "user");
+//        editView.addObject("typemap", combineTypeValues);
+//
+//        return editView;
+//    }
 
-        List<UserInfoGroupDto> groups = new ArrayList<>();
-        Map<String, UserInfoGroupDto> groupsMap = new HashMap<>();
-
-        // Parents
-        for (UserInfoView type : pTypes) {
-            if (Utils.isEmpty(type.getCategory())) {
-                UserInfoGroupDto cat = new UserInfoGroupDto();
-                cat.setCode(type.getName());
-                cat.setLabelName(getLabel("entity.userinfotype." + type.getCode(), pLocale));
-
-                groupsMap.put(type.getCode(), cat);
-            }
-        }
-
-        // Childs
-        for (UserInfoView type : pTypes) {
-            if (type.getCategory() != null) {
-
-                UserInfoGroupDto parent = groupsMap.get(type.getCategory());
-
-                // User Values
-                UserInfoView userValue = Utils.find(pUserInfos, ui -> ui.getRefTypeId().equals(type.getRefTypeId()));
-
-                if (userValue != null) {
-                    parent.addUserInfoTypeDto(userValue);
-                } else {
-                    parent.addUserInfoTypeDto(type);
-                }
-
-            }
-        }
-
-        groups.addAll(groupsMap.values());
-
-        return groups;
-    }
+//    private Map<String, List<UserInfoView>> split(UserView pUserView, List<UserInfoView> pUserInfoViews) {
+//        Map<String, List<UserInfoView>> infoViews = new LinkedHashMap<>();
+//
+//        // Start by creating a Map from parent
+//        pUserInfoViews.forEach(pUserInfoView -> {
+//            if (Utils.isEmpty(pUserInfoView.getCategory())) {
+//                infoViews.put(pUserInfoView.getCode().toLowerCase(), new ArrayList<>());
+//            }
+//        });
+//
+//        int idx = 0;
+//
+//        // Add children
+//        for (UserInfoView pUserInfoView : pUserInfoViews) {
+//            if (Utils.isNotEmpty(pUserInfoView.getCategory())) {
+//
+//                UserInfoView userValue = Utils.find(pUserView.getUserInfos(),
+//                                                    pUv -> pUv.getCode().toLowerCase().equals(pUserInfoView.getCode().toLowerCase()));
+//
+//                // Add user's values
+//                if (userValue != null) {
+//                    pUserInfoView.setName(userValue.getName());
+//                    pUserInfoView.setValue(userValue.getValue());
+//                }
+//                pUserInfoView.setIndex(idx++);
+//                infoViews.get(pUserInfoView.getCategory().toLowerCase()).add(pUserInfoView);
+//            }
+//
+//        }
+//
+//        return infoViews;
+//    }
+//
+//
+//    private List<UserInfoGroupDto> combine(List<UserInfoView> pTypes, List<UserInfoView> pUserInfos, Locale pLocale) {
+//
+//        List<UserInfoGroupDto> groups = new ArrayList<>();
+//        Map<String, UserInfoGroupDto> groupsMap = new HashMap<>();
+//
+//        // Parents
+//        for (UserInfoView type : pTypes) {
+//            if (Utils.isEmpty(type.getCategory())) {
+//                UserInfoGroupDto cat = new UserInfoGroupDto();
+//                cat.setCode(type.getName());
+//                cat.setLabelName(getLabel("entity.userinfotype." + type.getCode(), pLocale));
+//
+//                groupsMap.put(type.getCode(), cat);
+//            }
+//        }
+//
+//        // Childs
+//        for (UserInfoView type : pTypes) {
+//            if (type.getCategory() != null) {
+//
+//                UserInfoGroupDto parent = groupsMap.get(type.getCategory());
+//
+//                // User Values
+//                UserInfoView userValue = Utils.find(pUserInfos, ui -> ui.getRefTypeId().equals(type.getRefTypeId()));
+//
+//                if (userValue != null) {
+//                    parent.addUserInfoTypeDto(userValue);
+//                } else {
+//                    parent.addUserInfoTypeDto(type);
+//                }
+//
+//            }
+//        }
+//
+//        groups.addAll(groupsMap.values());
+//
+//        return groups;
+//    }
 
 
 
