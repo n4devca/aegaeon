@@ -21,12 +21,10 @@
 package ca.n4dev.aegaeon.server.service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -48,6 +46,7 @@ import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
 import ca.n4dev.aegaeon.api.validation.PasswordEvaluator;
 import ca.n4dev.aegaeon.server.security.AccessTokenAuthentication;
 import ca.n4dev.aegaeon.server.utils.Assert;
+import ca.n4dev.aegaeon.server.utils.Differentiation;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import ca.n4dev.aegaeon.server.view.UserInfoResponseView;
 import ca.n4dev.aegaeon.server.view.UserInfoView;
@@ -61,7 +60,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * UserService.java
- *
+ * <p>
  * User service.
  *
  * @author by rguillemette
@@ -80,6 +79,7 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
 
     /**
      * Default constructor.
+     *
      * @param pRepository The user repo.
      */
     @Autowired
@@ -102,7 +102,6 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
     }
 
     /**
-     *
      * @param pUserId
      * @return
      */
@@ -135,8 +134,8 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
     /**
      * Create a user.
      *
-     * @param pUsername The username
-     * @param pName It's name.
+     * @param pUsername  The username
+     * @param pName      It's name.
      * @param pRawPasswd The choosen password
      * @return The new user.
      */
@@ -172,7 +171,7 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
     public UserView update(Long pUserId, UserView pUserView) {
 
         // Get the user and its infos
-        User u = this.findById(pUserId);
+        final User u = this.findById(pUserId);
         Assert.notNull(u, ServerExceptionCode.USER_EMPTY);
         List<UserInfo> uis = this.userInfoRepository.findByUserId(pUserId);
         List<UserInfoType> allTypes = this.userInfoTypeService.findAllType();
@@ -181,10 +180,6 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
         u.setName(pUserView.getName());
         u.setPictureUrl(pUserView.getPicture());
 
-        // Update userinfo
-        Set<Long> idsToDelete = new HashSet<>();
-        List<UserInfo> uiToSave = new ArrayList<>();
-
         // Filter null entry and value
         List<UserInfoView> userInfoViews = pUserView.getUserInfos()
                                                     .stream()
@@ -192,64 +187,45 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
                                                             .isNotEmpty(pUserInfoView.getValue()))
                                                     .collect(Collectors.toList());
 
-        for (UserInfoView uiv : userInfoViews) {
+        final Differentiation<UserInfo> differentiation = Utils.differentiate(uis, userInfoViews,
+                                                                              (pUserInfo, pUserInfoView) ->
+                                                                                      pUserInfo.getId().equals(pUserInfoView.getRefId()),
+                                                                              (pUserInfo, pUserInfoView) -> {
+                                                                                  pUserInfo.setDescription(pUserInfoView.getName());
+                                                                                  pUserInfo.setValue(pUserInfoView.getValue());
+                                                                                  return pUserInfo;
+                                                                              }, pUserInfoView -> {
+                    // Validate type
+                    final Optional<UserInfoType> infoType = findType(allTypes, pUserInfoView);
+                    final UserInfoType type = infoType.get();
+                    UserInfo ui = new UserInfo(u, type, pUserInfoView.getValue());
+                    ui.setDescription(Utils.coalesce(pUserInfoView.getName(), type.getCode()));
 
-            boolean found = false;
-            UserInfo ui = null;
-            Iterator<UserInfo> it = uis.iterator();
+                    return ui;
+                });
 
-            // Find match
-            while (it.hasNext() && !found) {
-
-                ui = it.next();
-
-                if (Utils.equals(uiv.getRefId(), ui.getId())) {
-
-                    found = true;
-
-                    if (Utils.isNotEmpty(uiv.getValue())) {
-
-                        ui.setDescription(uiv.getName());
-                        ui.setValue(uiv.getValue());
-                        uiToSave.add(ui);
-
-                    } else {
-                        idsToDelete.add(ui.getId());
-                    }
-                }
-            }
-
-            if (!found) {
-                UserInfoType type = Utils.find(allTypes, t -> t.getCode().equals(uiv.getCode()));
-                Assert.notNull(type, ServerExceptionCode.INVALID_PARAMETER, "Unable to find type: " + uiv.getCode());
-
-                UserInfo newUserInfo = new UserInfo();
-                newUserInfo.setValue(uiv.getValue());
-                newUserInfo.setType(type);
-                newUserInfo.setUser(u);
-
-                newUserInfo.setDescription(uiv.getName());
-
-                uiToSave.add(newUserInfo);
-            }
-        }
 
         // Save User
-        u = this.save(u);
+        User savedUser = this.save(u);
+
+        List<UserInfo> userInfos = new ArrayList<>();
 
         // Save Info
-        if (Utils.isNotEmpty(uiToSave)) {
-            uiToSave = this.userInfoRepository.saveAll(uiToSave);
+        if (Utils.isNotEmpty(differentiation.getNewObjs())) {
+            userInfos.addAll(this.userInfoRepository.saveAll(differentiation.getNewObjs()));
+        }
+
+        if (Utils.isNotEmpty(differentiation.getUpdatedObjs())) {
+            userInfos.addAll(this.userInfoRepository.saveAll(differentiation.getUpdatedObjs()));
         }
 
         // Delete Info
-        if (Utils.isNotEmpty(idsToDelete)) {
-            this.userInfoRepository.deleteByIdIn(idsToDelete);
+        if (Utils.isNotEmpty(differentiation.getRemovedObjs())) {
+            this.userInfoRepository.deleteAll(differentiation.getRemovedObjs());
         }
 
-        // Reload
-        //return findOne(pUserView.getId());
-        return this.userMapper.toView(u, uiToSave);
+        userInfos = this.userInfoRepository.findByUserId(savedUser.getId());
+        return this.userMapper.toView(savedUser, userInfos);
     }
 
     @Transactional
@@ -358,5 +334,18 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
         }
 
         return payload;
+    }
+
+    private Optional<UserInfoType> findType(List<UserInfoType> pAllType, UserInfoView pUserInfoView) {
+
+        Assert.notNull(pAllType);
+        Assert.notNull(pUserInfoView);
+
+        final Optional<UserInfoType> userInfoTypeOptional = pAllType.stream()
+                                                                    .filter(pUt -> pUt.getId().equals(pUserInfoView.getRefTypeId()) ||
+                                                                            pUt.getCode().equals(pUserInfoView.getCode()))
+                                                                    .findFirst();
+
+        return userInfoTypeOptional;
     }
 }

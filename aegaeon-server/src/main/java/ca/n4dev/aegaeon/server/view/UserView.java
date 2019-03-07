@@ -152,6 +152,20 @@ public class UserView implements OAuthUser  {
         userName = pUserName;
     }
 
+    /**
+     * @param pId the id to set
+     */
+    public void setId(Long pId) {
+        id = pId;
+    }
+
+    /**
+     * @param pUniqueIdentifier the uniqueIdentifier to set
+     */
+    public void setUniqueIdentifier(String pUniqueIdentifier) {
+        uniqueIdentifier = pUniqueIdentifier;
+    }
+
     public String toString() {
         return new StringBuilder()
                     .append(getClass().getSimpleName())

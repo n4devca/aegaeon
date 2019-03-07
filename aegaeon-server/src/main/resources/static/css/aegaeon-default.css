@@ -215,6 +215,7 @@ div.box div.footer {
     display: inline-block;
     font-size: 1.2em;
     text-decoration: none;
+    min-width: 80px;
 }
 
 .btn:hover {
@@ -293,6 +294,10 @@ div.box div.footer {
     box-sizing: border-box;
 }
 
+.form-group > input.form-input.read-only {
+    background-color: #ccc;
+}
+
 .error-text {
     display: none;
     color:#f40000;
@@ -360,7 +365,7 @@ div.input-group {
 div.input-group-element {
     display: table-cell;
     padding: 0;
-    vertical-align: top;
+    vertical-align: middle;
     text-align: left;
 }
 
@@ -424,6 +429,20 @@ div.input-group-element.btnop {
 .tab-section .tab-content {
     border-top: 1px solid #ddd;
     padding: 10px;
+}
+
+label.pill {
+    margin: 0.2em 0;
+    padding: 0.3em 0.4em;
+    text-transform: uppercase;
+    font-size: 0.8em;
+    border-radius: 0.3em;
+}
+
+label.pill.pill-message {
+    background-color: #1b65b7;
+    border: 1px solid #095bb7;
+    color: #fff;
 }
 
 
