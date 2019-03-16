@@ -35,12 +35,12 @@ public enum GrantType {
     CLIENT_CREDENTIALS,
     REFRESH_TOKEN,
     PASSWORD, // Not implemented
-    HYBRID
+    HYBRID // Not implemented
     ;
     
     public static GrantType from(String pGrantString) {
         for (GrantType grant : GrantType.values()) {
-            if (grant.toString().equals(pGrantString)) {
+            if (grant.toString().equalsIgnoreCase(pGrantString)) {
                 return grant;
             }
         }

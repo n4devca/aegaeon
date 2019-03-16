@@ -23,24 +23,21 @@ package ca.n4dev.aegaeon.server.service;
 
 import java.time.ZoneOffset;
 
-import ca.n4dev.aegaeon.api.exception.ErrorHandling;
-import ca.n4dev.aegaeon.api.exception.OpenIdExceptionBuilder;
-import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.nimbusds.jwt.SignedJWT;
-
 import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
 import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
 import ca.n4dev.aegaeon.api.model.AccessToken;
 import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.server.config.ServerInfo;
+import ca.n4dev.aegaeon.server.controller.exception.InvalidIntrospectException;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import ca.n4dev.aegaeon.server.view.IntrospectResponseView;
+import com.nimbusds.jwt.SignedJWT;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * InstrospectService.java
@@ -85,6 +82,7 @@ public class InstrospectService {
      * @return
      */
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('ROLE_CLIENT')")
     public IntrospectResponseView introspect(String pToken, 
                                              String pTokenHint, // ignored currently
                                              String pAgentOfClientId,
@@ -127,10 +125,7 @@ public class InstrospectService {
                 openIdEventLogger.log(OpenIdEvent.OTHERS, getClass(), e.getMessage());
             }
         } else {
-            throw new OpenIdExceptionBuilder()
-                        .clientId(pAgentOfClientId)
-                        .code(ServerExceptionCode.INTROSPECT_PARAM_INVALID)
-                        .build();
+            throw new InvalidIntrospectException();
         }
 
         

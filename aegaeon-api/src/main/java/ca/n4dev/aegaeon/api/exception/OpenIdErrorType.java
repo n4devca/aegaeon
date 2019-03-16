@@ -89,8 +89,16 @@ public enum OpenIdErrorType {
     request_uri_not_supported,
 
     // The OP does not support use of the registration parameter defined in Section 7.2.1.
-    registration_not_supported
+    registration_not_supported,
+
+    //The provided authorization grant (e.g., authorization
+    //               code, resource owner credentials) or refresh token is
+    //               invalid, expired, revoked, does not match the redirection
+    //               URI used in the authorization request, or was issued to
+    //               another client.
+    invalid_grant
     ;
+
 
     public static OpenIdErrorType fromServerCode(ServerExceptionCode pServerExceptionCode) {
         if (pServerExceptionCode != null) {

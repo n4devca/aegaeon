@@ -1,6 +1,6 @@
 /**
  * Copyright 2017 Remi Guillemette - n4dev.ca
- *
+ * <p>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -8,32 +8,32 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 package ca.n4dev.aegaeon.server.security;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
+import ca.n4dev.aegaeon.api.token.OAuthUser;
+import ca.n4dev.aegaeon.server.view.ScopeView;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import ca.n4dev.aegaeon.api.token.OAuthUser;
-
 /**
  * AccessTokenAuthentication.java
- * 
+ *
  * An authentication by token.
  *
  * @author by rguillemette
@@ -42,35 +42,35 @@ import ca.n4dev.aegaeon.api.token.OAuthUser;
 public class AccessTokenAuthentication implements Authentication {
 
     private static final long serialVersionUID = 5436208889960585525L;
-    
+
     private Long userId;
     private String uniqueIdentifier;
     private String accessToken;
-    private List<String> scopes;
+    private Set<ScopeView> scopes;
     private boolean authenticated = false;
     private Collection<? extends GrantedAuthority> authorities;
-    
+
     public AccessTokenAuthentication(String pAccessToken) {
         this.accessToken = pAccessToken;
     }
 
-    public AccessTokenAuthentication(OAuthUser pOAuthUser, String pAccessToken, List<String> pScopes, List<String> pRoles) {
+    public AccessTokenAuthentication(OAuthUser pOAuthUser, String pAccessToken, Set<ScopeView> pScopes, List<String> pRoles) {
         this.userId = pOAuthUser.getId();
         this.uniqueIdentifier = pOAuthUser.getUniqueIdentifier();
         this.scopes = pScopes;
         this.accessToken = pAccessToken;
-        
+
         if (pRoles != null) {
             List<GrantedAuthority> roles = new ArrayList<>();
-            
+
             for (String role : pRoles) {
                 roles.add(new SimpleGrantedAuthority(role));
             }
-            
+
             this.authorities = roles;
         }
     }
-    
+
     /* (non-Javadoc)
      * @see java.security.Principal#getName()
      */
@@ -151,7 +151,7 @@ public class AccessTokenAuthentication implements Authentication {
     /**
      * @return the scopes
      */
-    public List<String> getScopes() {
+    public Set<ScopeView> getScopes() {
         return scopes;
     }
 

@@ -48,6 +48,7 @@ public class AuthorizationCodeViewMapper {
                 authorizationCodeView.setUserName(pAuthorizationCode.getUser().getUserName());
             }
 
+            authorizationCodeView.setCode(pAuthorizationCode.getCode());
         }
 
         return authorizationCodeView;

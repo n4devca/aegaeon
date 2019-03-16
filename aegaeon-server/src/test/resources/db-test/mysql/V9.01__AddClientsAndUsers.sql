@@ -21,7 +21,7 @@
  */
  
 insert into users(username, name, uniqueIdentifier, passwd, enabled) 
-values('admin@localhost', 'Remi Guillemette', uuid(), '$2a$10$z5Mxvmr82Oaodfgz2EWZ9uNsX/Xtvo7GrrP8LI6Ra1LezlbA5g02K', 1);
+values('admin@localhost', 'Remi Guillemette', uuid(), '{bcrypt}$2a$10$z5Mxvmr82Oaodfgz2EWZ9uNsX/Xtvo7GrrP8LI6Ra1LezlbA5g02K', 1);
 select last_insert_id() into @uid;
 
 insert into user_authority(user_id, authority_id)
@@ -40,7 +40,7 @@ values('ca.n4dev.auth.client', 'https://n4dev.ca/aegaeon/logo1.jpg', 'ca.n4dev.a
 select last_insert_id() into @client_auth;
 
 -- insert into client_grant_type(client_id, grant_type_id) values(@client_auth, @gt_auth);
-insert into client_auth_flow(client_id, flow) values(@client_auth, 'AUTHORIZATION_CODE');
+insert into client_auth_flow(client_id, flow) values(@client_auth, 'authorization_code');
 
 -- 'AUTHORIZATION_CODE',
 insert into client( name, logourl, public_id, secret, provider_name)
@@ -48,7 +48,7 @@ values('ca.n4dev.auth.client2', 'https://n4dev.ca/aegaeon/logo1.jpg', 'ca.n4dev.
 select last_insert_id() into @client_auth2;
 
 -- insert into client_grant_type(client_id, grant_type_id) values(@client_auth2, @gt_auth);
-insert into client_auth_flow(client_id, flow) values(@client_auth2, 'AUTHORIZATION_CODE');
+insert into client_auth_flow(client_id, flow) values(@client_auth2, 'authorization_code');
 
 -- 'AUTHORIZATION_CODE',
 insert into client( name, logourl, public_id, secret, provider_name)
@@ -56,7 +56,7 @@ values('ca.n4dev.auth.client3', 'https://n4dev.ca/aegaeon/logo1.jpg', 'ca.n4dev.
 select last_insert_id() into @client_auth3;
 
 -- insert into client_grant_type(client_id, grant_type_id) values(@client_auth3, @gt_auth);
-insert into client_auth_flow(client_id, flow) values(@client_auth3, 'AUTHORIZATION_CODE');
+insert into client_auth_flow(client_id, flow) values(@client_auth3, 'authorization_code');
 
 -- 'IMPLICIT', 
 insert into client( name, logourl, public_id, secret, provider_name)
@@ -64,7 +64,7 @@ values('ca.n4dev.auth.client.impl', 'https://n4dev.ca/aegaeon/logo2.jpg', 'ca.n4
 select last_insert_id() into @client_impl;
 
 -- insert into client_grant_type(client_id, grant_type_id) values(@client_impl, @gt_implicit);
-insert into client_auth_flow(client_id, flow) values(@client_impl, 'IMPLICIT');
+insert into client_auth_flow(client_id, flow) values(@client_impl, 'implicit');
 
 insert into client_scope(client_id, scope_id)
 select @client_impl, id

@@ -21,8 +21,8 @@
  */
 package ca.n4dev.aegaeon.api.token.payload;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import ca.n4dev.aegaeon.api.token.OAuthClient;
 import ca.n4dev.aegaeon.api.token.OAuthUser;
@@ -45,7 +45,7 @@ public interface PayloadProvider {
      * @param pRequestedScopes The requested scopes.
      * @return A payload as a Map (k=>v).
      */
-    Map<String, String> createPayload(OAuthUser pOAuthUser, 
+    Map<String, String> createPayload(OAuthUser pOAuthUser,
                                       OAuthClient pOAuthClient,
-                                      List<String> pRequestedScopes);
+                                      Set<String> pRequestedScopes);
 }

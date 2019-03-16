@@ -42,7 +42,7 @@ public class ServerInfoControllerTest {
     @Autowired
     private ServerInfo serverInfo;
 
-    @Test
+    @Test // ok
     public void getConfigurationTest() throws Exception {
 
         this.mockMvc.perform(get(ServerInfoController.URL))
@@ -62,10 +62,9 @@ public class ServerInfoControllerTest {
                     .andExpect(jsonPath("$.claims_parameter_supported", is(false)))
                     .andExpect(jsonPath("$.ui_locales_supported", items("fr_CA", "en")))
                     .andExpect(jsonPath("$.token_endpoint_auth_methods_supported", items("client_secret_basic")))
-                    .andExpect(jsonPath("$.response_types_supported", items("token",
-                                                                            "code id_token",
-                                                                            "id_token",
-                                                                            "client_credentials")));
+                    .andExpect(jsonPath("$.response_types_supported", items("code",
+                                                                            "id_token token",
+                                                                            "id_token")));
 
     }
 

@@ -21,13 +21,15 @@
  */
 package ca.n4dev.aegaeon.server.utils;
 
+import java.util.function.Supplier;
+
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Assert.java
- * 
+ *
  * Object used to check various condition and throw a ServerException 
  * if the condition is not met.
  *
@@ -35,66 +37,79 @@ import org.slf4j.LoggerFactory;
  * @since May 17, 2017
  */
 public class Assert {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Assert.class);
 
+    @Deprecated
     public static void notNull(Object pObj) {
         if (pObj == null) {
             Utils.raise(ServerExceptionCode.ILLEGAL_ARGUMENT);
         }
     }
 
-    public static void notNull(Object pObj, String pLogMsg) {
-        if (pObj == null) {
-            Utils.raise(ServerExceptionCode.ILLEGAL_ARGUMENT, pLogMsg);
-        }
-    }
-
+    @Deprecated
     public static void notEmpty(String pObj) {
         if (pObj == null || pObj.isEmpty()) {
             Utils.raise(ServerExceptionCode.ILLEGAL_ARGUMENT);
         }
     }
 
-    public static void isTrue(Boolean pValue) {
-        if (pValue == null || !pValue) {
-            Utils.raise(ServerExceptionCode.ILLEGAL_ARGUMENT);
-        }
-    }
-
-    public static void isFalse(Boolean pValue) {
-        if (pValue == null || pValue) {
-            Utils.raise(ServerExceptionCode.ILLEGAL_ARGUMENT);
-        }
-    }
-
+    @Deprecated
     public static void notNull(Object pObj, ServerExceptionCode pCode) {
         if (pObj == null) {
             Utils.raise(pCode);
         }
     }
-    
+
+    @Deprecated
     public static void notNull(Object pObj, ServerExceptionCode pCode, String pLogMsg) {
         if (pObj == null) {
             Utils.raise(pCode, pLogMsg);
         }
     }
-    
+
+    @Deprecated
     public static void notEmpty(String pObj, ServerExceptionCode pCode) {
         if (pObj == null || pObj.isEmpty()) {
             Utils.raise(pCode);
         }
     }
-    
+
+    @Deprecated
     public static void isTrue(Boolean pValue, ServerExceptionCode pCode) {
         if (pValue == null || !pValue) {
             Utils.raise(pCode);
         }
     }
-    
-    public static void isFalse(Boolean pValue, ServerExceptionCode pCode) {
-        if (pValue == null || pValue) {
-            Utils.raise(pCode);
+
+    public static void notNull(Object pObj, Supplier<RuntimeException> pRuntimeExceptionSupplier) {
+        if (pObj == null) {
+            throw pRuntimeExceptionSupplier.get();
         }
     }
+
+    public static void notEmpty(String pObj, Supplier<RuntimeException> pRuntimeExceptionSupplier) {
+        if (pObj == null || pObj.isEmpty() || pObj.trim().isEmpty()) {
+            throw pRuntimeExceptionSupplier.get();
+        }
+    }
+
+    public static void isEmpty(String pObj, Supplier<RuntimeException> pRuntimeExceptionSupplier) {
+        if (pObj != null && !pObj.isEmpty()) {
+            throw pRuntimeExceptionSupplier.get();
+        }
+    }
+
+    public static void isTrue(Boolean pValue, Supplier<RuntimeException> pRuntimeExceptionSupplier) {
+        if (pValue == null || !pValue) {
+            throw pRuntimeExceptionSupplier.get();
+        }
+    }
+
+    public static void equals(String pValue1, String pValue2, Supplier<RuntimeException> pRuntimeExceptionSupplier) {
+        if (!Utils.equals(pValue1, pValue2)) {
+            throw pRuntimeExceptionSupplier.get();
+        }
+    }
+
 }

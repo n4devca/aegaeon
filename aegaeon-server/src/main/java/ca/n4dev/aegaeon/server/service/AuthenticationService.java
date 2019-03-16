@@ -25,15 +25,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.nimbusds.jwt.SignedJWT;
-
 import ca.n4dev.aegaeon.api.model.AccessToken;
 import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.server.security.AccessTokenAuthentication;
@@ -42,6 +33,13 @@ import ca.n4dev.aegaeon.server.token.TokenFactory;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import ca.n4dev.aegaeon.server.view.UserView;
 import ca.n4dev.aegaeon.server.view.mapper.UserMapper;
+import com.nimbusds.jwt.SignedJWT;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * AuthenticationService.java
@@ -113,9 +111,9 @@ public class AuthenticationService {
             
             Authentication auth = 
                     new AccessTokenAuthentication(
-                            uv, 
-                            pAccessToken, 
-                            this.scopeService.parseScopeString(ScopeService.SPACE, accessToken.getScopes()),
+                            uv,
+                            pAccessToken,
+                            this.scopeService.getValidScopes(accessToken.getScopes()),
                             roles);
             
             return auth;

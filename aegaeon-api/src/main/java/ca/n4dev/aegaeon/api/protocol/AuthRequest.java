@@ -3,6 +3,8 @@ package ca.n4dev.aegaeon.api.protocol;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.web.bind.annotation.RequestMethod;
+
 /**
  * AuthFlow.java
  * TODO(rguillemette) Add description.
@@ -10,65 +12,75 @@ import java.util.List;
  * @author rguillemette
  * @since 2.0.0 - Feb 11 - 2018
  */
-public class AuthRequest {
+public class AuthRequest extends ClientRequest {
 
-    private String responseTypeParam;
+    private String responseType;
 
     private List<ResponseType> responseTypes;
 
     private String nonce;
 
-    private String state;
+    private String scope;
 
-    /**
-     * Create an auth request.
-     */
+    private String display;
+
+    private String prompt;
+
+    private String idTokenHint;
+
+    private RequestMethod requestMethod;
+
     public AuthRequest() {
-        this("", null, null);
+    }
+
+    public AuthRequest(String pResponseType,
+                       String pScope,
+                       String pClientPublicId,
+                       String pRedirectUri) {
+        this(pResponseType,
+             pScope,
+             pClientPublicId,
+             pRedirectUri,
+             null, null, null, null, null, null);
+    }
+
+    public AuthRequest(String pResponseType,
+                       String pScope,
+                       String pClientPublicId,
+                       String pRedirectUri,
+                       String pState,
+                       String pNonce,
+                       String pDisplay,
+                       String pPrompt,
+                       String pIdTokenHint,
+                       RequestMethod pRequestMethod) {
+
+        setResponseType(pResponseType);
+        setScope(pScope);
+        setClientId(pClientPublicId);
+        setRedirectUri(pRedirectUri);
+        setState(pState);
+        setNonce(pNonce);
+        setDisplay(pDisplay);
+        setPrompt(pPrompt);
+        setIdTokenHint(pIdTokenHint);
+        setRequestMethod(pRequestMethod);
+    }
+
+
+    /**
+     * @return the responseType
+     */
+    public String getResponseType() {
+        return responseType;
     }
 
     /**
-     * Create an auth request.
-     * @param pResponseTypeParam The requested response type.
+     * @param pResponseType the responseType to set
      */
-    public AuthRequest(String pResponseTypeParam) {
-        this(pResponseTypeParam, null, null);
-    }
-
-    /**
-     * Create an auth request.
-     * @param pResponseTypeParam The requested response type.
-     * @param pNonce The nonce param.
-     */
-    public AuthRequest(String pResponseTypeParam, String pNonce) {
-        this(pResponseTypeParam, pNonce, null);
-    }
-
-    /**
-     * Create an auth request.
-     * @param pResponseTypeParam The requested response type.
-     * @param pNonce The nonce param.
-     * @param pState The client state.
-     */
-    public AuthRequest(String pResponseTypeParam, String pNonce, String pState) {
-        responseTypeParam = pResponseTypeParam;
-        nonce = pNonce;
-        state = pState;
-        responseTypes = Collections.unmodifiableList(ResponseType.of(pResponseTypeParam));
-    }
-
-    /**
-     * @return the responseTypeParam
-     */
-    public String getResponseTypeParam() {
-        return responseTypeParam;
-    }
-
-    /**
-     * @param pResponseTypeParam the responseTypeParam to set
-     */
-    public void setResponseTypeParam(String pResponseTypeParam) {
-        responseTypeParam = pResponseTypeParam;
+    public void setResponseType(String pResponseType) {
+        responseType = pResponseType;
+        responseTypes = Collections.unmodifiableList(ResponseType.of(pResponseType));
     }
 
     /**
@@ -93,24 +105,79 @@ public class AuthRequest {
     }
 
     /**
-     * @return the state
+     * @return the scope
      */
-    public String getState() {
-        return state;
+    public String getScope() {
+        return scope;
     }
 
     /**
-     * @param pState the state to set
+     * @param pScope the scope to set
      */
-    public void setState(String pState) {
-        state = pState;
+    public void setScope(String pScope) {
+        scope = pScope;
     }
 
-    public boolean contains(ResponseType pResponseType) {
-        if (this.responseTypeParam != null && pResponseType != null) {
-            return this.responseTypeParam.contains(pResponseType.toString().toLowerCase());
-        }
+    /**
+     * @return the display
+     */
+    public String getDisplay() {
+        return display;
+    }
 
-        return false;
+    /**
+     * @param pDisplay the display to set
+     */
+    public void setDisplay(String pDisplay) {
+        display = pDisplay;
+    }
+
+    /**
+     * @return the prompt
+     */
+    public String getPrompt() {
+        return prompt;
+    }
+
+    /**
+     * @param pPrompt the prompt to set
+     */
+    public void setPrompt(String pPrompt) {
+        prompt = pPrompt;
+    }
+
+    /**
+     * @return The prompt value as Enum.
+     */
+    public Prompt getPromptType() {
+        return Prompt.from(prompt);
+    }
+
+    /**
+     * @return the idTokenHint
+     */
+    public String getIdTokenHint() {
+        return idTokenHint;
+    }
+
+    /**
+     * @param pIdTokenHint the idTokenHint to set
+     */
+    public void setIdTokenHint(String pIdTokenHint) {
+        idTokenHint = pIdTokenHint;
+    }
+
+    /**
+     * @return the requestMethod
+     */
+    public RequestMethod getRequestMethod() {
+        return requestMethod;
+    }
+
+    /**
+     * @param pRequestMethod the requestMethod to set
+     */
+    public void setRequestMethod(RequestMethod pRequestMethod) {
+        requestMethod = pRequestMethod;
     }
 }

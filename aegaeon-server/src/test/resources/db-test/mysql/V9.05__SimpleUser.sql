@@ -22,7 +22,7 @@
 
 
 insert into users(username, name, uniqueIdentifier, passwd, enabled)
-values('user@localhost', 'Remi Guillemette', uuid(), '$2a$10$5I2.hpEdy7NYvjS/GdWAKujreLRCLxHY/kFmtItf3SZjToRDvpUzy', 1);
+values('user@localhost', 'Remi Guillemette', uuid(), '{bcrypt}$2a$10$5I2.hpEdy7NYvjS/GdWAKujreLRCLxHY/kFmtItf3SZjToRDvpUzy', 1);
 select last_insert_id() into @uid;
 
 insert into user_authority(user_id, authority_id)
@@ -34,7 +34,7 @@ where code = 'ROLE_USER';
 select id into @clientid from client where public_id = 'ca.n4dev.auth.client';
 
 -- Allow ca.n4dev.auth.client to do implicit
-insert into client_auth_flow(client_id, flow) values(@clientid, 'IMPLICIT');
+insert into client_auth_flow(client_id, flow) values(@clientid, 'implicit');
 
 -- user@localhost authorized ca.n4dev.auth.client
 insert into users_authorization(user_id, client_id, scopes) values(@uid, @clientid, 'openid profile offline_access');

@@ -1,11 +1,33 @@
 package ca.n4dev.aegaeon.server.service;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import ca.n4dev.aegaeon.api.exception.OpenIdException;
-import ca.n4dev.aegaeon.api.model.*;
+import ca.n4dev.aegaeon.api.model.AccessToken;
+import ca.n4dev.aegaeon.api.model.AuthorizationCode;
+import ca.n4dev.aegaeon.api.model.Client;
+import ca.n4dev.aegaeon.api.model.ClientAuthFlow;
+import ca.n4dev.aegaeon.api.model.ClientRedirection;
+import ca.n4dev.aegaeon.api.model.ClientScope;
+import ca.n4dev.aegaeon.api.model.IdToken;
+import ca.n4dev.aegaeon.api.model.RefreshToken;
+import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.api.protocol.AuthRequest;
+import ca.n4dev.aegaeon.api.protocol.Flow;
 import ca.n4dev.aegaeon.api.protocol.FlowUtils;
 import ca.n4dev.aegaeon.api.protocol.GrantType;
+import ca.n4dev.aegaeon.api.protocol.TokenRequest;
+import ca.n4dev.aegaeon.server.controller.exception.InvalidAuthorizationCodeException;
+import ca.n4dev.aegaeon.server.controller.exception.InvalidClientIdException;
+import ca.n4dev.aegaeon.server.controller.exception.InvalidClientRedirectionException;
+import ca.n4dev.aegaeon.server.controller.exception.UnauthorizedGrant;
 import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
+import ca.n4dev.aegaeon.server.view.ScopeView;
 import ca.n4dev.aegaeon.server.view.TokenResponse;
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,11 +40,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.mockito.Mockito.*;
 
 /**
@@ -32,7 +49,7 @@ import static org.mockito.Mockito.*;
  * <p>
  * This unit test class is fairly intensive because TokenServicesFacade is
  * core to Aegaeon.
- *
+ * <p>
  * We are not testing individual token creation here.
  * Every *TokenService has its unit test.
  *
@@ -76,20 +93,26 @@ public class TokenServicesFacadeUnitTest {
     public void successCreateTokenForAuthCode() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
-        when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(buildGrants(GrantType.AUTHORIZATION_CODE));
+        when(clientService.findRedirectionsByClientId(anyLong())).thenReturn(buildRedirections());
+        when(clientService.findAuthFlowByClientId(anyLong())).thenReturn(buildFlow(Flow.authorization_code));
         when(this.authorizationCodeService.findByCode(anyString())).thenReturn(buildAuthCode("auth-code-0xff",
-                                                                                                             "test.1",
-                                                                                                             "https://cool-place.com/"));
+                                                                                             "test.1",
+                                                                                             "https://cool-place.com/"));
 
 
         mockCreateToken();
-        
+
         try {
-            TokenResponse tokenResponse = facade.createTokenForAuthCode("test.1",
-                                                        "auth-code-0xff",
-                                                        "https://cool-place.com/",
-                                                        buildUser());
+
+            TokenRequest tokenRequest = new TokenRequest(GrantType.AUTHORIZATION_CODE.toString().toLowerCase(),
+                                                         "auth-code-0xff",
+                                                         "test.1",
+                                                         "https://cool-place.com/",
+                                                         "openid profile",
+                                                         null);
+
+            TokenResponse tokenResponse = facade.createTokenForAuthCode(tokenRequest,
+                                                                        buildUser());
 
             Assert.assertNotNull(tokenResponse);
 
@@ -114,18 +137,19 @@ public class TokenServicesFacadeUnitTest {
     @Test
     public void successCreateTokenForImplicit() {
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
-        when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(buildGrants(GrantType.IMPLICIT));
-        when(clientService.findScopeByClientId(anyLong())).thenReturn(buildScope("openid profile"));
+        when(clientService.findRedirectionsByClientId(anyLong())).thenReturn(buildRedirections());
+        when(clientService.findAuthFlowByClientId(anyLong())).thenReturn(buildFlow(Flow.implicit));
+        //when(clientService.findScopeByClientId(anyLong())).thenReturn(buildScope("openid profile"));
         mockCreateToken();
 
         try {
 
-            AuthRequest authRequest = new AuthRequest(FlowUtils.RTYPE_IMPLICIT_FULL);
+            final AuthRequest authRequest =
+                    new AuthRequest(FlowUtils.RTYPE_AUTH_CODE, "openid profile",
+                                    "test.1", "https://cool-place.com/");
+
+
             TokenResponse tokenResponse = facade.createTokenForImplicit(authRequest,
-                                                                        "test.1",
-                                                                        "openid profile",
-                                                                        "https://cool-place.com/",
                                                                         buildUser());
 
             Assert.assertNotNull(tokenResponse);
@@ -138,33 +162,53 @@ public class TokenServicesFacadeUnitTest {
     @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseNoAuth() {
 
-        facade.createTokenForAuthCode("test.1",
-                                      "auth-code-0xff",
-                                      "https://no-where.com/",
+        TokenRequest tokenRequest = new TokenRequest(GrantType.AUTHORIZATION_CODE.toString().toLowerCase(),
+                                                     "auth-code-0xff",
+                                                     "test.1",
+                                                     "https://no-where.com/",
+                                                     "openid profile",
+                                                     null);
+
+        facade.createTokenForAuthCode(tokenRequest,
                                       null);
     }
 
-    @Test(expected = OpenIdException.class)
+    @Test(expected = InvalidClientIdException.class)
     public void failCreateTokenForAuthCodeBecauseMissingClientId() {
-        facade.createTokenForAuthCode(null,
-                                      "auth-code-0xff",
-                                      "https://no-where.com/",
+        TokenRequest tokenRequest = new TokenRequest(GrantType.AUTHORIZATION_CODE.toString().toLowerCase(),
+                                                     "auth-code-0xff",
+                                                     null,
+                                                     "https://no-where.com/",
+                                                     "openid profile",
+                                                     null);
+
+        facade.createTokenForAuthCode(tokenRequest,
                                       buildUser());
     }
 
     @Test(expected = OpenIdException.class)
     public void failCreateTokenForAuthCodeBecauseMissingAuthCode() {
-        facade.createTokenForAuthCode("test.1",
-                                      null,
-                                      "https://no-where.com/",
+        TokenRequest tokenRequest = new TokenRequest(GrantType.AUTHORIZATION_CODE.toString().toLowerCase(),
+                                                     null,
+                                                     "test.1",
+                                                     "https://no-where.com/",
+                                                     "openid profile",
+                                                     null);
+
+        facade.createTokenForAuthCode(tokenRequest,
                                       buildUser());
     }
 
-    @Test(expected = OpenIdException.class)
+    @Test(expected = InvalidClientRedirectionException.class)
     public void failCreateTokenForAuthCodeBecauseMissingRedirect() {
-        facade.createTokenForAuthCode("test.1",
-                                      "auth-code-0xff",
-                                      null,
+        TokenRequest tokenRequest = new TokenRequest(GrantType.AUTHORIZATION_CODE.toString().toLowerCase(),
+                                                     "auth-code-0xff",
+                                                     "test.1",
+                                                     null,
+                                                     "openid profile",
+                                                     null);
+
+        facade.createTokenForAuthCode(tokenRequest,
                                       buildUser());
     }
 
@@ -173,59 +217,84 @@ public class TokenServicesFacadeUnitTest {
 
         when(clientService.findByPublicId(anyString())).thenReturn(null);
 
-        facade.createTokenForAuthCode("test.1",
-                                      "auth-code-0xff",
-                                      "https://no-where.com/",
+        TokenRequest tokenRequest = new TokenRequest(GrantType.AUTHORIZATION_CODE.toString().toLowerCase(),
+                                                     "auth-code-0xff",
+                                                     "test.1",
+                                                     "https://no-where.com/",
+                                                     "openid profile",
+                                                     null);
+
+        facade.createTokenForAuthCode(tokenRequest,
                                       buildUser());
     }
 
-    @Test(expected = OpenIdException.class)
+    @Test(expected = InvalidClientRedirectionException.class)
     public void failCreateTokenForAuthCodeBecauseNoRedirection() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
-        when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(null);
+        when(clientService.findRedirectionsByClientId(anyLong())).thenReturn(null);
 
-        facade.createTokenForAuthCode("test.1",
-                                      "auth-code-0xff",
-                                      "https://no-where.com/",
+        TokenRequest tokenRequest = new TokenRequest(GrantType.AUTHORIZATION_CODE.toString().toLowerCase(),
+                                                     "auth-code-0xff",
+                                                     "test.1",
+                                                     "https://no-where.com/",
+                                                     "openid profile",
+                                                     null);
+
+        facade.createTokenForAuthCode(tokenRequest,
                                       buildUser());
     }
 
-    @Test(expected = OpenIdException.class)
+    @Test(expected = InvalidClientRedirectionException.class)
     public void failCreateTokenForAuthCodeBecauseInvalidRedirection() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
-        when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
+        when(clientService.findRedirectionsByClientId(anyLong())).thenReturn(buildRedirections());
 
-        facade.createTokenForAuthCode("test.1",
-                                      "auth-code-0xff",
-                                      "https://no-where.com/",
+        TokenRequest tokenRequest = new TokenRequest(GrantType.AUTHORIZATION_CODE.toString().toLowerCase(),
+                                                     "auth-code-0xff",
+                                                     "test.1",
+                                                     "https://no-where.com/",
+                                                     "openid profile",
+                                                     null);
+
+        facade.createTokenForAuthCode(tokenRequest,
                                       buildUser());
     }
 
-    @Test(expected = OpenIdException.class)
+    @Test(expected = UnauthorizedGrant.class)
     public void failCreateTokenForAuthCodeBecauseNoGrant() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
-        when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(null);
+        when(clientService.findRedirectionsByClientId(anyLong())).thenReturn(buildRedirections());
+        when(clientService.findAuthFlowByClientId(anyLong())).thenReturn(null);
 
-        facade.createTokenForAuthCode("test.1",
-                                      "auth-code-0xff",
-                                      "https://cool-place.com/",
+        TokenRequest tokenRequest = new TokenRequest(GrantType.AUTHORIZATION_CODE.toString().toLowerCase(),
+                                                     "auth-code-0xff",
+                                                     "test.1",
+                                                     "https://cool-place.com/",
+                                                     "openid profile",
+                                                     null);
+
+        facade.createTokenForAuthCode(tokenRequest,
                                       buildUser());
     }
 
-    @Test(expected = OpenIdException.class)
+    @Test(expected = UnauthorizedGrant.class)
     public void failCreateTokenForAuthCodeBecauseGrantNotAuthorized() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
-        when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(buildGrants(GrantType.IMPLICIT));
+        when(clientService.findRedirectionsByClientId(anyLong())).thenReturn(buildRedirections());
+        when(clientService.findAuthFlowByClientId(anyLong())).thenReturn(buildFlow(Flow.implicit));
 
-        facade.createTokenForAuthCode("test.1",
-                                      "auth-code-0xff",
-                                      "https://cool-place.com/",
+        TokenRequest tokenRequest = new TokenRequest(GrantType.AUTHORIZATION_CODE.toString().toLowerCase(),
+                                                     "auth-code-0xff",
+                                                     "test.1",
+                                                     "https://cool-place.com/",
+                                                     "openid profile",
+                                                     null);
+
+        facade.createTokenForAuthCode(tokenRequest,
                                       buildUser());
     }
 
@@ -233,47 +302,62 @@ public class TokenServicesFacadeUnitTest {
     public void failCreateTokenForAuthCodeBecauseBadAuthCode() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
-        when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(buildGrants(GrantType.AUTHORIZATION_CODE));
+        when(clientService.findRedirectionsByClientId(anyLong())).thenReturn(buildRedirections());
+        when(clientService.findAuthFlowByClientId(anyLong())).thenReturn(buildFlow(Flow.authorization_code));
         when(authorizationCodeService.findByCode(anyString())).thenReturn(buildAuthCode("other-auth-code-0xff",
-                                                                                                        "test.1",
-                                                                                                        "https://cool-place.com/"));
+                                                                                        "test.1",
+                                                                                        "https://cool-place.com/"));
 
-        facade.createTokenForAuthCode("test.1",
-                                      "auth-code-0xff",
-                                      "https://cool-place.com/",
+        TokenRequest tokenRequest = new TokenRequest(GrantType.AUTHORIZATION_CODE.toString().toLowerCase(),
+                                                     "auth-code-0xff",
+                                                     "test.1",
+                                                     "https://cool-place.com/",
+                                                     "openid profile",
+                                                     null);
+
+        facade.createTokenForAuthCode(tokenRequest,
                                       buildUser());
     }
 
-    @Test(expected = OpenIdException.class)
+    @Test(expected = InvalidAuthorizationCodeException.class)
     public void failCreateTokenForAuthCodeBecauseNotSameClient() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
-        when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(buildGrants(GrantType.AUTHORIZATION_CODE));
+        when(clientService.findRedirectionsByClientId(anyLong())).thenReturn(buildRedirections());
+        when(clientService.findAuthFlowByClientId(anyLong())).thenReturn(buildFlow(Flow.authorization_code));
         when(authorizationCodeService.findByCode(anyString())).thenReturn(buildAuthCode("auth-code-0xff",
-                                                                                                        "test.2",
-                                                                                                        "https://cool-place.com/"));
+                                                                                        "test.2",
+                                                                                        "https://cool-place.com/"));
 
-        facade.createTokenForAuthCode("test.1",
-                                      "auth-code-0xff",
-                                      "https://cool-place.com/",
+        TokenRequest tokenRequest = new TokenRequest(GrantType.AUTHORIZATION_CODE.toString().toLowerCase(),
+                                                     "auth-code-0xff",
+                                                     "test.1",
+                                                     "https://cool-place.com/",
+                                                     "openid profile",
+                                                     null);
+
+        facade.createTokenForAuthCode(tokenRequest,
                                       buildUser());
     }
 
-    @Test(expected = OpenIdException.class)
+    @Test(expected = InvalidAuthorizationCodeException.class)
     public void failCreateTokenForAuthCodeBecauseNotRedirect() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));
-        when(clientService.findRedirectionsByclientId(anyLong())).thenReturn(buildRedirections());
-        when(clientService.findAuthFlowByclientId(anyLong())).thenReturn(buildGrants(GrantType.AUTHORIZATION_CODE));
+        when(clientService.findRedirectionsByClientId(anyLong())).thenReturn(buildRedirections());
+        when(clientService.findAuthFlowByClientId(anyLong())).thenReturn(buildFlow(Flow.authorization_code));
         when(authorizationCodeService.findByCode(anyString())).thenReturn(buildAuthCode("auth-code-0xff",
-                                                                                                        "test.1",
-                                                                                                        "https://not-a-cool-place.com/"));
+                                                                                        "test.1",
+                                                                                        "https://not-a-cool-place.com/"));
 
-        facade.createTokenForAuthCode("test.1",
-                                      "auth-code-0xff",
-                                      "https://cool-place.com/",
+        TokenRequest tokenRequest = new TokenRequest(GrantType.AUTHORIZATION_CODE.toString().toLowerCase(),
+                                                     "auth-code-0xff",
+                                                     "test.1",
+                                                     "https://cool-place.com/",
+                                                     "openid profile",
+                                                     null);
+
+        facade.createTokenForAuthCode(tokenRequest,
                                       buildUser());
     }
 
@@ -306,10 +390,10 @@ public class TokenServicesFacadeUnitTest {
         return client;
     }
 
-    private List<ClientAuthFlow> buildGrants(GrantType pGrantCode) {
+    private List<ClientAuthFlow> buildFlow(Flow pFlow) {
         List<ClientAuthFlow> grants = new ArrayList<>();
 
-        grants.add(new ClientAuthFlow(buildClient("test.1"), pGrantCode));
+        grants.add(new ClientAuthFlow(buildClient("test.1"), pFlow));
 
         return grants;
     }
@@ -340,36 +424,36 @@ public class TokenServicesFacadeUnitTest {
 
         return redirections;
     }
-    
+
     private void mockCreateToken() {
 
-        when(scopeService.findScopeFromString(anyString())).thenAnswer(a -> {
-           String scopeArg = a.getArgument(0);
-           String[] scopesStr = scopeArg.split(" ");
-           List<Scope> lst = new ArrayList<>();
+        when(scopeService.getValidScopes(anyString())).thenAnswer(a -> {
+            String scopeArg = a.getArgument(0);
+            String[] scopesStr = scopeArg.split(" ");
+            Set<ScopeView> lst = new HashSet<>();
 
-           for (String s : scopesStr) {
-               Scope scope = new Scope();
-               scope.setName(s);
-               lst.add(scope);
-           }
+            for (String s : scopesStr) {
+                ScopeView scope = new ScopeView();
+                scope.setName(s);
+                lst.add(scope);
+            }
 
-           return lst;
+            return lst;
         });
 
-        when(idTokenService.createToken(any(), anyLong(), any(), anyList())).thenAnswer(a -> {
+        when(idTokenService.createToken(any(), anyLong(), any(), anySet())).thenAnswer(a -> {
             IdToken idToken = new IdToken();
             idToken.setValidUntil(LocalDateTime.now().plus(15L, ChronoUnit.MINUTES));
             return idToken;
         });
 
-        when(accessTokenService.createToken(any(), anyLong(), any(), anyList())).thenAnswer(a -> {
+        when(accessTokenService.createToken(any(), anyLong(), any(), anySet())).thenAnswer(a -> {
             AccessToken accessToken = new AccessToken();
             accessToken.setValidUntil(LocalDateTime.now().plus(60L, ChronoUnit.MINUTES));
             return accessToken;
         });
 
-        when(refreshTokenService.createToken(any(), anyLong(), any(), anyList())).thenAnswer(a -> {
+        when(refreshTokenService.createToken(any(), anyLong(), any(), anySet())).thenAnswer(a -> {
             RefreshToken refreshToken = new RefreshToken();
             refreshToken.setValidUntil(LocalDateTime.now().plus(60L, ChronoUnit.DAYS));
             return refreshToken;

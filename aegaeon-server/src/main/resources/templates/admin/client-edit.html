@@ -111,6 +111,25 @@
                         <div class="body">
 
                             <div class="form-group">
+                                <label th:text="#{page.adminclients.form.label.flows}"></label>
+                                <div th:each="g,gidx : *{grants}" class="input-group">
+                                    <div class="input-group-element input-group-element-check">
+                                        <input type="hidden"
+                                               th:field="*{grants[__${gidx.index}__].id}"/>
+                                        <input type="hidden"
+                                               th:field="*{grants[__${gidx.index}__].name}"/>
+                                        <input type="checkbox"
+                                               th:id="${'client-grant-' + g.id}"
+                                               th:selected="${g.selected}"
+                                               th:field="*{grants[__${gidx.index}__].selected}"/>
+                                    </div>
+                                    <div class="input-group-element">
+                                        <label th:for="${'client-grant-' + g.id}" th:text="${g.name}"></label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
                                 <label th:text="#{page.adminclients.form.label.scopes}"></label>
                                 <div th:each="s,sidx : *{scopes}" class="input-group">
                                     <div class="input-group-element input-group-element-check">
@@ -127,25 +146,6 @@
                                         <label th:for="${'client-scope-' + s.id}" th:text="${s.name}"></label>
                                     </div>
 
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label th:text="#{page.adminclients.form.label.grants}"></label>
-                                <div th:each="g,gidx : *{grants}" class="input-group">
-                                    <div class="input-group-element input-group-element-check">
-                                        <input type="hidden"
-                                               th:field="*{grants[__${gidx.index}__].id}"/>
-                                        <input type="hidden"
-                                               th:field="*{grants[__${gidx.index}__].name}"/>
-                                        <input type="checkbox"
-                                               th:id="${'client-grant-' + g.id}"
-                                               th:selected="${g.selected}"
-                                               th:field="*{grants[__${gidx.index}__].selected}"/>
-                                    </div>
-                                    <div class="input-group-element">
-                                        <label th:for="${'client-grant-' + g.id}" th:text="${g.name}"></label>
-                                    </div>
                                 </div>
                             </div>
 

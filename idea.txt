@@ -1,7 +1,8 @@
-# User Account
+# User Account - OK
 # Double check auth
 # Doc
 # Translations
+# Opt-In consent
 # Styling
 # Theme keys
 # SQL combine

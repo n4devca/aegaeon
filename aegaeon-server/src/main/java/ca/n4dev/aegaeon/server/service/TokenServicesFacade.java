@@ -20,13 +20,36 @@
  */
 package ca.n4dev.aegaeon.server.service;
 
-import ca.n4dev.aegaeon.api.exception.*;
-import ca.n4dev.aegaeon.api.model.*;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Set;
+
+import ca.n4dev.aegaeon.api.exception.OpenIdException;
+import ca.n4dev.aegaeon.api.exception.ServerException;
+import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.api.model.AccessToken;
+import ca.n4dev.aegaeon.api.model.AuthorizationCode;
+import ca.n4dev.aegaeon.api.model.Client;
+import ca.n4dev.aegaeon.api.model.ClientAuthFlow;
+import ca.n4dev.aegaeon.api.model.ClientRedirection;
+import ca.n4dev.aegaeon.api.model.ClientScope;
+import ca.n4dev.aegaeon.api.model.IdToken;
+import ca.n4dev.aegaeon.api.model.RefreshToken;
 import ca.n4dev.aegaeon.api.protocol.AuthRequest;
-import ca.n4dev.aegaeon.api.protocol.GrantType;
+import ca.n4dev.aegaeon.api.protocol.ClientRequest;
+import ca.n4dev.aegaeon.api.protocol.Flow;
+import ca.n4dev.aegaeon.api.protocol.TokenRequest;
+import ca.n4dev.aegaeon.server.controller.exception.InvalidAuthorizationCodeException;
+import ca.n4dev.aegaeon.server.controller.exception.InvalidClientIdException;
+import ca.n4dev.aegaeon.server.controller.exception.InvalidClientRedirectionException;
+import ca.n4dev.aegaeon.server.controller.exception.InvalidRefreshTokenException;
+import ca.n4dev.aegaeon.server.controller.exception.UnauthorizedClient;
+import ca.n4dev.aegaeon.server.controller.exception.UnauthorizedGrant;
 import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
+import ca.n4dev.aegaeon.server.view.ScopeView;
 import ca.n4dev.aegaeon.server.view.TokenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,10 +57,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 /**
  * TokenServicesFacade.java
@@ -80,28 +99,28 @@ public class TokenServicesFacade {
 
 
     @Transactional
-    public TokenResponse createTokenForAuthCode(String pClientPublicId,
-                                                String pCode,
-                                                String pRedirectUri,
+    public TokenResponse createTokenForAuthCode(TokenRequest pTokenRequest,
                                                 Authentication pAuthentication) {
 
 
         validateAuthentication(pAuthentication);
 
-        Client client = this.clientService.findByPublicId(pClientPublicId);
-        validateClient(client, pClientPublicId);
-        validateRedirectionUri(client, pRedirectUri);
-        validateClientFlow(client, GrantType.AUTHORIZATION_CODE);
-
-        AuthorizationCode authCode = this.authorizationCodeService.findByCode(pCode);
-        validateAuthorizationCode(authCode, pClientPublicId, pRedirectUri);
+        Client client = validateClientAnReturn(pTokenRequest, Flow.authorization_code);
+        AuthorizationCode authCode = this.authorizationCodeService.findByCode(pTokenRequest.getCode());
+        validateAuthorizationCode(pTokenRequest, authCode);
 
         try {
 
-            return createTokenResponse(new AuthRequest(authCode.getResponseType()),
-                                       authCode.getClient().getPublicId(),
-                                       authCode.getScopes(),
-                                       authCode.getRedirectUrl(),
+            final AuthRequest authRequest =
+                    new AuthRequest(authCode.getResponseType(), authCode.getScopes(), pTokenRequest.getClientId(),
+                                    authCode.getRedirectUrl(),
+                                    null, null, null, null, null, null);
+
+            // Complete info
+            pTokenRequest.setResponseType(authCode.getResponseType());
+            pTokenRequest.setScope(authCode.getScopes());
+
+            return createTokenResponse(pTokenRequest,
                                        pAuthentication);
 
         } finally {
@@ -119,38 +138,35 @@ public class TokenServicesFacade {
 
     /**
      * TODO(RG)
-     * @param pRefreshToken
+     * @param pTokenRequest
      * @param pAuthentication
      * @return
      */
     @Transactional
-    public TokenResponse createTokenForRefreshToken(String pRefreshToken, Authentication pAuthentication) {
+    public TokenResponse createTokenForRefreshToken(TokenRequest pTokenRequest, Authentication pAuthentication) {
 
         validateAuthentication(pAuthentication);
         AegaeonUserDetails auth = (AegaeonUserDetails) pAuthentication.getPrincipal();
 
-        if (Utils.isEmpty(pRefreshToken)) {
+        if (Utils.isEmpty(pTokenRequest.getRefreshToken())) {
             throw new OpenIdException(ServerExceptionCode.REFRESH_TOKEN_EMPTY, auth.getUsername(), getClass());
         }
 
-        AuthRequest authRequest = new AuthRequest();
-        Client client = this.clientService.findById(auth.getId());
+        Client client = validateClientAnReturn(pTokenRequest, Flow.authorization_code);
 
-        validateClient(client, auth.getUsername());
+        // Need to be equals
+        Assert.isTrue(Utils.equals(client.getId(), auth.getId()),
+                      () -> new UnauthorizedClient(pTokenRequest));
 
         // Check if the client has the proper scope
         validateClientScope(client, BaseTokenService.OFFLINE_SCOPE);
 
         // Load the refresh_token
-        RefreshToken refreshToken = this.refreshTokenService.findByTokenValueAndClientId(pRefreshToken, client.getId());
-
-        validateRefreshToken(refreshToken, client.getPublicId());
+        RefreshToken refreshToken = this.refreshTokenService.findByTokenValueAndClientId(pTokenRequest.getRefreshToken(), client.getId());
+        validateRefreshToken(pTokenRequest, refreshToken);
 
         // Ok, the token is valid, so create a new access token
-        return this.createTokenResponse(authRequest,
-                                        client.getPublicId(),
-                                        refreshToken.getScopes(),
-                                        "-",
+        return this.createTokenResponse(pTokenRequest,
                                         pAuthentication);
 
 
@@ -158,25 +174,19 @@ public class TokenServicesFacade {
 
 
     @Transactional
-    public TokenResponse createTokenForClientCred(String pScopes,
-                                                  String pRedirectUri,
+    public TokenResponse createTokenForClientCred(TokenRequest pTokenRequest,
                                                   Authentication pAuthentication) {
 
         // Need auth
         validateAuthentication(pAuthentication);
         AegaeonUserDetails auth = (AegaeonUserDetails) pAuthentication.getPrincipal();
-        Client client = this.clientService.findById(auth.getId());
-
+        final Client client = validateClientAnReturn(pTokenRequest, Flow.client_credentials);
         validateClient(client, auth.getUsername());
-        validateClientFlow(client, GrantType.CLIENT_CREDENTIALS);
-        validateRedirectionUri(client, pRedirectUri);
-        List<Scope> scopeFromString = this.scopeService.findScopeFromString(pScopes, BaseTokenService.OFFLINE_SCOPE);
-        validateClientScopes(client, scopeFromString);
 
-        return this.createTokenResponse(new AuthRequest(),
-                                        client.getPublicId(),
-                                        pScopes,
-                                        pRedirectUri,
+        Set<ScopeView> scopes = this.scopeService.getValidScopes(pTokenRequest.getScope(), Utils.asSet(BaseTokenService.OFFLINE_SCOPE));
+        validateClientScopes(client, scopes);
+
+        return this.createTokenResponse(pTokenRequest,
                                         pAuthentication);
 
     }
@@ -184,36 +194,21 @@ public class TokenServicesFacade {
     // Need to validate and remove the offline_access if the flow is not AUTH_CODE and if the prompt is not concent.
     @Transactional
     public TokenResponse createTokenForImplicit(AuthRequest pAuthRequest,
-                                                String pClientPublicId,
-                                                String pScopes,
-                                                String pRedirectUrl,
                                                 Authentication pAuthentication) {
 
         validateAuthentication(pAuthentication);
-        Client client = this.clientService.findByPublicId(pClientPublicId);
-
-        validateClient(client, pClientPublicId);
-        validateClientFlow(client, GrantType.IMPLICIT);
-        validateClientScopes(client, pScopes);
-        validateRedirectionUri(client, pRedirectUrl);
+        Client client = validateClientAnReturn(pAuthRequest, Flow.implicit);
+        //validateClientFlow(client, GrantType.IMPLICIT);
+        //validateRedirectionUri(client, pAuthRequest.getRedirectUri());
 
         // Make sure the offline scope is not request
-        List<Scope> scopeFromString = this.scopeService.findScopeFromString(pScopes, BaseTokenService.OFFLINE_SCOPE);
-        validateClientScopes(client, scopeFromString);
+        Set<ScopeView> scopes = this.scopeService.getValidScopes(pAuthRequest.getScope(), Utils.asSet(BaseTokenService.OFFLINE_SCOPE));
+        validateClientScopes(client, scopes);
 
-        return createTokenResponse(pAuthRequest, pClientPublicId, pScopes, pRedirectUrl, pAuthentication);
+        return createTokenResponse(new TokenRequest(pAuthRequest), pAuthentication);
     }
 
-    @Transactional(readOnly = true)
-    public void validateClientFlow(String pClientPublicId, GrantType pGrantType) {
-        Client client = this.clientService.findByPublicId(pClientPublicId);
-        validateClientFlow(client, pGrantType);
-    }
-
-    TokenResponse createTokenResponse(AuthRequest pAuthRequest,
-                                      String pClientPublicId,
-                                      String pScopes,
-                                      String pRedirectUrl,
+    TokenResponse createTokenResponse(TokenRequest pTokenRequest,
                                       Authentication pAuthentication) {
 
         validateAuthentication(pAuthentication);
@@ -222,16 +217,18 @@ public class TokenServicesFacade {
 
             AegaeonUserDetails userDetails = (AegaeonUserDetails) pAuthentication.getPrincipal();
 
-            List<Scope> scopes = this.scopeService.findScopeFromString(pScopes);
+            Set<ScopeView> scopes = this.scopeService.getValidScopes(pTokenRequest.getScope());
 
             TokenResponse t = new TokenResponse();
-            t.setScope(pScopes);
+            t.setScope(pTokenRequest.getScope());
             t.setTokenType(TokenResponse.BEARER);
 
             // Tokens
-            IdToken idToken = this.idTokenService.createToken(pAuthRequest, userDetails.getId(), pClientPublicId, scopes);
-            AccessToken accessToken = this.accessTokenService.createToken(pAuthRequest, userDetails.getId(), pClientPublicId, scopes);
-            RefreshToken refreshToken = this.refreshTokenService.createToken(pAuthRequest, userDetails.getId(), pClientPublicId, scopes);
+            IdToken idToken = this.idTokenService.createToken(pTokenRequest, userDetails.getId(), pTokenRequest.getClientId(), scopes);
+            AccessToken accessToken =
+                    this.accessTokenService.createToken(pTokenRequest, userDetails.getId(), pTokenRequest.getClientId(), scopes);
+            RefreshToken refreshToken =
+                    this.refreshTokenService.createToken(pTokenRequest, userDetails.getId(), pTokenRequest.getClientId(), scopes);
 
             t.setIdToken(idToken);
             t.setAccessToken(accessToken);
@@ -239,7 +236,7 @@ public class TokenServicesFacade {
 
             // Time
             long expiresIn = ChronoUnit.SECONDS.between(LocalDateTime.now(), accessToken.getValidUntil());
-            t.setExpiresIn(String.valueOf(expiresIn));
+            t.setExpiresIn(expiresIn);
 
             return t;
 
@@ -248,7 +245,7 @@ public class TokenServicesFacade {
             throw se;
         } catch (Exception e) {
             LOGGER.error("Exception in " + getClass().getSimpleName() + "#createTokenResponse.", e);
-            throw new OpenIdException(ServerExceptionCode.UNEXPECTED_ERROR, pClientPublicId, getClass());
+            throw new OpenIdException(ServerExceptionCode.UNEXPECTED_ERROR, pTokenRequest.getClientId(), getClass());
         }
 
     }
@@ -261,90 +258,104 @@ public class TokenServicesFacade {
         }
     }
 
-    private void validateAuthorizationCode(AuthorizationCode pAuthorizationCode,
-                                           String pClientPublicId,
-                                           String pRedirectUri) {
+    private void validateAuthorizationCode(TokenRequest pTokenRequest,
+                                           AuthorizationCode pAuthorizationCode) {
 
-        if (pAuthorizationCode == null) {
-            throw new OpenIdException(ServerExceptionCode.AUTH_CODE_EMPTY, pClientPublicId, getClass());
-        }
+        Assert.notNull(pAuthorizationCode,
+                       () -> new InvalidAuthorizationCodeException(pTokenRequest, InvalidAuthorizationCodeException.EMPTY));
 
-        if (!Utils.isAfterNow(pAuthorizationCode.getValidUntil())) {
-            throw new OpenIdException(ServerExceptionCode.AUTH_CODE_EXPIRED, pClientPublicId, getClass());
-        }
+        Assert.isTrue(Utils.isAfterNow(pAuthorizationCode.getValidUntil()),
+                      () -> new InvalidAuthorizationCodeException(pTokenRequest, InvalidAuthorizationCodeException.EXPIRED));
 
         // Make sure, it's the same client
-        if (!Utils.equals(pAuthorizationCode.getClient().getPublicId(), pClientPublicId)) {
-            throw new OpenIdException(ServerExceptionCode.AUTH_CODE_UNEXPECTED_CLIENT, pClientPublicId, getClass());
-        }
+        Assert.equals(pAuthorizationCode.getClient().getPublicId(), pTokenRequest.getClientId(),
+                      () -> new InvalidAuthorizationCodeException(pTokenRequest, InvalidAuthorizationCodeException.INVALID_CLIENT));
 
         // Make sure the redirection is the same than previously
-        if (!Utils.equals(pAuthorizationCode.getRedirectUrl(), pRedirectUri)) {
-            throw new OpenIdException(ServerExceptionCode.AUTH_CODE_UNEXPECTED_REDIRECTION, pClientPublicId, getClass());
-        }
+        Assert.equals(pAuthorizationCode.getRedirectUrl(), pTokenRequest.getRedirectUri(),
+                      () -> new InvalidAuthorizationCodeException(pTokenRequest, InvalidAuthorizationCodeException.INVALID_CLIENT_URI));
+
+
     }
 
-    private void validateRefreshToken(RefreshToken pRefreshToken, String pClientPublicId) {
-        if (pRefreshToken == null) {
-            throw new OpenIdException(ServerExceptionCode.REFRESH_TOKEN_EMPTY, pClientPublicId, getClass());
-        }
+    private void validateRefreshToken(TokenRequest pTokenRequest, RefreshToken pRefreshToken) {
 
-        if (!Utils.isAfterNow(pRefreshToken.getValidUntil())) {
-            throw new OpenIdException(ServerExceptionCode.REFRESH_TOKEN_EXPIRED, pClientPublicId, getClass());
-        }
+        Assert.notNull(pRefreshToken, () -> new InvalidRefreshTokenException(pTokenRequest, InvalidRefreshTokenException.EMPTY));
+
+        Assert.isTrue(Utils.isAfterNow(pRefreshToken.getValidUntil()),
+                      () -> new InvalidRefreshTokenException(pTokenRequest, InvalidRefreshTokenException.EXPIRED));
+
+        Assert.isTrue(Utils.equals(pTokenRequest.getClientId(), pRefreshToken.getClient().getPublicId()),
+                      () -> new InvalidRefreshTokenException(pTokenRequest, InvalidRefreshTokenException.INVALID_CLIENT));
     }
+
+    private Client validateClientAnReturn(ClientRequest pClientRequest, Flow pFlow) {
+
+        final String clientId = pClientRequest.getClientId();
+        final String redirectUri = pClientRequest.getRedirectUri();
+
+        Assert.notEmpty(clientId, () -> new InvalidClientIdException(pClientRequest));
+        Assert.notEmpty(redirectUri, () -> new InvalidClientRedirectionException(pClientRequest));
+
+        Client client = this.clientService.findByPublicId(pClientRequest.getClientId());
+        validateClient(client, pClientRequest.getClientId());
+
+        validateRedirectionUri(pClientRequest, client, pClientRequest.getRedirectUri());
+        validateClientFlow(pClientRequest, client, pFlow);
+
+        return client;
+    }
+
 
     private void validateClient(Client pClient, String pClientPublicId) {
 
-        if (pClient == null || Utils.isEmpty(pClient.getPublicId()) || Utils.isEmpty(pClientPublicId)) {
+        if (pClient == null || Utils.isEmpty(pClient.getPublicId()) || Utils.isEmpty(pClientPublicId)
+                || !Utils.equals(pClientPublicId, pClient.getPublicId())) {
             throw new OpenIdException(ServerExceptionCode.CLIENT_EMPTY, pClientPublicId, getClass());
         }
     }
 
-    private void validateClientFlow(Client pClient, GrantType pGrantType) {
+    @Transactional(readOnly = true)
+    public void validateClientFlow(ClientRequest pClientRequest, String pClientId, Flow pFlow) {
+        validateClientFlow(pClientRequest, clientService.findByPublicId(pClientId), pFlow);
+    }
+
+    private void validateClientFlow(ClientRequest pClientRequest, Client pClient, Flow pFlow) {
 
         boolean fail = true;
         Long id = pClient != null ? pClient.getId() : null;
-        String publicId = pClient != null ? pClient.getPublicId() : null;
 
-        if (pGrantType != null && id != null) {
+        if (pFlow != null && id != null) {
             // Did we set this client to use this flow
-            List<ClientAuthFlow> grants = this.clientService.findAuthFlowByclientId(id);
-
-            fail = !Utils.isOneTrue(grants, g -> g.getFlow().equals(pGrantType));
+            List<ClientAuthFlow> grants = this.clientService.findAuthFlowByClientId(id);
+            fail = !Utils.isOneTrue(grants, g -> g.getFlow().equals(pFlow));
         }
 
         if (fail) {
-            throw new OpenIdException(ServerExceptionCode.CLIENT_UNAUTHORIZED_FLOW, publicId, getClass());
+            throw new UnauthorizedGrant(pClientRequest);
         }
     }
 
-    private void validateRedirectionUri(Client pClient, String pRedirectUri) {
+
+    private void validateRedirectionUri(ClientRequest pClientRequest, Client pClient, String pRedirectUri) {
 
         boolean fail = true;
         Long id = pClient != null ? pClient.getId() : null;
         String publicId = pClient != null ? pClient.getPublicId() : null;
 
         if (Utils.isNotEmpty(pRedirectUri) && id != null) {
-            List<ClientRedirection> redirectionList = this.clientService.findRedirectionsByclientId(id);
+            List<ClientRedirection> redirectionList = this.clientService.findRedirectionsByClientId(id);
             fail = redirectionList == null || !Utils.isOneTrue(redirectionList, cr -> cr.getUrl().equals(pRedirectUri));
         }
 
         if (fail) {
-            throw new OpenIdException(ServerExceptionCode.CLIENT_REDIRECTIONURL_INVALID, publicId, getClass());
+            throw new InvalidClientRedirectionException(pClientRequest);
         }
     }
 
-    private void validateClientScopes(Client pClient, List<Scope> pScopes) {
+    private void validateClientScopes(Client pClient, Set<ScopeView> pScopes) {
         if (Utils.isNotEmpty(pScopes)) {
             pScopes.forEach(pScope -> validateClientScope(pClient, pScope.getName()));
-        }
-    }
-
-    private void validateClientScopes(Client pClient, String pScopes) {
-        if (Utils.isNotEmpty(pScopes)) {
-            final List<String> scopeList = scopeService.parseScopeString(pScopes);
-            scopeList.forEach(pScope -> validateClientScope(pClient, pScope));
         }
     }
 

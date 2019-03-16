@@ -24,6 +24,7 @@ import java.util.List;
 
 import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.ClientRedirection;
+import ca.n4dev.aegaeon.api.model.UserAuthorization;
 import ca.n4dev.aegaeon.api.repository.ClientRedirectionRepository;
 import ca.n4dev.aegaeon.api.repository.ClientRepository;
 import ca.n4dev.aegaeon.api.repository.UserAuthorizationRepository;
@@ -64,14 +65,11 @@ public class AuthorizationService {
         this.scopeService = pScopeService;
     }
 
-
     @Transactional(readOnly = true)
-    public boolean isAuthorized(Authentication pAuthentication, String pClientPublicId) {
-        return isAuthorized(pAuthentication, pClientPublicId, null);
-    }
-
-    @Transactional(readOnly = true)
-    public boolean isAuthorized(Authentication pAuthentication, String pClientPublicId, String pClientRedirectionUrl) {
+    public boolean isAuthorized(Authentication pAuthentication,
+                                String pClientPublicId,
+                                String pClientRedirectionUrl,
+                                String pRawScopeParam) {
 
         if (Utils.isNotEmpty(pClientPublicId)
                 && pAuthentication != null
@@ -87,20 +85,35 @@ public class AuthorizationService {
                     return false;
                 }
 
+                UserAuthorization userAuthorization = null;
+
                 // Check if the user has allowed this client
                 if (userDetails.getId() != null) {
-                    return this.userAuthorizationRepository
-                            .findByUserIdAndClientId(userDetails.getId(), client.getId()) != null;
+                    userAuthorization = this.userAuthorizationRepository.findByUserIdAndClientId(userDetails.getId(),
+                                                                                                 client.getId());
                 } else if (Utils.isNotEmpty(userDetails.getUsername())) {
-                    return this.userAuthorizationRepository
-                            .findByUserUserNameAndClientId(userDetails.getUsername(), client.getId()) != null;
+                    userAuthorization = this.userAuthorizationRepository.findByUserUserNameAndClientId(userDetails.getUsername(),
+                                                                                                       client.getId());
                 }
+
+                if (userAuthorization == null) {
+                    return false;
+                }
+
+                // finally, Validate scopes
+                return scopeService.isPartOf(userAuthorization.getScopes(), pRawScopeParam);
+
+//                final Set<ScopeView> requestedScope = scopeService.getValidScopes(pRawScopeParam);
+//                final Set<ScopeView> authorizedScopes = scopeService.getValidScopes(userAuthorization.getScopes());
+//
+//                return authorizedScopes != null && authorizedScopes.equals(requestedScope);
             }
 
         }
 
         return false;
     }
+
 
     @Transactional(readOnly = true)
     public boolean isClientInfoValid(String pClientPublicId, String pRedirectionUrl) {

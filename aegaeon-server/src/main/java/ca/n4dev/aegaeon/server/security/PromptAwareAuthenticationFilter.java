@@ -91,17 +91,22 @@ public class PromptAwareAuthenticationFilter extends GenericFilterBean {
         HttpServletResponse response = (HttpServletResponse) pServletResponse;
 
         // Only on /authorize
-        String requestedPath = request.getServletPath();
+        String requestedPath = request.getRequestURI();
 
         if (AuthorizationController.URL.startsWith(requestedPath)) {
 
-            String ps = request.getParameter(UriBuilder.PARAM_PROMPT);
+            String prompt = request.getParameter(UriBuilder.PARAM_PROMPT);
             String clientIdStr = request.getParameter(UriBuilder.PARAM_CLIENT_ID);
             String redirectionUrl = request.getParameter(UriBuilder.PARAM_REDIRECTION_URL);
             String responseType = request.getParameter(UriBuilder.PARAM_RESPONSE_TYPE);
             String state = request.getParameter(UriBuilder.PARAM_STATE);
             String nonce = request.getParameter(UriBuilder.PARAM_NONCE);
+            String scope = request.getParameter(UriBuilder.PARAM_SCOPE);
 
+
+            AuthRequest authRequest = new AuthRequest(responseType, scope,
+                                                      clientIdStr, redirectionUrl, state, nonce, null,
+                                                      prompt, null, null);
 
             // none
             // => check session, client and redirection
@@ -109,51 +114,40 @@ public class PromptAwareAuthenticationFilter extends GenericFilterBean {
             // => force sign-in
 
             // Client id and url need to be valid, otherwise, we don't redirect or response
-            if (!Utils.areOneEmpty(ps, clientIdStr, redirectionUrl, responseType)
-                    && authorizationService.isClientInfoValid(clientIdStr, redirectionUrl)) {
+            if (isValidRequest(authRequest)) {
 
-                if (Utils.equals(ps, Prompt.none.toString())) {
+                if (Utils.equals(prompt, Prompt.none.toString())) {
 
-                    if (isAuthorizedAlready(clientIdStr, redirectionUrl)) {
-                        // OK
-
-
-                    } else {
-                        handleError(clientIdStr, redirectionUrl, responseType, nonce, state, request, response);
+                    if (!isAuthorizedAlready(clientIdStr, redirectionUrl, scope)) {
+                        handleError(authRequest, request, response);
                         return;
                     }
 
-                } else if (Utils.equals(ps, Prompt.login.toString())) {
+                } else if (Utils.equals(prompt, Prompt.login.toString())) {
                     clearUserContext(request);
                     // Nothing else to do, next filter should ask user to login
                 }
-
             }
         }
 
         pFilterChain.doFilter(pServletRequest, pServletResponse);
     }
 
-    private void handleError(String pClientPublicId,
-                             String pRedirectionUrl,
-                             String pResponseType,
-                             String pNonce,
-                             String pState,
+    private void handleError(AuthRequest pAuthRequest,
                              HttpServletRequest pHttpServletRequest,
                              HttpServletResponse pHttpServletResponse) {
 
         try {
 
-            AuthRequest authRequest = new AuthRequest(pResponseType, pNonce, pState);
-            GrantType grantType = FlowUtils.getAuthorizationType(authRequest);
+            GrantType grantType = FlowUtils.getAuthorizationType(pAuthRequest);
 
             Object response =
                     this.controllerErrorInterceptor
                             .openIdException(new OpenIdExceptionBuilder()
                                                      .code(ServerExceptionCode.USER_UNAUTHENTICATED)
-                                                     .redirection(pRedirectionUrl)
+                                                     .redirection(pAuthRequest.getRedirectUri())
                                                      .from(grantType)
-                                                     .state(pState)
+                                                     .state(pAuthRequest.getState())
                                                      .build(),
                                              Locale.ENGLISH,
                                              pHttpServletRequest,
@@ -185,12 +179,27 @@ public class PromptAwareAuthenticationFilter extends GenericFilterBean {
     }
 
 
-    private boolean isAuthorizedAlready(String pClientId, String pRedirectionUrl) {
+    private boolean isAuthorizedAlready(String pClientId, String pRedirectionUrl, String pScopeParam) {
         Authentication existingAuth = SecurityContextHolder.getContext().getAuthentication();
 
         if (existingAuth == null) {
+            return authorizationService.isAuthorized(existingAuth, pClientId, pRedirectionUrl, pScopeParam);
+        }
 
-            return authorizationService.isAuthorized(existingAuth, pClientId, pRedirectionUrl);
+        return false;
+    }
+
+    private boolean isValidRequest(AuthRequest pAuthRequest) {
+
+
+        boolean hasProperParams = !Utils.areOneEmpty(pAuthRequest.getPrompt(),
+                                                     pAuthRequest.getClientId(),
+                                                     pAuthRequest.getRedirectUri(),
+                                                     pAuthRequest.getResponseType());
+
+        if (hasProperParams) {
+            // OK, then, check the client
+            return authorizationService.isClientInfoValid(pAuthRequest.getClientId(), pAuthRequest.getRedirectUri());
         }
 
         return false;

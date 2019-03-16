@@ -23,18 +23,12 @@ package ca.n4dev.aegaeon.server.service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import java.util.Set;
 
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.model.AuthorizationCode;
 import ca.n4dev.aegaeon.api.model.Client;
-import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.repository.AuthorizationCodeRepository;
 import ca.n4dev.aegaeon.api.repository.ClientRepository;
@@ -43,7 +37,12 @@ import ca.n4dev.aegaeon.server.token.TokenFactory;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import ca.n4dev.aegaeon.server.view.AuthorizationCodeView;
+import ca.n4dev.aegaeon.server.view.ScopeView;
 import ca.n4dev.aegaeon.server.view.mapper.AuthorizationCodeViewMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * AuthorizationCodeService.java
@@ -86,7 +85,7 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
     @PreAuthorize("isAuthenticated() and principal.id == #pUserId")
     public AuthorizationCodeView createCode(Long pUserId, String pClientPublicId, String pResponseType, String pScopes, String pRedirectUrl) {
         // Get Scopes
-        List<Scope> scopes = this.scopeService.findScopeFromString(pScopes);
+        Set<ScopeView> scopes = this.scopeService.getValidScopes(pScopes);
         
         // Create Code
         AuthorizationCode code = createCode(pUserId, pClientPublicId, pResponseType, scopes, pRedirectUrl);
@@ -109,9 +108,9 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
 
         return null;
     }
-    
-    
-    AuthorizationCode createCode(Long pUserId, String pClientPublicId, String pResponseType, List<Scope> pScopes, String pRedirectUrl) {
+
+
+    AuthorizationCode createCode(Long pUserId, String pClientPublicId, String pResponseType, Set<ScopeView> pScopes, String pRedirectUrl) {
         
         Assert.notNull(pUserId, ServerExceptionCode.USER_EMPTY);
         Assert.notEmpty(pClientPublicId, ServerExceptionCode.CLIENT_EMPTY);
@@ -130,7 +129,7 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
      * @param pClient The client.
      * @return A code or null.
      */
-    AuthorizationCode createCode(User pUser, Client pClient, String pResponseType, List<Scope> pScopes, String pRedirectUrl) {
+    AuthorizationCode createCode(User pUser, Client pClient, String pResponseType, Set<ScopeView> pScopes, String pRedirectUrl) {
         Assert.notNull(pUser, ServerExceptionCode.USER_EMPTY);
         Assert.notNull(pClient, ServerExceptionCode.CLIENT_EMPTY);
         Assert.notEmpty(pRedirectUrl, ServerExceptionCode.CLIENT_REDIRECTURL_EMPTY);
