@@ -41,7 +41,7 @@ public class JwkControllerTest {
     @Autowired
     private KeysProvider keysProvider;
 
-    @Test
+    @Test // ok
     public void getPublicJwks() throws Exception {
 
         JWKSet jwkSet = keysProvider.getJwkSet();

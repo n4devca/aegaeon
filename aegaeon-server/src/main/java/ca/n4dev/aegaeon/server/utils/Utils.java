@@ -26,10 +26,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -132,6 +133,21 @@ public class Utils {
         return l;
     }
 
+
+    public static <E, T> Set<T> convert(Set<E> pElements, Function<E, T> pFunc) {
+
+
+        if (pElements != null) {
+            Set<T> l = new HashSet<>();
+            for (E e : pElements) {
+                l.add(pFunc.apply(e));
+            }
+            return l;
+        }
+
+        return Collections.emptySet();
+    }
+
     public static <E, M, T> List<T> convert(List<E> pElements, M pModel, BiFunction<E, M, T> pFunc) {
 
         List<T> l = new ArrayList<>();
@@ -145,11 +161,11 @@ public class Utils {
         return l;
     }
 
-    public static <E> String join(List<E> pElements, Function<E, String> pFunc) {
+    public static <E> String join(Collection<E> pElements, Function<E, String> pFunc) {
         return join(SPACE, pElements, pFunc);
     }
 
-    public static <E> String join(String pSeparator, List<E> pElements, Function<E, String> pFunc) {
+    public static <E> String join(String pSeparator, Collection<E> pElements, Function<E, String> pFunc) {
         if (pElements == null || pElements.isEmpty()) {
             return "";
         }
@@ -190,6 +206,15 @@ public class Utils {
         return lst;
     }
 
+    public static <E> Set<E> safeSet(Set<E> pSet) {
+
+        if (pSet == null) {
+            return Collections.emptySet();
+        }
+
+        return pSet;
+    }
+
     public static <O> O coalesce(O... pEntities) {
         if (pEntities != null) {
             for (O e : pEntities) {
@@ -225,7 +250,7 @@ public class Utils {
         return false;
     }
 
-    public static <E> boolean isOneTrue(List<E> pEntities, Function<E, Boolean> pSearchFunc) {
+    public static <E> boolean isOneTrue(Collection<E> pEntities, Function<E, Boolean> pSearchFunc) {
         if (pEntities != null) {
             for (E e : pEntities) {
                 if (pSearchFunc.apply(e)) {
@@ -275,45 +300,29 @@ public class Utils {
     }
 
     public static <E> List<E> asList(E... pEntities) {
-        List<E> entities = new ArrayList<>();
 
         if (pEntities != null) {
+            List<E> entities = new ArrayList<>();
             for (E entity : pEntities) {
                 entities.add(entity);
             }
+            return entities;
         }
 
-        return entities;
+        return Collections.emptyList();
     }
 
-    public static <E> E find(List<E> pEntities, Function<E, Boolean> pFunc) {
-        if (pEntities != null) {
-
-            for (E e : pEntities) {
-                if (pFunc.apply(e)) {
-                    return e;
-                }
-            }
-        }
-        return null;
-    }
-
-    public static <E> void remove(List<E> pEntities, Function<E, Boolean> pFindFunc) {
+    public static <E> Set<E> asSet(E... pEntities) {
 
         if (pEntities != null) {
-
-            Iterator<E> it = pEntities.iterator();
-            boolean hasfind = false;
-
-            while (it.hasNext() && !hasfind) {
-                E entity = it.next();
-
-                if (pFindFunc.apply(entity)) {
-                    hasfind = true;
-                    it.remove();
-                }
+            Set<E> entities = new HashSet<>();
+            for (E entity : pEntities) {
+                entities.add(entity);
             }
+            return entities;
         }
+
+        return Collections.emptySet();
     }
 
     /**
@@ -326,19 +335,11 @@ public class Utils {
     }
 
     /**
-     * Get a negative id.
-     *
-     * @return next negative id.
-     */
-    public static Long nextNegativeId() {
-        return -nextPositiveId();
-    }
-
-    /**
      * Raise a {@link ServerException}
      *
      * @param pServerExceptionCode the {@link ServerExceptionCode}
      */
+    @Deprecated
     public static void raise(ServerExceptionCode pServerExceptionCode) {
         raise(pServerExceptionCode, null);
     }
@@ -349,6 +350,7 @@ public class Utils {
      * @param pServerExceptionCode the {@link ServerExceptionCode}
      * @param pMessage             A message.
      */
+    @Deprecated
     public static void raise(ServerExceptionCode pServerExceptionCode, String pMessage) {
         if (pServerExceptionCode != null) {
             throw new ServerException(pServerExceptionCode, pMessage);
@@ -401,28 +403,6 @@ public class Utils {
         }
 
         return new Differentiation<>(newObjs, updatedObjs, removedObjs);
-    }
-
-    public static <E, C> List<C> combine(List<C> pManagedList, List<E> pOriginalList, BiFunction<C, E, Boolean> pEqualsFunc,
-                                         Function<E, C> pCreatorFunc) {
-        List<C> combined = new ArrayList<>();
-
-        for (E original : pOriginalList) {
-            boolean found = false;
-            for (C managed : pManagedList) {
-                if (pEqualsFunc.apply(managed, original)) {
-                    combined.add(managed);
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                combined.add(pCreatorFunc.apply(original));
-            }
-        }
-
-        return combined;
     }
 
     public static <V, E, C> List<V> combine(List<C> pManagedList,

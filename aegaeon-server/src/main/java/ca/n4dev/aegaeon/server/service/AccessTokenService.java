@@ -23,30 +23,24 @@ package ca.n4dev.aegaeon.server.service;
 
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 
-import ca.n4dev.aegaeon.api.exception.OpenIdException;
-import ca.n4dev.aegaeon.api.protocol.AuthRequest;
-import ca.n4dev.aegaeon.api.protocol.ResponseType;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import ca.n4dev.aegaeon.api.exception.ServerException;
-import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.model.AccessToken;
 import ca.n4dev.aegaeon.api.model.Client;
-import ca.n4dev.aegaeon.api.model.ClientScope;
-import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.api.model.User;
+import ca.n4dev.aegaeon.api.protocol.ResponseType;
+import ca.n4dev.aegaeon.api.protocol.TokenRequest;
 import ca.n4dev.aegaeon.api.repository.AccessTokenRepository;
 import ca.n4dev.aegaeon.api.token.OAuthUser;
 import ca.n4dev.aegaeon.api.token.Token;
 import ca.n4dev.aegaeon.api.token.TokenType;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
-import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
+import ca.n4dev.aegaeon.server.view.ScopeView;
 import ca.n4dev.aegaeon.server.view.TokenView;
 import ca.n4dev.aegaeon.server.view.mapper.TokenMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * AccessTokenService.java
@@ -83,7 +77,7 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#createManagedToken(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    AccessToken createManagedToken(AuthRequest pAuthRequest, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
+    AccessToken createManagedToken(TokenRequest pTokenRequest, User pUser, Client pClient, Set<ScopeView> pScopes) throws Exception {
         
         Token token = this.tokenFactory.createToken(pUser, 
                                                     pClient, 
@@ -117,7 +111,7 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#validate(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    void validate(AuthRequest pAuthRequest, User pUser, Client pClient, List<Scope> pScopes) throws Exception {
+    void validate(TokenRequest pTokenRequest, User pUser, Client pClient, Set<ScopeView> pScopes) throws Exception {
         // No more validations for access token.
     }
 
@@ -125,44 +119,17 @@ public class AccessTokenService extends BaseTokenService<AccessToken, AccessToke
      * @see ca.n4dev.aegaeon.server.service.BaseTokenService#isTokenToCreate(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
      */
     @Override
-    boolean isTokenToCreate(AuthRequest pAuthRequest, User pUser, Client pClient, List<Scope> pScopes) {
+    boolean isTokenToCreate(TokenRequest pTokenRequest, User pUser, Client pClient, Set<ScopeView> pScopes) {
         
         // OpenID: don't return access token if the requested type is only id_token
-        if (pAuthRequest == null || Utils.equals(pAuthRequest.getResponseTypeParam(), "id_token")) {
+        if (pTokenRequest != null && pTokenRequest.getResponseTypes() != null
+                && pTokenRequest.getResponseTypes().size() == 1
+                && ResponseType.id_token == pTokenRequest.getResponseTypes().get(0)) {
+
             return false;
         }
 
         return true;
-    }
-    
-    AccessToken createClientAccessToken(Client pClient, List<Scope> pScopes) {
-        Assert.notNull(pClient, ServerExceptionCode.CLIENT_EMPTY);
-        
-        // Compare authorized and requested scopes
-        List<ClientScope> clientScopes = this.clientService.findScopeByClientId(pClient.getId());
-        
-        List<String> clientScopesStr = Utils.convert(clientScopes, cs -> cs.getScope().getName()); 
-        
-        Assert.isTrue(isAuthorized(clientScopesStr, pScopes), ServerExceptionCode.SCOPE_UNAUTHORIZED);
-        
-        try {
-            Token token = this.tokenFactory.createToken(new ClientOAuthUser(pClient), pClient, 
-                                                        pClient.getAccessTokenSeconds(), ChronoUnit.SECONDS,
-                                                        Collections.emptyMap());
-            
-            AccessToken at = new AccessToken();
-            at.setClient(pClient);
-            at.setToken(token.getValue());
-            at.setValidUntil(token.getValidUntil());
-            
-            if (pScopes != null) {
-                at.setScopes(Utils.join(" ", pScopes, s -> s.getName()));
-            }
-            
-            return this.save(at);
-        } catch (Exception e) {
-            throw new OpenIdException(ServerExceptionCode.UNEXPECTED_ERROR);
-        }
     }
     
     AccessToken findByToken(String pTokenValue) {

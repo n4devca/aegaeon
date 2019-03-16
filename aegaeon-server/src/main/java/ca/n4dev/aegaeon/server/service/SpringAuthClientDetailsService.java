@@ -24,16 +24,16 @@ package ca.n4dev.aegaeon.server.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.n4dev.aegaeon.api.model.Client;
+import ca.n4dev.aegaeon.api.repository.ClientRepository;
+import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import ca.n4dev.aegaeon.api.model.Client;
-import ca.n4dev.aegaeon.api.repository.ClientRepository;
-import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 
 /**
  * SpringAuthClientDetailsService.java
@@ -48,10 +48,12 @@ import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 public class SpringAuthClientDetailsService implements UserDetailsService {
 
     private ClientRepository clientRepository;
-    
+    private PasswordEncoder passwordEncoder;
+
     @Autowired
-    public SpringAuthClientDetailsService(ClientRepository pClientRepository) {
+    public SpringAuthClientDetailsService(ClientRepository pClientRepository, PasswordEncoder pPasswordEncoder) {
         this.clientRepository = pClientRepository;
+        this.passwordEncoder = pPasswordEncoder;
     }
     /* (non-Javadoc)
      * @see org.springframework.security.core.userdetails.UserDetailsService#loadUserByUsername(java.lang.String)
@@ -63,7 +65,7 @@ public class SpringAuthClientDetailsService implements UserDetailsService {
         if (client != null) {
             List<SimpleGrantedAuthority> auths = new ArrayList<>();
             auths.add(new SimpleGrantedAuthority("ROLE_CLIENT"));
-            return new AegaeonUserDetails(client.getId(), pUsername, client.getSecret(), true, true, auths);
+            return new AegaeonUserDetails(client.getId(), pUsername, "{noop}" + client.getSecret(), true, true, auths);
         }
         
         throw new UsernameNotFoundException(pUsername + " not found");

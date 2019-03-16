@@ -20,9 +20,11 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
+import java.util.Arrays;
+import java.util.List;
+
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
-import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.api.protocol.GrantType;
 import ca.n4dev.aegaeon.server.controller.dto.PageDto;
 import ca.n4dev.aegaeon.server.controller.validator.ClientViewValidator;
@@ -31,6 +33,7 @@ import ca.n4dev.aegaeon.server.service.ScopeService;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import ca.n4dev.aegaeon.server.view.ClientView;
 import ca.n4dev.aegaeon.server.view.ClientViewAction;
+import ca.n4dev.aegaeon.server.view.ScopeView;
 import ca.n4dev.aegaeon.server.view.SelectableItemView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -39,12 +42,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * SimpleClientAdminController.java
@@ -196,7 +201,7 @@ public class SimpleClientAdminController extends BaseUiController {
         ModelAndView mv = pResult != null && pResult.hasErrors() ? new ModelAndView(VIEW_EDIT, pResult.getModel()) : new ModelAndView(VIEW_EDIT);
 
         List<GrantType> grants = Arrays.asList(GrantType.values());
-        List<Scope> scopes = this.scopeService.findAll();
+        List<ScopeView> scopes = this.scopeService.findAll();
 
         mv.addObject("scopes", Utils.convert(scopes, s -> new SelectableItemView(s.getId(), s.getName(), null, false)));
         mv.addObject("grants", Utils.convert(grants, g -> new SelectableItemView(null, g.toString(), null, false)));

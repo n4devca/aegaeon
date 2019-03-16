@@ -21,15 +21,23 @@
  */
 package ca.n4dev.aegaeon.server.config;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import ca.n4dev.aegaeon.server.controller.*;
+import ca.n4dev.aegaeon.server.controller.ControllerErrorInterceptor;
+import ca.n4dev.aegaeon.server.controller.IntrospectController;
+import ca.n4dev.aegaeon.server.controller.PublicJwkController;
+import ca.n4dev.aegaeon.server.controller.ServerInfoController;
+import ca.n4dev.aegaeon.server.controller.SimpleCreateAccountController;
+import ca.n4dev.aegaeon.server.controller.SimpleHomeController;
+import ca.n4dev.aegaeon.server.controller.SimpleUserAccountController;
+import ca.n4dev.aegaeon.server.controller.TokensController;
+import ca.n4dev.aegaeon.server.controller.UserInfoController;
+import ca.n4dev.aegaeon.server.security.AccessTokenAuthenticationFilter;
+import ca.n4dev.aegaeon.server.security.AccessTokenAuthenticationProvider;
+import ca.n4dev.aegaeon.server.security.PromptAwareAuthenticationFilter;
+import ca.n4dev.aegaeon.server.service.AuthenticationService;
 import ca.n4dev.aegaeon.server.service.AuthorizationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -43,20 +51,13 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import ca.n4dev.aegaeon.server.security.AccessTokenAuthenticationFilter;
-import ca.n4dev.aegaeon.server.security.AccessTokenAuthenticationProvider;
-import ca.n4dev.aegaeon.server.security.PromptAwareAuthenticationFilter;
-import ca.n4dev.aegaeon.server.service.AuthenticationService;
-import ca.n4dev.aegaeon.server.service.ClientService;
 
 /**
  * WebSecurityConfig.java
@@ -70,7 +71,8 @@ import ca.n4dev.aegaeon.server.service.ClientService;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig {
 
-    private static final String BCRYPT_PREFIX = "bcrypt";
+    private static final String BCRYPT_PASSWD_ENCODER_PREFIX = "bcrypt";
+    private static final String NOOP_PASSWD_ENCODER_PREFIX = "noop";
     private static final String ROLE_CLIENT = "ROLE_CLIENT";
     private static final String ROLE_USER = "ROLE_USER";
 
@@ -80,9 +82,10 @@ public class WebSecurityConfig {
         PasswordEncoder bcryptPasswordEncoder =  new BCryptPasswordEncoder();
 
         Map<String, PasswordEncoder> encoders = new HashMap<>();
-        encoders.put(BCRYPT_PREFIX, bcryptPasswordEncoder);
+        encoders.put(BCRYPT_PASSWD_ENCODER_PREFIX, bcryptPasswordEncoder);
+        encoders.put(NOOP_PASSWD_ENCODER_PREFIX, NoOpPasswordEncoder.getInstance());
 
-        DelegatingPasswordEncoder delegatingPasswordEncoder = new DelegatingPasswordEncoder(BCRYPT_PREFIX, encoders);
+        DelegatingPasswordEncoder delegatingPasswordEncoder = new DelegatingPasswordEncoder(BCRYPT_PASSWD_ENCODER_PREFIX, encoders);
         delegatingPasswordEncoder.setDefaultPasswordEncoderForMatches(bcryptPasswordEncoder);
 
         return delegatingPasswordEncoder;
@@ -97,23 +100,29 @@ public class WebSecurityConfig {
         
         @Autowired
         private AuthenticationEntryPoint authenticationEntryPoint;
-        
+
         @Override
         protected void configure(HttpSecurity pHttp) throws Exception {
             pHttp
-                .antMatcher(TokensController.URL).antMatcher(IntrospectController.URL)
-                .authorizeRequests()
-                    .anyRequest().hasAnyAuthority(ROLE_CLIENT)
-                .and()
-                    .httpBasic()
-                        .authenticationEntryPoint(authenticationEntryPoint)
-                .and()
+                    .requestMatchers()
+                    .antMatchers(TokensController.URL, IntrospectController.URL)
+                    .and()
+                    .authorizeRequests().anyRequest().hasAnyAuthority(ROLE_CLIENT)
+                    .and()
+                    .httpBasic().authenticationEntryPoint(authenticationEntryPoint)
+                    .and()
                     .sessionManagement()
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
+                    .and()
                     .csrf().disable()
-                .userDetailsService(clientDetailsService);
+                    .userDetailsService(clientDetailsService);
         }
+
+//        @Autowired
+//        public void configureGlobal(AuthenticationManagerBuilder pAuth) throws Exception {
+//            pAuth.userDetailsService(clientDetailsService).passwordEncoder(NoOpPasswordEncoder.getInstance());
+//
+//        }
         
     }
 
@@ -157,12 +166,12 @@ public class WebSecurityConfig {
         @Override
         protected void configure(HttpSecurity pHttp) throws Exception {
             pHttp
-                .csrf().disable()
-                .antMatcher(UserInfoController.URL)
-                .authorizeRequests()
+                    .antMatcher(UserInfoController.URL)
+                    .authorizeRequests()
                     .anyRequest().hasAnyAuthority(ROLE_USER)
-                .and()
-                .addFilterBefore(accessTokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                    .and()
+                    .csrf().disable()
+                    .addFilterBefore(accessTokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                     .sessionManagement()
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                     ;
@@ -171,7 +180,7 @@ public class WebSecurityConfig {
     
     
     @Configuration
-    @Order(3)
+    // @Order(3)
     public static class FormLoginWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
         
         @Autowired
@@ -194,46 +203,38 @@ public class WebSecurityConfig {
         @Override
         protected void configure(HttpSecurity pHttp) throws Exception {
             pHttp
-                    .antMatcher("/**")
                     .authorizeRequests()
-                        // public
-                        .antMatchers("/resources/**").permitAll()
-                        .antMatchers(ServerInfoController.URL).permitAll()
-                        .antMatchers(PublicJwkController.URL).permitAll()
-                        .antMatchers(SimpleHomeController.URL).permitAll()
-                        .antMatchers(SimpleCreateAccountController.URL).permitAll()
-                        .antMatchers(SimpleCreateAccountController.URL_ACCEPT).permitAll()
-                    .anyRequest().hasAuthority(ROLE_USER)
+                    // public
+                    .antMatchers("/resources/**",
+                                 ServerInfoController.URL,
+                                 PublicJwkController.URL,
+                                 SimpleHomeController.URL,
+                                 SimpleCreateAccountController.URL,
+                                 SimpleCreateAccountController.URL_ACCEPT).permitAll()
+                    .anyRequest()
+                    .hasAnyAuthority(ROLE_USER)
                     .and()
                     .addFilterBefore(promptAwareAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                     .formLogin()
-                        .loginPage("/login")
-                        .permitAll()
+                    .loginPage("/login").permitAll()
                     .defaultSuccessUrl(SimpleUserAccountController.URL)
                     .and()
+                    .csrf().disable()
                     .userDetailsService(userDetailsService)
                     .logout()
                     .logoutSuccessUrl("/");
         }
 
-        @Autowired
-        public void configureGlobal(AuthenticationManagerBuilder pAuth) throws Exception {
-            pAuth.userDetailsService(userDetailsService)
-                 .passwordEncoder(passwordEncoder);
-            
-        }
+//        @Autowired
+//        public void configureGlobal(AuthenticationManagerBuilder pAuth) throws Exception {
+//            pAuth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
+//
+//        }
     }
     
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint() {
-        return new AuthenticationEntryPoint() {
-            
-            @Override
-            public void commence(HttpServletRequest pRequest, HttpServletResponse pResponse, AuthenticationException pException)
-                    throws IOException, ServletException {
-                pResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            }
-        };
+        return (pRequest, pResponse, pException) -> pResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
     }
-    
+
 }

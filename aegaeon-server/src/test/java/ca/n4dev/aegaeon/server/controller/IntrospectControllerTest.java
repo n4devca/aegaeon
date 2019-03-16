@@ -52,14 +52,14 @@ public class IntrospectControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Test
+    @Test // ok
     public void noAuthShouldGetForbidden() throws Exception {
         this.mockMvc.perform(post(IntrospectController.URL).params(introspectParams(true)))
                     .andDo(print())
                     .andExpect(status().isUnauthorized());
     }
 
-    @Test
+    @Test // ok
     public void authShouldGetOk() throws Exception {
 
         this.mockMvc
@@ -74,7 +74,7 @@ public class IntrospectControllerTest {
                 .andReturn();
     }
 
-    @Test
+    @Test // ok
     public void shouldGetActiveIntrospectResponse() throws Exception {
 
         int now = Long.valueOf(Instant.now().getEpochSecond()).intValue();
@@ -100,7 +100,7 @@ public class IntrospectControllerTest {
 
     }
 
-    @Test
+    @Test // ok
     public void noClientAuthorityShouldGetForbidden() throws Exception {
         this.mockMvc.perform(post(IntrospectController.URL).params(introspectParams(true))
                                                            .with(user(CLIENT_PUBLIC_ID)
@@ -110,7 +110,7 @@ public class IntrospectControllerTest {
                     .andExpect(status().isForbidden());
     }
 
-    @Test
+    @Test // ok
     public void invalidParamGetErrorResponse() throws Exception {
 
 
@@ -119,7 +119,7 @@ public class IntrospectControllerTest {
                                                    .password(CLIENT_PASSWD)
                                                    .authorities(new SimpleGrantedAuthority("ROLE_CLIENT"))))
                     .andDo(print())
-                    .andExpect(status().isOk())
+                    .andExpect(status().isBadRequest())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                     .andExpect(content().string(new StringContains("\"error\"")))
                     .andExpect(content().string(new StringContains("\"invalid_request\"")));

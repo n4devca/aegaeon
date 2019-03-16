@@ -48,27 +48,32 @@ public class UriBuilder {
     public static final String PARAM_PROMPT = "prompt";
     public static final String PARAM_STATE = "state";
     public static final String PARAM_CLIENT_ID = "client_id";
-    public static final String PARAM_REDIRECTION_URL = "redirection_url";
+    public static final String PARAM_REDIRECTION_URL = "redirect_uri";
     public static final String PARAM_RESPONSE_TYPE = "response_type";
     public static final String PARAM_NONCE = "nonce";
     public static final String PARAM_SCOPE = "scope";
     public static final String PARAM_DISPLAY = "display";
     public static final String PARAM_IDTOKENHINT = "id_token_hint";
+    public static final String PARAM_ID_TOKEN = "id_token";
+    public static final String PARAM_ACCESS_TOKEN = "access_token";
+    public static final String PARAM_REFRESH_TOKEN = "refresh_token";
+    public static final String PARAM_TOKEN_TYPE = "token_type";
+    public static final String PARAM_EXPIRES_IN = "expires_in";
+    public static final String PARAM_CODE = "code";
 
-
-    public static String build(String pUrl, TokenResponse pTokenResponse, String pState) {
+    public static String build(String pUrl, TokenResponse pTokenResponse, String pState, boolean pAsFragment) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
-        
-        append(params, "access_token", pTokenResponse.getAccessToken());
-        append(params, "refresh_token", pTokenResponse.getRefreshToken());
-        append(params, "id_token", pTokenResponse.getIdToken());
-        
-        append(params, "token_type", pTokenResponse.getTokenType());
-        append(params, "expires_in", pTokenResponse.getExpiresIn());
-        append(params, "scope", pTokenResponse.getScope());
-        append(params, "state", pState);
 
-        return build(pUrl, params, false);
+        append(params, PARAM_ACCESS_TOKEN, pTokenResponse.getAccessToken());
+        append(params, PARAM_REFRESH_TOKEN, pTokenResponse.getRefreshToken());
+        append(params, PARAM_ID_TOKEN, pTokenResponse.getIdToken());
+
+        append(params, PARAM_TOKEN_TYPE, pTokenResponse.getTokenType());
+        append(params, PARAM_EXPIRES_IN, pTokenResponse.getExpiresIn());
+        append(params, PARAM_SCOPE, pTokenResponse.getScope());
+        append(params, PARAM_STATE, pState);
+
+        return build(pUrl, params, pAsFragment);
     }
 
     public static String build(String pUrl, OpenIdException pOpenIdException, boolean pAsFragment) {
@@ -104,6 +109,12 @@ public class UriBuilder {
     private static void append(MultiValueMap<String, String> pParams, String pKey, String pValue) {
         if (Utils.isNotEmpty(pKey) && Utils.isNotEmpty(pValue)) {
             pParams.add(pKey, pValue);
+        }
+    }
+
+    private static void append(MultiValueMap<String, String> pParams, String pKey, Long pValue) {
+        if (Utils.isNotEmpty(pKey) && pValue != null) {
+            pParams.add(pKey, String.valueOf(pValue));
         }
     }
 

@@ -5,7 +5,7 @@ import java.util.List;
 import ca.n4dev.aegaeon.api.model.ClientAuthFlow;
 import ca.n4dev.aegaeon.api.model.ClientScope;
 import ca.n4dev.aegaeon.api.model.Scope;
-import ca.n4dev.aegaeon.api.protocol.GrantType;
+import ca.n4dev.aegaeon.api.protocol.Flow;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import ca.n4dev.aegaeon.server.view.SelectableItemView;
 import ca.n4dev.aegaeon.server.view.Selection;
@@ -82,7 +82,7 @@ public class SelectionMapper {
         if (pSelectableItemView != null) {
             selection.setEntity(new ClientAuthFlow());
             selection.getEntity().setId(pSelectableItemView.getId());
-            selection.getEntity().setFlow(GrantType.from(pSelectableItemView.getName()));
+            selection.getEntity().setFlow(Flow.from(pSelectableItemView.getName()));
         }
 
         selection.setSelected(pSelectableItemView.isSelected());

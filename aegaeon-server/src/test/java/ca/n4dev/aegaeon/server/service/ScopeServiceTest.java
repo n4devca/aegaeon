@@ -21,14 +21,15 @@
  */
 package ca.n4dev.aegaeon.server.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import ca.n4dev.aegaeon.server.utils.Utils;
+import ca.n4dev.aegaeon.server.view.ScopeView;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import ca.n4dev.aegaeon.api.model.Scope;
-import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**
  * ScopeServiceTest.java
@@ -45,32 +46,35 @@ public class ScopeServiceTest extends BaseServiceTest {
     
     @Test
     public void testStringToScope() {
-        List<Scope> all = this.scopeService.findAll();
+        List<ScopeView> all = this.scopeService.findAll();
         Assert.assertNotNull(all);
         
         String scopesStr = Utils.join(all, s -> s.getName());
-        
-        for (Scope s : all) {
+
+        for (ScopeView s : all) {
             Assert.assertTrue(scopesStr.contains(s.getName()));
         }
-        
-        List<Scope> convertedAll = this.scopeService.findScopeFromString(scopesStr);
+
+        Set<ScopeView> convertedAll = this.scopeService.getValidScopes(scopesStr);
         Assert.assertNotNull(convertedAll);
         Assert.assertTrue(convertedAll.size() == all.size());
     }
     
     @Test
     public void testStringToScopeWithExcluded() {
-        List<Scope> all = this.scopeService.findAll();
+        List<ScopeView> all = this.scopeService.findAll();
         Assert.assertNotNull(all);
         
         String scopesStr = Utils.join(all, s -> s.getName());
-        
-        for (Scope s : all) {
+
+        for (ScopeView s : all) {
             Assert.assertTrue(scopesStr.contains(s.getName()));
         }
-        
-        List<Scope> convertedAll = this.scopeService.findScopeFromString(scopesStr, BaseTokenService.OFFLINE_SCOPE);
+
+
+        Set<String> exclusions = new HashSet<>();
+        exclusions.add(BaseTokenService.OFFLINE_SCOPE);
+        Set<ScopeView> convertedAll = this.scopeService.getValidScopes(scopesStr, exclusions);
         Assert.assertNotNull(convertedAll);
         Assert.assertTrue(convertedAll.size() == (all.size() - 1));
     }

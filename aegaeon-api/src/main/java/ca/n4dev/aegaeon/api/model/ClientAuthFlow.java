@@ -21,9 +21,15 @@
  */
 package ca.n4dev.aegaeon.api.model;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
-import ca.n4dev.aegaeon.api.protocol.GrantType;
+import ca.n4dev.aegaeon.api.protocol.Flow;
 
 /**
  * ClientGrantType.java
@@ -44,7 +50,7 @@ public class ClientAuthFlow extends BaseEntity {
 
     @Column(name = "flow")
     @Enumerated(EnumType.STRING)
-    private GrantType flow;
+    private Flow flow;
 
     /**
      * Default Constructor.
@@ -55,9 +61,9 @@ public class ClientAuthFlow extends BaseEntity {
      * Full Constructor.
      * @param pClient The associated client.
      */
-    public ClientAuthFlow(Client pClient, GrantType pGrantType) {
+    public ClientAuthFlow(Client pClient, Flow pFlow) {
         this.client = pClient;
-        this.flow = pGrantType;
+        this.flow = pFlow;
     }
 
     /**
@@ -77,14 +83,14 @@ public class ClientAuthFlow extends BaseEntity {
     /**
      * @return the flow
      */
-    public GrantType getFlow() {
+    public Flow getFlow() {
         return flow;
     }
 
     /**
      * @param pFlow the flow to set
      */
-    public void setFlow(GrantType pFlow) {
+    public void setFlow(Flow pFlow) {
         flow = pFlow;
     }
 }

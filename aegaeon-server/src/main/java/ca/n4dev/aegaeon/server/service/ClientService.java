@@ -33,7 +33,7 @@ import ca.n4dev.aegaeon.api.model.ClientContact;
 import ca.n4dev.aegaeon.api.model.ClientRedirection;
 import ca.n4dev.aegaeon.api.model.ClientScope;
 import ca.n4dev.aegaeon.api.protocol.ClientConfig;
-import ca.n4dev.aegaeon.api.protocol.GrantType;
+import ca.n4dev.aegaeon.api.protocol.Flow;
 import ca.n4dev.aegaeon.api.repository.ClientAuthFlowRepository;
 import ca.n4dev.aegaeon.api.repository.ClientContactRepository;
 import ca.n4dev.aegaeon.api.repository.ClientRedirectionRepository;
@@ -140,11 +140,11 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
         return null;
     }
 
-    List<ClientRedirection> findRedirectionsByclientId(Long pClientId) {
+    List<ClientRedirection> findRedirectionsByClientId(Long pClientId) {
         return this.clientRedirectionRepository.findByClientId(pClientId);
     }
 
-    List<ClientAuthFlow> findAuthFlowByclientId(Long pClientId) {
+    List<ClientAuthFlow> findAuthFlowByClientId(Long pClientId) {
         return this.clientAuthFlowRepository.findByClientId(pClientId);
     }
 
@@ -170,11 +170,11 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
     }
 
     @Transactional(readOnly = true)
-    public boolean hasGrantType(Long pClientId, GrantType pGrantType) {
+    public boolean hasFlow(Long pClientId, Flow pFlow) {
 
-        if (pClientId != null && pGrantType != null) {
-            List<ClientAuthFlow> clientGrants = this.findAuthFlowByclientId(pClientId);
-            return Utils.isOneTrue(clientGrants, cg -> cg.getFlow().equals(pGrantType));
+        if (pClientId != null && pFlow != null) {
+            List<ClientAuthFlow> clientGrants = this.findAuthFlowByClientId(pClientId);
+            return Utils.isOneTrue(clientGrants, cg -> cg.getFlow().equals(pFlow));
         }
 
         return false;
@@ -184,7 +184,7 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
     public boolean hasRedirectionUri(Long pClientId, String pRedirectionUri) {
 
         if (pClientId != null && Utils.isNotEmpty(pRedirectionUri)) {
-            List<ClientRedirection> clientGrants = this.findRedirectionsByclientId(pClientId);
+            List<ClientRedirection> clientGrants = this.findRedirectionsByClientId(pClientId);
 
             return Utils.isOneTrue(clientGrants, r -> r.getUrl().equals(pRedirectionUri));
         }
@@ -204,9 +204,9 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
             if (client != null) {
 
                 List<ClientScope> clientScopes = this.findScopeByClientId(pId);
-                List<ClientRedirection> clientRedirections = this.findRedirectionsByclientId(pId);
+                List<ClientRedirection> clientRedirections = this.findRedirectionsByClientId(pId);
                 List<ClientContact> contacts = this.findContactByClientId(pId);
-                List<ClientAuthFlow> clientGrantTypes = this.findAuthFlowByclientId(pId);
+                List<ClientAuthFlow> clientGrantTypes = this.findAuthFlowByClientId(pId);
 
 
                 ClientView clientView = this.clientMapper.clientToClientDto(client,
@@ -295,7 +295,7 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
     }
 
     private void updateRedirectionUrls(Long pClientId, List<String> pUrls) {
-        List<ClientRedirection> redirections = this.findRedirectionsByclientId(pClientId);
+        List<ClientRedirection> redirections = this.findRedirectionsByClientId(pClientId);
 
         Differentiation<ClientRedirection> diff = Utils.differentiate(redirections, pUrls,
                                                                       (redUrl, url) -> redUrl.getUrl().equalsIgnoreCase(url),
@@ -326,7 +326,7 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
     }
 
     private void updateAuthFlow(Long pClientId, List<SelectableItemView> pGrantTypesView) {
-        List<ClientAuthFlow> clientAuthFlows = this.findAuthFlowByclientId(pClientId);
+        List<ClientAuthFlow> clientAuthFlows = this.findAuthFlowByClientId(pClientId);
         //List<ClientAuthFlow> selectedAuthFlows = this.grantTypeMapper.selectableItemViewsToClientGrantTypes(pGrantTypesView);
         List<Selection<ClientAuthFlow>> selectedAuthFlows = this.selectionMapper.selectableItemViewsToClientAuthFlows(pGrantTypesView);
 
@@ -448,9 +448,9 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
     private List<Selection<ClientAuthFlow>> combineGrants(Client pClient, List<ClientAuthFlow> pClientAuthFlows) {
 
         return Utils.combine(pClientAuthFlows,
-                             Arrays.asList(GrantType.values()),
+                             Arrays.asList(Flow.values()),
                              (pClientAuthFlow, pGrantType) -> pGrantType.equals(pClientAuthFlow.getFlow()),
-                             pGrantType -> new Selection<>(new ClientAuthFlow(pClient, pGrantType), false),
+                             pFlow -> new Selection<>(new ClientAuthFlow(pClient, pFlow), false),
                              pClientAuthFlow -> new Selection<>(pClientAuthFlow, true));
 
     }

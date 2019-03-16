@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -122,7 +123,8 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
         User u = this.findById(pAccessTokenAuthentication.getUserId());
         Assert.notNull(u, ServerExceptionCode.USER_EMPTY);
 
-        Map<String, String> payload = this.createPayload(u, null, pAccessTokenAuthentication.getScopes());
+        final Set<String> scopeStrings = Utils.convert(pAccessTokenAuthentication.getScopes(), pScopeView -> pScopeView.getName());
+        Map<String, String> payload = createPayload(u, null, scopeStrings);
 
         UserInfoResponseView response = new UserInfoResponseView(pAccessTokenAuthentication.getUniqueIdentifier(), payload);
 
@@ -323,12 +325,14 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
      */
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('CLIENT') or principal.id == #pOAuthUser.id")
-    public Map<String, String> createPayload(OAuthUser pOAuthUser, OAuthClient pOAuthClient, List<String> pRequestedScopes) {
+    public Map<String, String> createPayload(OAuthUser pOAuthUser, OAuthClient pOAuthClient, Set<String> pRequestedScopes) {
         Map<String, String> payload = new LinkedHashMap<>();
 
         User u = this.findById(pOAuthUser.getId());
 
-        if (Utils.contains(pRequestedScopes, "profile")) {
+        final boolean hasProfile = Utils.safeSet(pRequestedScopes).contains("profile");
+
+        if (hasProfile) {
             payload.put(Claims.NAME, pOAuthUser.getName());
             payload.put(Claims.USERNAME, u.getUserName());
         }

@@ -21,11 +21,10 @@
  */
 package ca.n4dev.aegaeon.server.view;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import ca.n4dev.aegaeon.api.model.AccessToken;
 import ca.n4dev.aegaeon.api.model.IdToken;
 import ca.n4dev.aegaeon.api.model.RefreshToken;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * TokenResponse.java
@@ -36,24 +35,24 @@ import ca.n4dev.aegaeon.api.model.RefreshToken;
  * @since May 9, 2017
  */
 public class TokenResponse {
-    
-    public static final String BEARER = "bearer";
+
+    public static final String BEARER = "Bearer";
     
     private String idToken;
     
     private String accessToken;
     
     private String tokenType;
-    
-    private String expiresIn;
+
+    private Long expiresIn;
         
     private String scope;
     
     private String refreshToken;
 
     public TokenResponse() {}
-    
-    public TokenResponse(String pAccessToken, String pTokenType, String pExpiresIn, String pScope, String pRefreshToken) {
+
+    public TokenResponse(String pAccessToken, String pTokenType, Long pExpiresIn, String pScope, String pRefreshToken) {
         this.accessToken = pAccessToken;
         this.tokenType = pTokenType;
         this.expiresIn = pExpiresIn;
@@ -95,14 +94,14 @@ public class TokenResponse {
      * @return the expiresIn
      */
     @JsonProperty("expires_in")
-    public String getExpiresIn() {
+    public Long getExpiresIn() {
         return expiresIn;
     }
 
     /**
      * @param pExpiresIn the expiresIn to set
      */
-    public void setExpiresIn(String pExpiresIn) {
+    public void setExpiresIn(Long pExpiresIn) {
         expiresIn = pExpiresIn;
     }
 
@@ -153,10 +152,6 @@ public class TokenResponse {
         if (pRefreshToken != null) {
             this.refreshToken = pRefreshToken.getToken();
         }
-    }
-    
-    public static TokenResponse bearer(String pAccessToken, String pExpiresIn, String pScope) {
-        return new TokenResponse(pAccessToken, BEARER, pExpiresIn, pScope, null);
     }
 
     /**

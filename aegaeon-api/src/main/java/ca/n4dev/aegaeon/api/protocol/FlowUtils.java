@@ -42,6 +42,10 @@ public class FlowUtils {
     public static final String RTYPE_HYBRID_FULL = "code id_token token";
     public static final String RTYPE_HYBRID_NOID = "code token";
 
+    public static final String RTYPE_OAUTH2_CLIENT_CRED = "client_credentials";
+    public static final String RTYPE_OAUTH2_REFRESH_TOKEN = "refresh_token";
+
+
 
     public static GrantType getAuthorizationType(AuthRequest pAuthRequest) {
 
@@ -52,7 +56,7 @@ public class FlowUtils {
             //throw new OauthRestrictedException(FlowUtils.class, OpenIdErrorType.invalid_grant, pAuthRequest, null, null);
         }
 
-        return getAuthorizationType(pAuthRequest.getResponseTypeParam());
+        return getAuthorizationType(pAuthRequest.getResponseType());
     }
 
 
@@ -77,8 +81,7 @@ public class FlowUtils {
 
         if (RTYPE_AUTH_CODE.equalsIgnoreCase(responseTypeParam)) {
             return GrantType.AUTHORIZATION_CODE;
-        } else if (RTYPE_IMPLICIT_ONLYID.equalsIgnoreCase(responseTypeParam) || RTYPE_IMPLICIT_FULL
-                .equalsIgnoreCase(responseTypeParam)) {
+        } else if (RTYPE_IMPLICIT_ONLYID.equalsIgnoreCase(responseTypeParam) || RTYPE_IMPLICIT_FULL.equalsIgnoreCase(responseTypeParam)) {
             return GrantType.IMPLICIT;
         } else if (RTYPE_HYBRID_ONLYID.equalsIgnoreCase(responseTypeParam)
                 || RTYPE_HYBRID_FULL.equalsIgnoreCase(responseTypeParam)

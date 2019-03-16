@@ -76,10 +76,10 @@ public class BaseOAuthException extends ServerException {
     public String toString() {
 
         return new StringBuilder()
-                    .append(authRequest.getResponseTypeParam())
-                    .append(",")
-                    .append(this.error)
-                    .toString();
+                .append(authRequest.getResponseType())
+                .append(",")
+                .append(this.error)
+                .toString();
     }
 
     /**
