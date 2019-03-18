@@ -22,7 +22,6 @@
 package ca.n4dev.aegaeon.server.security;
 
 import java.io.IOException;
-
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -30,16 +29,14 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import ca.n4dev.aegaeon.server.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.web.filter.GenericFilterBean;
-
-import ca.n4dev.aegaeon.server.utils.Utils;
 
 /**
  * AccessTokenAuthFilter.java
@@ -89,9 +86,9 @@ public class AccessTokenAuthenticationFilter extends GenericFilterBean {
         
         if (Utils.isNotEmpty(accessToken)) {
             
-            // Attempt authentication
             try {
-                
+
+                // Attempt authentication
                 Authentication auth = attemptAuthentication(accessToken, pServletRequest, pServletResponse);
                 SecurityContextHolder.getContext().setAuthentication(auth);  
                 
@@ -116,9 +113,9 @@ public class AccessTokenAuthenticationFilter extends GenericFilterBean {
     private String extractAccessToken(String pAuthorizationHeader) {
         if (pAuthorizationHeader != null) {
             
-            if (pAuthorizationHeader.indexOf(AUTH_HEADER_NAME) == -1) {
-                throw new InsufficientAuthenticationException("Bearer not found");
-            }
+//            if (pAuthorizationHeader.indexOf(AUTH_HEADER_NAME) == -1) {
+//                throw new InsufficientAuthenticationException("Bearer not found");
+//            }
             return pAuthorizationHeader.substring(AUTH_HEADER_SCHEMA.length()).trim();
         }
         

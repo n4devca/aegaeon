@@ -15,6 +15,7 @@ public class InvalidAuthorizationCodeException extends BaseException {
     public static final String EXPIRED = "EXPIRED";
     public static final String INVALID_CLIENT = "INVALID_CLIENT";
     public static final String INVALID_CLIENT_URI = "INVALID_CLIENT_URI";
+    public static final String EMPTY_USER = "EMPTY_USER";
 
     private String reason;
     private TokenRequest tokenRequest;

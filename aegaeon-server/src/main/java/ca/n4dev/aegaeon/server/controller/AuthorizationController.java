@@ -157,11 +157,11 @@ public class AuthorizationController {
                 if (prompt == Prompt.none && !isAlreadyAuthorized) {
                     throw new OpenIdException(ServerExceptionCode.USER_UNAUTHENTICATED);
                 } else if (!isAlreadyAuthorized || prompt == Prompt.login || prompt == Prompt.consent) {
-                    return consentPage(pResponseType, pClientPublicId, pRedirectUri, pScope, pState, pPrompt, pDisplay);
+                    return consentPage(pResponseType, pClientPublicId, pRedirectUri, pScope, pState, pNonce, pPrompt, pDisplay);
                 }  // else OK
 
             } else if (!isAlreadyAuthorized) {
-                return consentPage(pResponseType, pClientPublicId, pRedirectUri, pScope, pState, pPrompt, pDisplay);
+                return consentPage(pResponseType, pClientPublicId, pRedirectUri, pScope, pState, pNonce, pPrompt, pDisplay);
             }
 
             // TODO(RG): Hybrid Flow
@@ -170,7 +170,7 @@ public class AuthorizationController {
             switch (grantType) {
 
                 case AUTHORIZATION_CODE:
-                    redirect = authorizeCodeResponse(pAuthentication, authRequest, pClientPublicId, pScope, pRedirectUri, pState);
+                    redirect = authorizeCodeResponse(authRequest, pAuthentication);
                     break;
 
                 case IMPLICIT:
@@ -197,6 +197,7 @@ public class AuthorizationController {
                                              @RequestParam(value = "scope", required = false) String pScope,
                                              @RequestParam(value = "redirect_uri", required = false) String pRedirectionUrl,
                                              @RequestParam(value = "state", required = false) String pState,
+                                             @RequestParam(value = "nonce", required = false) String pNonce,
                                              @RequestParam(value = "prompt", required = false) String pPrompt,
                                              @RequestParam(value = "display", required = false) String pDisplay,
                                              @RequestParam(value = "id_token_hint", required = false) String pIdTokenHint,
@@ -208,7 +209,7 @@ public class AuthorizationController {
             AegaeonUserDetails userDetails = (AegaeonUserDetails) pAuthentication.getPrincipal();
             this.userAuthorizationService.createOneUserAuthorization(userDetails, pClientPublicId, pScope);
 
-            return authorize(pResponseType, pClientPublicId, pScope, pRedirectionUrl, pState, null, pPrompt, pDisplay, pIdTokenHint,
+            return authorize(pResponseType, pScope, pClientPublicId, pRedirectionUrl, pState, pNonce, pDisplay, pPrompt, pIdTokenHint,
                              pAuthentication, RequestMethod.POST);
 
         } catch (InternalAuthorizationException pInternalAuthorizationException) {
@@ -218,27 +219,23 @@ public class AuthorizationController {
         }
     }
 
-    private RedirectView authorizeCodeResponse(Authentication pAuthentication,
-                                               AuthRequest pAuthRequest,
-                                               String pClientId,
-                                               String pScopes,
-                                               String pRedirectionUrl,
-                                               String pState) {
+    private RedirectView authorizeCodeResponse(AuthRequest pAuthRequest,
+                                               Authentication pAuthentication) {
 
 
         // Create auth code
         AegaeonUserDetails user = (AegaeonUserDetails) pAuthentication.getPrincipal();
 
-        tokenServicesFacade.validateClientFlow(pAuthRequest, pClientId, Flow.authorization_code);
-        AuthorizationCodeView code = this.authorizationCodeService
-                .createCode(user.getId(), pClientId, pAuthRequest.getResponseType(), pScopes, pRedirectionUrl);
+        tokenServicesFacade.validateClientFlow(pAuthRequest, pAuthRequest.getClientId(), Flow.authorization_code);
+        AuthorizationCodeView code = this.authorizationCodeService.createCode(user.getId(),
+                                                                              pAuthRequest);
 
         // Returned values
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add(UriBuilder.PARAM_STATE, pState);
+        params.add(UriBuilder.PARAM_STATE, pAuthRequest.getState());
         params.add(UriBuilder.PARAM_CODE, code.getCode());
 
-        String url = UriBuilder.build(pRedirectionUrl, params, false);
+        String url = UriBuilder.build(pAuthRequest.getRedirectUri(), params, false);
         RedirectView view = new RedirectView(url, false);
 
         return view;
@@ -269,6 +266,7 @@ public class AuthorizationController {
      * @param pRedirectionUrl The selected redirect url
      * @param pScope          The requested scopes.
      * @param pState          A client state.
+     * @param pNonce          The nonce value.
      * @param pPrompt         Which prompt option.
      * @param pDisplay        How to display page.
      * @return A model and view.
@@ -278,6 +276,7 @@ public class AuthorizationController {
                                      String pRedirectionUrl,
                                      String pScope,
                                      String pState,
+                                     String pNonce,
                                      String pPrompt,
                                      String pDisplay) {
 
@@ -287,9 +286,11 @@ public class AuthorizationController {
         authPage.addObject("redirect_uri", pRedirectionUrl);
         authPage.addObject("scope", pScope);
         authPage.addObject("state", pState);
+        authPage.addObject("nonce", pNonce);
         authPage.addObject("response_type", pResponseType);
         authPage.addObject("display", pDisplay);
         authPage.addObject("prompt", pPrompt);
+
 
 
         return authPage;

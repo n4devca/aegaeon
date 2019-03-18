@@ -116,7 +116,7 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('CLIENT') or principal.id = pAccessTokenAuthentication.userId")
+    @PreAuthorize("hasRole('CLIENT') or principal == #pAccessTokenAuthentication.accessToken")
     public UserInfoResponseView info(AccessTokenAuthentication pAccessTokenAuthentication) {
         Assert.notNull(pAccessTokenAuthentication, ServerExceptionCode.USER_EMPTY);
 

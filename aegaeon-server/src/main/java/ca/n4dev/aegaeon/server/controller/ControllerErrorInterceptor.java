@@ -472,7 +472,7 @@ public class ControllerErrorInterceptor extends BaseUiController {
                                            HttpServletRequest pHttpServletRequest,
                                            HttpServletResponse pHttpServletResponse) {
 
-        LOGGER.error("internalErrorPage",
+        LOGGER.error("internalErrorPage: " +
                      new StringBuilder()
                              .append(pSeverity)
                              .append(">")

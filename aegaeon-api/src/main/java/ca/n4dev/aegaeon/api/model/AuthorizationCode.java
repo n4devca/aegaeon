@@ -63,6 +63,8 @@ public class AuthorizationCode extends BaseEntity {
 
     @Column(name = "response_type")
     private String responseType;
+
+    private String nonce;
     
     /**
      * Default no-args constructor.
@@ -180,5 +182,19 @@ public class AuthorizationCode extends BaseEntity {
      */
     public void setResponseType(String pResponseType) {
         responseType = pResponseType;
+    }
+
+    /**
+     * @return the nonce
+     */
+    public String getNonce() {
+        return nonce;
+    }
+
+    /**
+     * @param pNonce the nonce to set
+     */
+    public void setNonce(String pNonce) {
+        nonce = pNonce;
     }
 }

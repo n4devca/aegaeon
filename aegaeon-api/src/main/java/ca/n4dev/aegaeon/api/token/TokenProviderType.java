@@ -30,9 +30,11 @@ package ca.n4dev.aegaeon.api.token;
  * @since May 14, 2017
  */
 public enum TokenProviderType {
-    
-    RSA_RS512("RSA PKCS#1 with SHA-512"),
+
+    HMAC_HS256("HMAC with SHA-256"),
     HMAC_HS512("HMAC with SHA-512"),
+    RSA_RS256("RSA PKCS#1 with SHA-256"),
+    RSA_RS512("RSA PKCS#1 with SHA-512"),
     UUID("Simple UUID (no signature)")
     ;
     

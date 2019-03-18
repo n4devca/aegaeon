@@ -22,6 +22,8 @@ package ca.n4dev.aegaeon.server.service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -36,6 +38,7 @@ import ca.n4dev.aegaeon.api.model.ClientRedirection;
 import ca.n4dev.aegaeon.api.model.ClientScope;
 import ca.n4dev.aegaeon.api.model.IdToken;
 import ca.n4dev.aegaeon.api.model.RefreshToken;
+import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.protocol.AuthRequest;
 import ca.n4dev.aegaeon.api.protocol.ClientRequest;
 import ca.n4dev.aegaeon.api.protocol.Flow;
@@ -54,7 +57,12 @@ import ca.n4dev.aegaeon.server.view.TokenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -111,17 +119,19 @@ public class TokenServicesFacade {
 
         try {
 
-            final AuthRequest authRequest =
-                    new AuthRequest(authCode.getResponseType(), authCode.getScopes(), pTokenRequest.getClientId(),
-                                    authCode.getRedirectUrl(),
-                                    null, null, null, null, null, null);
+//            final AuthRequest authRequest =
+//                    new AuthRequest(authCode.getResponseType(), authCode.getScopes(), pTokenRequest.getClientId(),
+//                                    authCode.getRedirectUrl(),
+//                                    null, null, null, null, null, null);
 
             // Complete info
             pTokenRequest.setResponseType(authCode.getResponseType());
             pTokenRequest.setScope(authCode.getScopes());
+            pTokenRequest.setNonce(authCode.getNonce());
 
+            final Authentication codeAuthentication = createAuthenticationFromAuthCode(pTokenRequest, authCode);
             return createTokenResponse(pTokenRequest,
-                                       pAuthentication);
+                                       codeAuthentication);
 
         } finally {
             try {
@@ -374,4 +384,42 @@ public class TokenServicesFacade {
         }
     }
 
+    private Authentication createAuthenticationFromAuthCode(TokenRequest pTokenRequest, AuthorizationCode pAuthorizationCode) {
+        Assert.notNull(pAuthorizationCode,
+                       () -> new InvalidAuthorizationCodeException(pTokenRequest, InvalidAuthorizationCodeException.EMPTY));
+
+        Assert.notNull(pAuthorizationCode.getUser(),
+                       () -> new InvalidAuthorizationCodeException(pTokenRequest, InvalidAuthorizationCodeException.EMPTY_USER));
+
+
+        final User user = pAuthorizationCode.getUser();
+
+        List<SimpleGrantedAuthority> auths = new ArrayList<>();
+        user.getAuthorities().forEach(a -> auths.add(new SimpleGrantedAuthority(a.getCode() /*a.getCode().replace("ROLE_", "")*/)));
+        final AegaeonUserDetails aegaeonUserDetails =
+                new AegaeonUserDetails(user.getId(), user.getUserName(), user.getPasswd(), user.isEnabled(), true, auths);
+
+        return new CodeAuthentication(aegaeonUserDetails);
+    }
+
+    private static final class CodeAuthentication extends AbstractAuthenticationToken {
+
+        private UserDetails userDetails;
+
+        public CodeAuthentication(AegaeonUserDetails pUserDetails) {
+            super(null);
+            userDetails = pUserDetails;
+        }
+
+        @Override
+        public Object getPrincipal() {
+            return userDetails;
+        }
+
+        @Override
+        public Object getCredentials() {
+            return null;
+        }
+
+    }
 }

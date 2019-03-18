@@ -37,6 +37,7 @@ import ca.n4dev.aegaeon.server.service.AuthorizationService;
 import ca.n4dev.aegaeon.server.service.ScopeService;
 import ca.n4dev.aegaeon.server.service.TokenServicesFacade;
 import ca.n4dev.aegaeon.server.utils.Assert;
+import ca.n4dev.aegaeon.server.utils.Utils;
 import ca.n4dev.aegaeon.server.view.TokenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,16 +112,18 @@ public class TokensController {
 
         TokenResponse response = null;
 
-        TokenRequest tokenRequest = new TokenRequest(pGrantType, pCode, pClientPublicId, pRedirectUri, pScope, pRefreshToken);
+        String clientPublicId = Utils.coalesce(pClientPublicId, pAuthentication.getName());
+
+        TokenRequest tokenRequest = new TokenRequest(pGrantType, pCode, clientPublicId, pRedirectUri, pScope, pRefreshToken);
 
         // -- Validations
 
         // Client
-        Assert.notEmpty(pClientPublicId, () -> new InvalidClientIdException(tokenRequest));
+        Assert.notEmpty(clientPublicId, () -> new InvalidClientIdException(tokenRequest));
         Assert.notEmpty(pRedirectUri, () -> new InvalidClientRedirectionException(tokenRequest));
 
         // Make sure the client and redirection is valid
-        if (!authorizationService.isClientInfoValid(pClientPublicId, pRedirectUri)) {
+        if (!authorizationService.isClientInfoValid(clientPublicId, pRedirectUri)) {
             throw new InvalidClientRedirectionException(tokenRequest);
         }
 
@@ -172,7 +175,7 @@ public class TokensController {
         } catch (Exception pException) {
             // TODO(RG): change that!
             throw new OpenIdExceptionBuilder(pException)
-                    .clientId(pClientPublicId)
+                    .clientId(clientPublicId)
                     .redirection(pRedirectUri)
                     .from(tokenRequest.getGrantTypeAsType())
                     .handling(ErrorHandling.JSON)

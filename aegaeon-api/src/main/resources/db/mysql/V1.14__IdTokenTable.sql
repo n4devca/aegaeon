@@ -37,5 +37,5 @@ create table id_token (
     constraint idtk_user_id_user_fk foreign key (user_id) references users (id) on delete cascade on update no action
 ) engine=innodb;
 
-alter table authorization_code add noonce varchar(40);
+alter table authorization_code add nonce varchar(40);
 

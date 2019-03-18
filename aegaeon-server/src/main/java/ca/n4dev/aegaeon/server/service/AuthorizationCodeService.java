@@ -30,6 +30,7 @@ import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.model.AuthorizationCode;
 import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.User;
+import ca.n4dev.aegaeon.api.protocol.AuthRequest;
 import ca.n4dev.aegaeon.api.repository.AuthorizationCodeRepository;
 import ca.n4dev.aegaeon.api.repository.ClientRepository;
 import ca.n4dev.aegaeon.api.repository.UserRepository;
@@ -83,17 +84,21 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
     
     @Transactional
     @PreAuthorize("isAuthenticated() and principal.id == #pUserId")
-    public AuthorizationCodeView createCode(Long pUserId, String pClientPublicId, String pResponseType, String pScopes, String pRedirectUrl) {
+    public AuthorizationCodeView createCode(Long pUserId, AuthRequest pAuthRequest) {
         // Get Scopes
-        Set<ScopeView> scopes = this.scopeService.getValidScopes(pScopes);
+        Set<ScopeView> scopes = this.scopeService.getValidScopes(pAuthRequest.getScope());
         
         // Create Code
-        AuthorizationCode code = createCode(pUserId, pClientPublicId, pResponseType, scopes, pRedirectUrl);
+        AuthorizationCode code = createCode(pUserId,
+                                            pAuthRequest.getClientId(),
+                                            pAuthRequest.getResponseType(),
+                                            scopes,
+                                            pAuthRequest.getRedirectUri(),
+                                            pAuthRequest.getNonce());
         
         // Return view
         return this.viewMapper.toView(code);
     }
-
 
     /**
      * Find a AuthCode by code (string)
@@ -110,7 +115,8 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
     }
 
 
-    AuthorizationCode createCode(Long pUserId, String pClientPublicId, String pResponseType, Set<ScopeView> pScopes, String pRedirectUrl) {
+    AuthorizationCode createCode(Long pUserId, String pClientPublicId,
+                                 String pResponseType, Set<ScopeView> pScopes, String pRedirectUrl, String pNonce) {
         
         Assert.notNull(pUserId, ServerExceptionCode.USER_EMPTY);
         Assert.notEmpty(pClientPublicId, ServerExceptionCode.CLIENT_EMPTY);
@@ -119,7 +125,7 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
         Optional<User> u = this.userRepository.findById(pUserId);
         Client client = this.clientRepository.findByPublicId(pClientPublicId);
         
-        return createCode(u.orElse(null), client, pResponseType, pScopes, pRedirectUrl);
+        return createCode(u.orElse(null), client, pResponseType, pScopes, pRedirectUrl, pNonce);
     }
     
     
@@ -129,7 +135,8 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
      * @param pClient The client.
      * @return A code or null.
      */
-    AuthorizationCode createCode(User pUser, Client pClient, String pResponseType, Set<ScopeView> pScopes, String pRedirectUrl) {
+    AuthorizationCode createCode(User pUser, Client pClient, String pResponseType,
+                                 Set<ScopeView> pScopes, String pRedirectUrl, String pNonce) {
         Assert.notNull(pUser, ServerExceptionCode.USER_EMPTY);
         Assert.notNull(pClient, ServerExceptionCode.CLIENT_EMPTY);
         Assert.notEmpty(pRedirectUrl, ServerExceptionCode.CLIENT_REDIRECTURL_EMPTY);
@@ -142,6 +149,7 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
         c.setResponseType(pResponseType);
         c.setValidUntil(LocalDateTime.now().plus(3L, ChronoUnit.MINUTES));
         c.setRedirectUrl(pRedirectUrl);
+        c.setNonce(pNonce);
         
         if (pScopes != null) {
             c.setScopes(Utils.join(" ", pScopes, s -> s.getName()));
@@ -162,17 +170,17 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
 
     /**
      * Check if a user is allowed to do an operation.
-     * @param pAuthUserId
+     * @param pClientId
      * @param pId
      * @param pOperation
      * @return
      */
     @Transactional(readOnly = true)
-    public boolean hasPermissionTo(Long pAuthUserId, Long pId, String pOperation) {
-        if (pId != null && pAuthUserId != null && Utils.isNotEmpty(pOperation)) {
+    public boolean hasPermissionTo(Long pClientId, Long pId, String pOperation) {
+        if (pId != null && pClientId != null && Utils.isNotEmpty(pOperation)) {
             AuthorizationCode code = this.findById(pId);
             
-            if (code != null && code.getUserId().equals(pAuthUserId)) {
+            if (code != null && code.getClient().getId().equals(pClientId)) {
                 return true;
             }
         }

@@ -90,7 +90,7 @@ public class InstrospectService {
         
         IntrospectResponseView response = new IntrospectResponseView(false);
         
-        if (!Utils.areOneEmpty(pToken, pAgentOfClientId)) {
+        if (!Utils.areOneEmpty(pToken)) {
             
             try {
                 // Is it a valid JWT ?
@@ -102,8 +102,7 @@ public class InstrospectService {
                 // Need to exist, be still valid, be a proper token and be the agent of client
                 if (accessToken != null 
                         && Utils.isAfterNow(accessToken.getValidUntil()) 
-                        && this.tokenFactory.validate(accessToken.getClient(), pToken) 
-                        && accessToken.getClient().getPublicId().equals(pAgentOfClientId)) {
+                        && this.tokenFactory.validate(accessToken.getClient(), pToken)) {
                     
                     
                     // OK, good

@@ -32,6 +32,7 @@ import ca.n4dev.aegaeon.api.token.TokenProviderType;
 import ca.n4dev.aegaeon.api.token.verifier.TokenVerifier;
 import ca.n4dev.aegaeon.server.config.ServerInfo;
 import ca.n4dev.aegaeon.server.token.key.KeysProvider;
+import org.springframework.stereotype.Component;
 
 /**
  * HMAC512JwtTokenVerifier.java
@@ -41,6 +42,7 @@ import ca.n4dev.aegaeon.server.token.key.KeysProvider;
  * @author by rguillemette
  * @since Jul 19, 2017
  */
+@Component
 public class HMAC512JwtTokenVerifier extends BaseJwtVerifier implements TokenVerifier {
     
     private boolean enable = false;
