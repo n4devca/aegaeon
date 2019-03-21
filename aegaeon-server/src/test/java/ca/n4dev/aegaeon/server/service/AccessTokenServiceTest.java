@@ -21,6 +21,7 @@
 package ca.n4dev.aegaeon.server.service;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
@@ -77,7 +78,7 @@ public class AccessTokenServiceTest extends BaseTokenServiceTest {
         AccessToken token = this.accessTokenService.createToken(tokenRequest, user, client, scopes);
         Assert.assertNotNull(token);
         Assert.assertNotNull(token.getScopes());
-        Assert.assertNotNull(token.getValidUntil().isAfter(LocalDateTime.now()));
+        Assert.assertNotNull(token.getValidUntil().isAfter(ZonedDateTime.now()));
     }
 
 
@@ -105,7 +106,7 @@ public class AccessTokenServiceTest extends BaseTokenServiceTest {
         AccessToken token = this.accessTokenService.createToken(tokenRequest, user, client, scopes);
         Assert.assertNotNull(token);
         Assert.assertNotNull(token.getScopes());
-        Assert.assertNotNull(token.getValidUntil().isAfter(LocalDateTime.now()));
+        Assert.assertNotNull(token.getValidUntil().isAfter(ZonedDateTime.now()));
     }
 
 

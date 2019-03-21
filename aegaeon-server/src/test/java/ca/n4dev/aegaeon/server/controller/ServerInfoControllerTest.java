@@ -56,8 +56,10 @@ public class ServerInfoControllerTest {
                     .andExpect(jsonPath("$.display_values_supported", notNullValue()))
                     .andExpect(jsonPath("$.scopes_supported", items("openid", "profile", "offline_access")))
                     .andExpect(jsonPath("$.subject_types_supported", items("public")))
-                    .andExpect(jsonPath("$.userinfo_signing_alg_values_supported", items("Simple UUID (no signature)", "RS512", "HS512")))
-                    .andExpect(jsonPath("$.id_token_signing_alg_values_supported", items("Simple UUID (no signature)", "RS512", "HS512")))
+                    .andExpect(jsonPath("$.userinfo_signing_alg_values_supported",
+                                        items("Simple UUID (no signature)", "RS512", "RS256", "HS512", "HS256")))
+                    .andExpect(jsonPath("$.id_token_signing_alg_values_supported",
+                                        items("Simple UUID (no signature)", "RS512", "RS256", "HS512", "HS256")))
                     .andExpect(jsonPath("$.claim_types_supported", items("normal", "distributed")))
                     .andExpect(jsonPath("$.claims_parameter_supported", is(false)))
                     .andExpect(jsonPath("$.ui_locales_supported", items("fr_CA", "en")))

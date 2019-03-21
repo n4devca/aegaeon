@@ -24,6 +24,7 @@ package ca.n4dev.aegaeon.server.view;
 import java.util.Map;
 
 import ca.n4dev.aegaeon.api.token.payload.Claims;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * UserInfoResponse.java
@@ -42,10 +43,14 @@ public class UserInfoResponseView {
     private String email;
     
     private String picture;
-    
-    private String zoneinfo;
+
+    @JsonProperty("zoneinfo")
+    private String zoneInfo;
     
     private String locale;
+
+    @JsonProperty("preferred_username")
+    private String preferredUsername;
     
     
     public UserInfoResponseView(String pSub, Map<String, String> pPayload) {
@@ -54,8 +59,9 @@ public class UserInfoResponseView {
         this.name = pPayload.get(Claims.NAME);
         this.email = pPayload.get(Claims.EMAIL);
         this.picture = pPayload.get(Claims.PICTURE);
-        this.zoneinfo = pPayload.get(Claims.ZONEINFO);
+        this.zoneInfo = pPayload.get(Claims.ZONEINFO);
         this.locale = pPayload.get(Claims.LOCALE);
+        this.preferredUsername = pPayload.get(Claims.USERNAME);
     }
 
 
@@ -92,10 +98,10 @@ public class UserInfoResponseView {
 
 
     /**
-     * @return the zoneinfo
+     * @return the zoneInfo
      */
-    public String getZoneinfo() {
-        return zoneinfo;
+    public String getZoneInfo() {
+        return zoneInfo;
     }
 
 

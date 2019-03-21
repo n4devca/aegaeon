@@ -22,6 +22,7 @@
 package ca.n4dev.aegaeon.server.view;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 /**
  * TokenView.java
@@ -41,7 +42,7 @@ public class TokenView {
     
     private String scopes;
     
-    private LocalDateTime validUntil;
+    private ZonedDateTime validUntil;
 
     /**
      * @return the token
@@ -88,14 +89,14 @@ public class TokenView {
     /**
      * @return the validUntil
      */
-    public LocalDateTime getValidUntil() {
+    public ZonedDateTime getValidUntil() {
         return validUntil;
     }
 
     /**
      * @param pValidUntil the validUntil to set
      */
-    public void setValidUntil(LocalDateTime pValidUntil) {
+    public void setValidUntil(ZonedDateTime pValidUntil) {
         validUntil = pValidUntil;
     }
 

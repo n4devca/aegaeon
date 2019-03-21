@@ -3,6 +3,7 @@ package ca.n4dev.aegaeon.server.token.provider;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.TemporalUnit;
 import java.util.Collections;
 import java.util.Date;
@@ -136,8 +137,9 @@ public abstract class BaseRSAJwtTokenProvider implements TokenProvider {
                              TemporalUnit pTemporalUnit,
                              Map<String, String> pPayloads) throws Exception {
 
-        LocalDateTime expiredIn = LocalDateTime.now().plus(pTimeValue, pTemporalUnit);
-        Instant instant = expiredIn.toInstant(ZoneOffset.UTC);
+        //LocalDateTime expiredIn = LocalDateTime.now().plus(pTimeValue, pTemporalUnit);
+        ZonedDateTime expiredIn = ZonedDateTime.now(ZoneOffset.UTC).plus(pTimeValue, pTemporalUnit);
+        Instant instant = expiredIn.toInstant();
         Date date = Date.from(instant);
 
         JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder();

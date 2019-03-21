@@ -22,6 +22,7 @@
 package ca.n4dev.aegaeon.api.model;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -45,7 +46,7 @@ public abstract class BaseTokenEntity extends BaseEntity {
 
     protected String token;
     
-    protected LocalDateTime validUntil;
+    protected ZonedDateTime validUntil;
     
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -79,14 +80,14 @@ public abstract class BaseTokenEntity extends BaseEntity {
     /**
      * @return the validUntil
      */
-    public LocalDateTime getValidUntil() {
+    public ZonedDateTime getValidUntil() {
         return validUntil;
     }
 
     /**
      * @param pValidUntil the validUntil to set
      */
-    public void setValidUntil(LocalDateTime pValidUntil) {
+    public void setValidUntil(ZonedDateTime pValidUntil) {
         validUntil = pValidUntil;
     }
 

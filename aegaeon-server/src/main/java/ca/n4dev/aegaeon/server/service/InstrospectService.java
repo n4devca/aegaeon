@@ -115,7 +115,7 @@ public class InstrospectService {
                     response.setClientId(accessToken.getClient().getPublicId());
                     response.setIssuer(this.serverInfo.getIssuer());
                     response.setScope(accessToken.getScopes());
-                    response.setExpiration(accessToken.getValidUntil().toInstant(ZoneOffset.UTC).getEpochSecond());
+                    response.setExpiration(accessToken.getValidUntil().toInstant().getEpochSecond());
                     
                     openIdEventLogger.log(OpenIdEvent.REQUEST_INFO, getClass(), u.getUserName(), null);
                 }

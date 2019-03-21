@@ -120,7 +120,7 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
     public UserInfoResponseView info(AccessTokenAuthentication pAccessTokenAuthentication) {
         Assert.notNull(pAccessTokenAuthentication, ServerExceptionCode.USER_EMPTY);
 
-        User u = this.findById(pAccessTokenAuthentication.getUserId());
+        UserView u = findOne(pAccessTokenAuthentication.getUserId());
         Assert.notNull(u, ServerExceptionCode.USER_EMPTY);
 
         final Set<String> scopeStrings = Utils.convert(pAccessTokenAuthentication.getScopes(), pScopeView -> pScopeView.getName());
@@ -326,15 +326,18 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('CLIENT') or principal.id == #pOAuthUser.id")
     public Map<String, String> createPayload(OAuthUser pOAuthUser, OAuthClient pOAuthClient, Set<String> pRequestedScopes) {
-        Map<String, String> payload = new LinkedHashMap<>();
+        final UserView userView = findOne(pOAuthUser.getId());
+        return createPayload(userView, pOAuthClient, pRequestedScopes);
+    }
 
-        User u = this.findById(pOAuthUser.getId());
+    private Map<String, String> createPayload(UserView pUserView, OAuthClient pOAuthClient, Set<String> pRequestedScopes) {
+        Map<String, String> payload = new LinkedHashMap<>();
 
         final boolean hasProfile = Utils.safeSet(pRequestedScopes).contains("profile");
 
         if (hasProfile) {
-            payload.put(Claims.NAME, pOAuthUser.getName());
-            payload.put(Claims.USERNAME, u.getUserName());
+            payload.put(Claims.NAME, pUserView.getName());
+            payload.put(Claims.USERNAME, pUserView.getUserName());
         }
 
         return payload;

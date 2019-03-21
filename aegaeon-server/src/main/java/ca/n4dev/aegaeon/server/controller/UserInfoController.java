@@ -67,7 +67,8 @@ public class UserInfoController {
         if (pAuthentication != null && pAuthentication instanceof AccessTokenAuthentication) {
             return this.userService.info((AccessTokenAuthentication) pAuthentication);
         }
-        
+
+        //TODO(RG) Throw exception instead
         return null;
     }
 }

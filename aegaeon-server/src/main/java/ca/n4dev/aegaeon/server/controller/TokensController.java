@@ -137,7 +137,7 @@ public class TokensController {
         if (GrantType.AUTHORIZATION_CODE == tokenRequest.getGrantTypeAsType()) {
             Assert.notEmpty(pCode, () -> new InvalidAuthorizationCodeException(tokenRequest, "empty"));
             Assert.isEmpty(pScope, () -> new InvalidScopeException(pScope, tokenRequest));
-        } else {
+        } else if (GrantType.CLIENT_CREDENTIALS == tokenRequest.getGrantTypeAsType()) {
             // Others needs scopes
             Assert.notEmpty(pScope, () -> new InvalidScopeException(pScope, tokenRequest));
         }

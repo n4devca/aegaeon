@@ -21,6 +21,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
@@ -117,10 +119,11 @@ public class TokenProviderUnitTest {
         Assert.assertNotNull("A token should have been created.", pToken);
         Assert.assertNotNull("The token has no value.", pToken.getValue());
         Assert.assertNotNull("The token has no end date.", pToken.getValidUntil());
-        Assert.assertTrue("The end date is invalid (not after now).", pToken.getValidUntil().isAfter(LocalDateTime.now()));
+        Assert.assertTrue("The end date is invalid (not after now).",
+                          pToken.getValidUntil().isAfter(ZonedDateTime.now(ZoneOffset.UTC)));
 
         // Tomorrow or equals
-        final LocalDateTime tomorrow = LocalDateTime.now().plus(1L, ChronoUnit.DAYS);
+        final ZonedDateTime tomorrow = ZonedDateTime.now(ZoneOffset.UTC).plus(1L, ChronoUnit.DAYS);
         Assert.assertTrue("The end date is invalid (not before -1d).",
                           pToken.getValidUntil().isBefore(tomorrow) || pToken.getValidUntil().isEqual(tomorrow));
         Assert.assertTrue("The token's value (JWT) is invalid.", pTokenVerifier.validate(pToken.getValue()));

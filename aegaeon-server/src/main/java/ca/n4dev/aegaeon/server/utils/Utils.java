@@ -23,6 +23,9 @@ package ca.n4dev.aegaeon.server.utils;
 import java.net.URI;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -114,6 +117,15 @@ public class Utils {
     public static boolean isAfterNow(LocalDateTime pValidUntil) {
         if (pValidUntil != null) {
             LocalDateTime now = LocalDateTime.now();
+            return pValidUntil.isAfter(now);
+        }
+
+        return true;
+    }
+
+    public static boolean isAfterNow(ZonedDateTime pValidUntil) {
+        if (pValidUntil != null) {
+            ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
             return pValidUntil.isAfter(now);
         }
 

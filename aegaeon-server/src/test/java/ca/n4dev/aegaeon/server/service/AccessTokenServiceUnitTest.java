@@ -16,6 +16,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
 import static org.mockito.Mockito.when;
@@ -92,7 +94,7 @@ public class AccessTokenServiceUnitTest {
         AccessToken token = new AccessToken();
         token.setToken("0xff");
         token.setScopes(String.join(" ", "openid", "profile"));
-        token.setValidUntil(LocalDateTime.now().plus(1L, ChronoUnit.DAYS));
+        token.setValidUntil(ZonedDateTime.now(ZoneOffset.UTC).plus(1L, ChronoUnit.DAYS));
         token.setId(1L);
         token.setClient(new Client(42L));
 

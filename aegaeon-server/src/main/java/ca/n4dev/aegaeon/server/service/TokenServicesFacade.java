@@ -175,6 +175,19 @@ public class TokenServicesFacade {
         RefreshToken refreshToken = this.refreshTokenService.findByTokenValueAndClientId(pTokenRequest.getRefreshToken(), client.getId());
         validateRefreshToken(pTokenRequest, refreshToken);
 
+        // Validate scope, otherwise reuse refresh_token scopes
+        boolean validRequestedScopes = false;
+        if (Utils.isNotEmpty(pTokenRequest.getScope())) {
+            validRequestedScopes = scopeService.isPartOf(refreshToken.getScopes(), pTokenRequest.getScope());
+        }
+
+        if (!validRequestedScopes) {
+            pTokenRequest.setScope(refreshToken.getScopes());
+        }
+
+        // In any case, remove the openid scope because we can't meet the check requirements right now
+        pTokenRequest.setScope(withoutOpenIdScope(pTokenRequest.getScope()));
+
         // Ok, the token is valid, so create a new access token
         return this.createTokenResponse(pTokenRequest,
                                         pAuthentication);
@@ -400,6 +413,16 @@ public class TokenServicesFacade {
                 new AegaeonUserDetails(user.getId(), user.getUserName(), user.getPasswd(), user.isEnabled(), true, auths);
 
         return new CodeAuthentication(aegaeonUserDetails);
+    }
+
+    private String withoutOpenIdScope(String pScopes) {
+        if (Utils.isNotEmpty(pScopes)) {
+
+            String scopeNoOpenId = pScopes.replace("openid", "").trim();
+            return scopeNoOpenId;
+        }
+
+        return pScopes;
     }
 
     private static final class CodeAuthentication extends AbstractAuthenticationToken {

@@ -1,6 +1,8 @@
 package ca.n4dev.aegaeon.server.service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -8,15 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import ca.n4dev.aegaeon.api.exception.OpenIdException;
-import ca.n4dev.aegaeon.api.model.AccessToken;
-import ca.n4dev.aegaeon.api.model.AuthorizationCode;
-import ca.n4dev.aegaeon.api.model.Client;
-import ca.n4dev.aegaeon.api.model.ClientAuthFlow;
-import ca.n4dev.aegaeon.api.model.ClientRedirection;
-import ca.n4dev.aegaeon.api.model.ClientScope;
-import ca.n4dev.aegaeon.api.model.IdToken;
-import ca.n4dev.aegaeon.api.model.RefreshToken;
-import ca.n4dev.aegaeon.api.model.Scope;
+import ca.n4dev.aegaeon.api.model.*;
 import ca.n4dev.aegaeon.api.protocol.AuthRequest;
 import ca.n4dev.aegaeon.api.protocol.Flow;
 import ca.n4dev.aegaeon.api.protocol.FlowUtils;
@@ -415,6 +409,17 @@ public class TokenServicesFacadeUnitTest {
 
         authorizationCode.setScopes("id_token openid profile");
 
+        User user = new User();
+        List<Authority> authorities = new ArrayList<>();
+        authorities.add(new Authority("ROLE_USER"));
+
+        user.setId(1L);
+        user.setUserName("tester");
+        user.setEnabled(true);
+        user.setAuthorities(authorities);
+
+        authorizationCode.setUser(user);
+
         return authorizationCode;
     }
 
@@ -443,19 +448,19 @@ public class TokenServicesFacadeUnitTest {
 
         when(idTokenService.createToken(any(), anyLong(), any(), anySet())).thenAnswer(a -> {
             IdToken idToken = new IdToken();
-            idToken.setValidUntil(LocalDateTime.now().plus(15L, ChronoUnit.MINUTES));
+            idToken.setValidUntil(ZonedDateTime.now(ZoneOffset.UTC).plus(15L, ChronoUnit.MINUTES));
             return idToken;
         });
 
         when(accessTokenService.createToken(any(), anyLong(), any(), anySet())).thenAnswer(a -> {
             AccessToken accessToken = new AccessToken();
-            accessToken.setValidUntil(LocalDateTime.now().plus(60L, ChronoUnit.MINUTES));
+            accessToken.setValidUntil(ZonedDateTime.now(ZoneOffset.UTC).plus(60L, ChronoUnit.MINUTES));
             return accessToken;
         });
 
         when(refreshTokenService.createToken(any(), anyLong(), any(), anySet())).thenAnswer(a -> {
             RefreshToken refreshToken = new RefreshToken();
-            refreshToken.setValidUntil(LocalDateTime.now().plus(60L, ChronoUnit.DAYS));
+            refreshToken.setValidUntil(ZonedDateTime.now(ZoneOffset.UTC).plus(60L, ChronoUnit.DAYS));
             return refreshToken;
         });
 

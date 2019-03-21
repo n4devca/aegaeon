@@ -38,6 +38,13 @@ public class Authority extends BaseEntity {
 
     private String code;
 
+    public Authority() {
+    }
+
+    public Authority(String pCode) {
+        code = pCode;
+    }
+
     /**
      * @return the code
      */
