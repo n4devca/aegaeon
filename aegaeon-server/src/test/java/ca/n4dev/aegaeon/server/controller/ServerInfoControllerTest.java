@@ -54,7 +54,8 @@ public class ServerInfoControllerTest {
                     .andExpect(jsonPath("$.token_endpoint", is(new StringEndsWith(TokensController.URL))))
                     .andExpect(jsonPath("$.userinfo_endpoint", is(new StringEndsWith(UserInfoController.URL))))
                     .andExpect(jsonPath("$.display_values_supported", notNullValue()))
-                    .andExpect(jsonPath("$.scopes_supported", items("openid", "profile", "offline_access")))
+                    .andExpect(jsonPath("$.scopes_supported",
+                                        items("openid", "profile", "offline_access", "email", "address", "phone", "socialmedia")))
                     .andExpect(jsonPath("$.subject_types_supported", items("public")))
                     .andExpect(jsonPath("$.userinfo_signing_alg_values_supported",
                                         items("Simple UUID (no signature)", "RS512", "RS256", "HS512", "HS256")))
@@ -64,9 +65,8 @@ public class ServerInfoControllerTest {
                     .andExpect(jsonPath("$.claims_parameter_supported", is(false)))
                     .andExpect(jsonPath("$.ui_locales_supported", items("fr_CA", "en")))
                     .andExpect(jsonPath("$.token_endpoint_auth_methods_supported", items("client_secret_basic")))
-                    .andExpect(jsonPath("$.response_types_supported", items("code",
-                                                                            "id_token token",
-                                                                            "id_token")));
+                    .andExpect(jsonPath("$.response_types_supported",
+                                        items("code", "id_token token", "id_token")));
 
     }
 
