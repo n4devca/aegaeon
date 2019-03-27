@@ -20,6 +20,11 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import ca.n4dev.aegaeon.api.exception.OpenIdException;
@@ -29,6 +34,7 @@ import ca.n4dev.aegaeon.api.protocol.Flow;
 import ca.n4dev.aegaeon.api.protocol.FlowUtils;
 import ca.n4dev.aegaeon.api.protocol.GrantType;
 import ca.n4dev.aegaeon.api.protocol.Prompt;
+import ca.n4dev.aegaeon.api.token.OAuthUser;
 import ca.n4dev.aegaeon.server.controller.exception.InternalAuthorizationException;
 import ca.n4dev.aegaeon.server.controller.exception.InvalidClientIdException;
 import ca.n4dev.aegaeon.server.controller.exception.InvalidClientRedirectionException;
@@ -42,11 +48,13 @@ import ca.n4dev.aegaeon.server.service.BaseTokenService;
 import ca.n4dev.aegaeon.server.service.ScopeService;
 import ca.n4dev.aegaeon.server.service.TokenServicesFacade;
 import ca.n4dev.aegaeon.server.service.UserAuthorizationService;
+import ca.n4dev.aegaeon.server.service.UserService;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.UriBuilder;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import ca.n4dev.aegaeon.server.view.AuthorizationCodeView;
 import ca.n4dev.aegaeon.server.view.TokenResponse;
+import ca.n4dev.aegaeon.server.view.UserView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.Authentication;
@@ -75,24 +83,29 @@ public class AuthorizationController {
 
     public static final String URL = "/authorize";
 
+    private static final String CONSENT_VIEW = "consent";
+
     private UserAuthorizationService userAuthorizationService;
     private AuthorizationCodeService authorizationCodeService;
     private AuthorizationService authorizationService;
     private TokenServicesFacade tokenServicesFacade;
     private ScopeService scopeService;
+    private UserService userService;
 
     @Autowired
     public AuthorizationController(AuthorizationService pAuthorizationService,
                                    UserAuthorizationService pUserAuthorizationService,
                                    AuthorizationCodeService pAuthorizationCodeService,
                                    ScopeService pScopeService,
-                                   TokenServicesFacade pTokenServicesFacade) {
+                                   TokenServicesFacade pTokenServicesFacade,
+                                   UserService pUserService) {
 
         authorizationService = pAuthorizationService;
         userAuthorizationService = pUserAuthorizationService;
         authorizationCodeService = pAuthorizationCodeService;
         scopeService = pScopeService;
         tokenServicesFacade = pTokenServicesFacade;
+        userService = pUserService;
     }
 
     /*
@@ -157,11 +170,11 @@ public class AuthorizationController {
                 if (prompt == Prompt.none && !isAlreadyAuthorized) {
                     throw new OpenIdException(ServerExceptionCode.USER_UNAUTHENTICATED);
                 } else if (!isAlreadyAuthorized || prompt == Prompt.login || prompt == Prompt.consent) {
-                    return consentPage(pResponseType, pClientPublicId, pRedirectUri, pScope, pState, pNonce, pPrompt, pDisplay);
+                    return consentPage(pAuthentication, authRequest);
                 }  // else OK
 
             } else if (!isAlreadyAuthorized) {
-                return consentPage(pResponseType, pClientPublicId, pRedirectUri, pScope, pState, pNonce, pPrompt, pDisplay);
+                return consentPage(pAuthentication, authRequest);
             }
 
             // TODO(RG): Hybrid Flow
@@ -194,22 +207,28 @@ public class AuthorizationController {
     @RequestMapping(value = "/consent")
     public ModelAndView addUserAuthorization(@RequestParam("response_type") String pResponseType,
                                              @RequestParam("client_id") String pClientPublicId,
-                                             @RequestParam(value = "scope", required = false) String pScope,
+                                             @RequestParam(value = "scope", required = false) String pScopes,
                                              @RequestParam(value = "redirect_uri", required = false) String pRedirectionUrl,
                                              @RequestParam(value = "state", required = false) String pState,
                                              @RequestParam(value = "nonce", required = false) String pNonce,
                                              @RequestParam(value = "prompt", required = false) String pPrompt,
                                              @RequestParam(value = "display", required = false) String pDisplay,
                                              @RequestParam(value = "id_token_hint", required = false) String pIdTokenHint,
+                                             @RequestParam(value = "accept_scopes", required = false) String[] pAcceptScopes,
                                              Authentication pAuthentication) {
 
         try {
 
             // Create a UserAuth and redirect
+            final List<String> acceptedScopes = new ArrayList<>(Arrays.asList(pAcceptScopes));
+            if (Utils.isNotEmpty(pScopes) && pScopes.contains("openid")) {
+                acceptedScopes.add(0, "openid");
+            }
+            final String acceptedScopeParam = Utils.join(acceptedScopes, pScope -> pScope);
             AegaeonUserDetails userDetails = (AegaeonUserDetails) pAuthentication.getPrincipal();
-            this.userAuthorizationService.createOneUserAuthorization(userDetails, pClientPublicId, pScope);
+            this.userAuthorizationService.createOneUserAuthorization(userDetails, pClientPublicId, acceptedScopeParam);
 
-            return authorize(pResponseType, pScope, pClientPublicId, pRedirectionUrl, pState, pNonce, pDisplay, pPrompt, pIdTokenHint,
+            return authorize(pResponseType, acceptedScopeParam, pClientPublicId, pRedirectionUrl, pState, pNonce, pDisplay, pPrompt, pIdTokenHint,
                              pAuthentication, RequestMethod.POST);
 
         } catch (InternalAuthorizationException pInternalAuthorizationException) {
@@ -261,37 +280,31 @@ public class AuthorizationController {
      * Create a page to ask user consent.
      * See authorize endpoint.
      *
-     * @param pResponseType   The response type.
-     * @param pClientPublicId The client public id.
-     * @param pRedirectionUrl The selected redirect url
-     * @param pScope          The requested scopes.
-     * @param pState          A client state.
-     * @param pNonce          The nonce value.
-     * @param pPrompt         Which prompt option.
-     * @param pDisplay        How to display page.
+     * @param pAuthentication   The authenticated user.
+     * @param pAuthRequest The authorization request.
      * @return A model and view.
      */
-    private ModelAndView consentPage(String pResponseType,
-                                     String pClientPublicId,
-                                     String pRedirectionUrl,
-                                     String pScope,
-                                     String pState,
-                                     String pNonce,
-                                     String pPrompt,
-                                     String pDisplay) {
-
-        ModelAndView authPage = new ModelAndView("consent");
-
-        authPage.addObject("client_id", pClientPublicId);
-        authPage.addObject("redirect_uri", pRedirectionUrl);
-        authPage.addObject("scope", pScope);
-        authPage.addObject("state", pState);
-        authPage.addObject("nonce", pNonce);
-        authPage.addObject("response_type", pResponseType);
-        authPage.addObject("display", pDisplay);
-        authPage.addObject("prompt", pPrompt);
+    private ModelAndView consentPage(Authentication pAuthentication,
+                                     AuthRequest pAuthRequest) {
 
 
+        ModelAndView authPage = new ModelAndView(CONSENT_VIEW);
+
+        authPage.addObject("client_id", pAuthRequest.getClientId());
+        authPage.addObject("redirect_uri", pAuthRequest.getRedirectUri());
+        authPage.addObject("scope", pAuthRequest.getScope());
+        authPage.addObject("state", pAuthRequest.getState());
+        authPage.addObject("nonce", pAuthRequest.getNonce());
+        authPage.addObject("response_type", pAuthRequest.getResponseType());
+        authPage.addObject("display", pAuthRequest.getDisplay());
+        authPage.addObject("prompt", pAuthRequest.getPrompt());
+
+
+        final List<String> explode = Utils.explode(pAuthRequest.getScope(), pS -> pS);
+        final UserView user = userService.findOne(((AegaeonUserDetails) pAuthentication.getPrincipal()).getId());
+        final Map<String, Map<String, Object>> payload = userService.createPayload(user, new HashSet<>(explode));
+
+        authPage.addObject("claims", payload);
 
         return authPage;
     }

@@ -239,7 +239,9 @@ public class CompleteFlowTest {
 
     private RequestBuilder getParams(String pResponseType, boolean pWithRefresh) {
 
-        String[] scopes = pWithRefresh ? new String[] {"openid", "profile", "offline_access"} : new String[] {"openid", "profile"};
+        String[] scopes = pWithRefresh ?
+                new String[] {"openid", "profile", "offline_access"} :
+                new String[] {"openid", "profile", "email", "phone", "address", "socialmedia"};
 
         RequestBuilder builder = new RequestBuilder()
                 .responseType(pResponseType)

@@ -16,8 +16,6 @@ import ca.n4dev.aegaeon.server.view.mapper.UserMapper;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -57,7 +55,7 @@ public class UserServiceUnitTest {
         UserView userView = buildUserView();
 
         //when(userRepository.findByUserName(any())).thenReturn(user);
-        when(userInfoRepository.findByUserId(any())).thenReturn(buildUserInfo());
+        when(userInfoRepository.findByUserIdOrderByTypeCode(any())).thenReturn(buildUserInfo());
         when(userMapper.toView(any(), any())).thenReturn(userView);
 
         // when(myMock.myFunction(anyString())).thenAnswer(i -> i.getArguments()[0]);

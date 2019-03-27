@@ -1,11 +1,11 @@
 # User Account - OK
-# Double check auth
+# Double check auth - OK
 # Doc
-# Translations
-# Opt-In consent
+# Translations - OK
+# Opt-In consent - OK
 # Styling
 # Theme keys
-# SQL combine
+# SQL combine - OK
 ## Logs
 ## Postgresql
 ## Perfo

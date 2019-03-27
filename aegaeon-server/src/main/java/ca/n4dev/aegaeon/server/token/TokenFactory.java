@@ -115,7 +115,7 @@ public class TokenFactory {
      * @return A Token or null.
      */
     public Token createToken(OAuthUser pOAuthUser, OAuthClient pOAuthClient, TokenProvider pTokenProvider, 
-                             Long pTimeValue, TemporalUnit pTemporalUnit, Map<String, String> pPayloads) throws Exception {
+                             Long pTimeValue, TemporalUnit pTemporalUnit, Map<String, Object> pPayloads) throws Exception {
         
         
         return pTokenProvider.createToken(pOAuthUser, 
@@ -134,7 +134,7 @@ public class TokenFactory {
      * @return A Token or null.
      */
     public Token createToken(OAuthUser pOAuthUser, OAuthClient pOAuthClient, TokenProviderType pTokenProviderType, 
-                             Long pTimeValue, TemporalUnit pTemporalUnit, Map<String, String> pPayloads) throws Exception {
+                             Long pTimeValue, TemporalUnit pTemporalUnit, Map<String, Object> pPayloads) throws Exception {
         
         TokenProvider tp = this.tokenProviderHolder.get(pTokenProviderType);
         
@@ -153,7 +153,7 @@ public class TokenFactory {
      * @return A Token or null.
      */
     public Token createToken(OAuthUser pOAuthUser, OAuthClient pOAuthClient, String pTokenProviderName, 
-                             Long pTimeValue, TemporalUnit pTemporalUnit, Map<String, String> pPayloads) throws Exception {
+                             Long pTimeValue, TemporalUnit pTemporalUnit, Map<String, Object> pPayloads) throws Exception {
         
         return createToken(pOAuthUser, 
                            pOAuthClient, 
@@ -171,7 +171,7 @@ public class TokenFactory {
      * @return A Token or null.
      */
     public Token createToken(OAuthUser pOAuthUser, OAuthClient pOAuthClient, 
-                             Long pTimeValue, TemporalUnit pTemporalUnit, Map<String, String> pPayloads) throws Exception {
+                             Long pTimeValue, TemporalUnit pTemporalUnit, Map<String, Object> pPayloads) throws Exception {
         
        
         return createToken(pOAuthUser, 

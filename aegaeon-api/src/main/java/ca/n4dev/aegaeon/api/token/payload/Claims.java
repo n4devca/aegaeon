@@ -38,12 +38,14 @@ public class Claims {
     public static final String USERNAME = "preferred_username";
     public static final String PICTURE = "picture";
     public static final String WEBSITE = "website";
+    public static final String ADDRESS = "address";
     public static final String EMAIL = "email";
+    public static final String EMAIL_VERIFIED = "email_verified";
     public static final String PHONE_NUMBER = "phone_number";
+    public static final String PHONE_NUMBER_VERIFIED = "phone_number_verified";
     public static final String UPDATED_AT = "updated_at";
     public static final String LOCALE = "locale";
     public static final String ZONEINFO = "zoneinfo";
-    
     public static final String NONCE = "nonce";
     
 }

@@ -24,6 +24,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.Mockito.when;
@@ -61,11 +63,15 @@ public class TokenProviderUnitTest {
         TokenProvider tokenProvider = new RSA512JwtTokenProvider(this.keysProvider, serverInfo);
         TokenVerifier tokenVerifier = new RSA512JwtTokenVerifier(keysProvider, serverInfo);
 
+        final Map<String, Object> claims = new LinkedHashMap<>();
+        claims.putAll(Utils.asMap(Claims.WEBSITE, "httpz://bob.com", Claims.PHONE_NUMBER, "+1-111-111-1111"));
+
+
         Token token = tokenProvider.createToken(buildOAuthUser(),
                                                 buildOAuthClient(TokenProviderType.RSA_RS512),
                                                 1L,
                                                 ChronoUnit.DAYS,
-                                                Utils.asMap(Claims.WEBSITE, "httpz://bob.com", Claims.PHONE_NUMBER, "+1-111-111-1111"));
+                                                claims);
 
         validateToken(token, tokenVerifier);
 
@@ -103,7 +109,8 @@ public class TokenProviderUnitTest {
         Token token = tokenProvider.createToken(buildOAuthUser(),
                                                 buildOAuthClient(TokenProviderType.HMAC_HS512),
                                                 1L, ChronoUnit.DAYS,
-                                                Utils.asMap(Claims.WEBSITE, "httpz://bob.com", Claims.PHONE_NUMBER, "+1-111-111-1111"));
+                                                new LinkedHashMap<>(Utils.asMap(Claims.WEBSITE, "httpz://bob.com",
+                                                                                Claims.PHONE_NUMBER, "+1-111-111-1111")));
 
         validateToken(token, tokenVerifier);
         OAuthUserAndClaim userAndClaim = tokenVerifier.extractAndValidate(token.getValue());

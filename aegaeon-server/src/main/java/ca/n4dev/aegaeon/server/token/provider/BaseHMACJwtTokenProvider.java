@@ -106,7 +106,7 @@ public abstract class BaseHMACJwtTokenProvider implements TokenProvider {
      */
     @Override
     public Token createToken(OAuthUser pOAuthUser, OAuthClient pOAuthClient, Long pTimeValue, TemporalUnit pTemporalUnit,
-                             Map<String, String> pPayloads) throws Exception {
+                             Map<String, Object> pPayloads) throws Exception {
 
         ZonedDateTime expiredIn = ZonedDateTime.now(ZoneOffset.UTC).plus(pTimeValue, pTemporalUnit);
         Instant instant = expiredIn.toInstant();
@@ -121,7 +121,7 @@ public abstract class BaseHMACJwtTokenProvider implements TokenProvider {
         builder.issueTime(new Date());
 
         if (pPayloads != null && !pPayloads.isEmpty()) {
-            for (Map.Entry<String, String> en : pPayloads.entrySet()) {
+            for (Map.Entry<String, Object> en : pPayloads.entrySet()) {
                 builder.claim(en.getKey(), en.getValue());
             }
         }

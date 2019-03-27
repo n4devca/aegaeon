@@ -45,3 +45,6 @@ insert into user_info_type(code) values('ADDRESS');
 insert into user_info_type(code) values('EMAIL');
 insert into user_info_type(code) values('PHONE');
 insert into user_info_type(code) values('SOCIALMEDIA');
+
+
+

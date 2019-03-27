@@ -1,10 +1,12 @@
 package ca.n4dev.aegaeon.server.view;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
  * ScopeView.java
- * TODO(rguillemette) Add description.
+ *
+ * Scope view.
  *
  * @author rguillemette
  * @since 2.0.0 - Mar 12 - 2019
@@ -14,6 +16,8 @@ public class ScopeView {
     private Long id;
 
     private String name;
+
+    private List<String> claims;
 
     public ScopeView() {
     }
@@ -49,6 +53,20 @@ public class ScopeView {
      */
     public void setName(String pName) {
         name = pName;
+    }
+
+    /**
+     * @return the claims
+     */
+    public List<String> getClaims() {
+        return claims;
+    }
+
+    /**
+     * @param pClaims the claims to set
+     */
+    public void setClaims(List<String> pClaims) {
+        claims = pClaims;
     }
 
     @Override

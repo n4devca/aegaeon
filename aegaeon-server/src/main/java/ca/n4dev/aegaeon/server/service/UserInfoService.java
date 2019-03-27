@@ -8,9 +8,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -41,22 +41,22 @@ import ca.n4dev.aegaeon.api.repository.UserInfoRepository;
 @Service
 public class UserInfoService extends BaseSecuredService<UserInfo, UserInfoRepository> {
 
-	/**
-	 * @param pRepository
-	 */
-	@Autowired
-	public UserInfoService(UserInfoRepository pRepository) {
-		super(pRepository);
-	}
+    /**
+     * @param pRepository
+     */
+    @Autowired
+    public UserInfoService(UserInfoRepository pRepository) {
+        super(pRepository);
+    }
 
-	/**
-	 * Find all user info by user id.
-	 * @param pUserId A user's id.
-	 * @return A list of user info.
-	 */
-	@Transactional(readOnly = true)
+    /**
+     * Find all user info by user id.
+     * @param pUserId A user's id.
+     * @return A list of user info.
+     */
+    @Transactional(readOnly = true)
     @PreAuthorize("hasRole('CLIENT') or principal.id == #pUserId")
-	public List<UserInfo> findByUserId(Long pUserId) {
-		return getRepository().findByUserId(pUserId);
-	}
+    public List<UserInfo> findByUserId(Long pUserId) {
+        return getRepository().findByUserIdOrderByTypeCode(pUserId);
+    }
 }

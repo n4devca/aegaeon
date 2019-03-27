@@ -17,13 +17,7 @@
                     <h1 th:text="#{page.home.welcome}"></h1>
                     <p th:text="#{page.home.welcome.about.1}"></p>
                     <p th:text="#{page.home.welcome.about.2}"></p>
-                    <p th:text="#{page.home.welcome.about.3}"></p>
 
-                    <ul>
-                        <li><span th:text="#{page.home.welcome.about.4}"></span></li>
-                        <li><span th:text="#{page.home.welcome.about.5}"></span></li>
-                        <li><span th:text="#{page.home.welcome.about.6}"></span></li>
-                    </ul>
 
                     <div class="center" sec:authorize="!hasRole('ROLE_USER')">
                         <a href="/login" class="btn" th:href="@{login}" th:text="#{action.login}">Login</a>

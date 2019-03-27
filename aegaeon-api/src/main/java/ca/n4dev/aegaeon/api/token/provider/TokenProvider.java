@@ -77,6 +77,6 @@ public interface TokenProvider {
                       OAuthClient pOAuthClient, 
                       Long pTimeValue, 
                       TemporalUnit pTemporalUnit, 
-                      Map<String, String> pPayloads) throws Exception;
+                      Map<String, Object> pPayloads) throws Exception;
     
 }

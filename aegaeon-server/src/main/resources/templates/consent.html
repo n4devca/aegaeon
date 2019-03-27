@@ -14,11 +14,34 @@
                   class="login-form">
                 <div class="box">
                     <div class="heading">
-                        <h2 th:text="#{page.authorize.title}">Consent</h2>
+                        <h2 th:text="#{page.authorize.help(${client_id})}">Consent</h2>
                     </div>
                     <div class="body">
-                        <p th:text="#{page.authorize.help(${client_id})}"></p>
-                        
+                        <p th:text="#{page.authorize.scope(${scope})}"></p>
+
+                        <p th:text="#{page.authorize.claims.help}"></p>
+
+                        <p th:text="#{page.authorize.claims.choice}"></p>
+
+                        <div class="box">
+
+                            <div class="body">
+
+                                <div th:each="claim : ${claims}">
+                                    <h3>
+                                        <input type="checkbox" checked="checked"
+                                               name="accept_scopes" th:value="${claim.key}" />
+                                        <span th:text="${claim.key}"></span>
+                                    </h3>
+
+
+                                    <p th:each="claimValue : ${claim.value}">
+                                        <span th:text="${claimValue}"></span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         <input type="hidden" name="client_id" th:value="${client_id}" />
                         <input type="hidden" name="redirect_uri" th:value="${redirect_uri}"/>
                         <input type="hidden" name="state" th:value="${state}" />

@@ -81,7 +81,7 @@ public class IdTokenService extends BaseTokenService<IdToken, IdTokenRepository>
 
         // Create Payload.
         Set<String> scopes = Utils.convert(pScopes, s -> s.getName());
-        Map<String, String> payload = this.userService.createPayload(pUser, pClient, scopes);
+        Map<String, Object> payload = this.userService.createPayload(pUser, pClient, scopes);
 
         // If we need to include nonce param to prevent replay attack
         if (Utils.isNotEmpty(pTokenRequest.getNonce())) {

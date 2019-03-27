@@ -1,6 +1,6 @@
 /**
  * Copyright 2017 Remi Guillemette - n4dev.ca
- *
+ * <p>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -8,16 +8,15 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 package ca.n4dev.aegaeon.server.service;
 
@@ -39,7 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * ScopeService.java
- * 
+ *
  * Service managing scopes.
  *
  * @author by rguillemette
@@ -49,7 +48,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ScopeService extends BaseService<Scope, ScopeRepository> {
 
     private static final String SPACE = " ";
-    
+
     /**
      * Default Constructor.
      * @param pRepository The repository used by this service.
@@ -58,12 +57,13 @@ public class ScopeService extends BaseService<Scope, ScopeRepository> {
     public ScopeService(ScopeRepository pRepository) {
         super(pRepository);
     }
-    
+
     @Transactional(readOnly = true)
     public List<ScopeView> findAll() {
         final List<Scope> all = this.getRepository().findAll();
         return Utils.convert(all, pScope -> new ScopeView(pScope.getId(), pScope.getName()));
     }
+
 
     @Transactional(readOnly = true)
     public ScopeView findByName(String pName) {
@@ -158,14 +158,17 @@ public class ScopeService extends BaseService<Scope, ScopeRepository> {
     }
 
     public static class ScopeSet {
+        private static ScopeSet empty = new ScopeSet(Collections.emptySet(), Collections.emptySet());
         private Set<ScopeView> validScopes;
         private Set<ScopeView> invalidScopes;
-
-        private static ScopeSet empty = new ScopeSet(Collections.emptySet(), Collections.emptySet());
 
         public ScopeSet(Set<ScopeView> pValidScopes, Set<ScopeView> pInvalidScopes) {
             validScopes = pValidScopes;
             invalidScopes = pInvalidScopes;
+        }
+
+        public static final ScopeSet empty() {
+            return empty;
         }
 
         /**
@@ -180,11 +183,6 @@ public class ScopeService extends BaseService<Scope, ScopeRepository> {
          */
         public Set<ScopeView> getInvalidScopes() {
             return invalidScopes;
-        }
-
-
-        public static final ScopeSet empty() {
-            return empty;
         }
     }
 }

@@ -135,7 +135,7 @@ public abstract class BaseRSAJwtTokenProvider implements TokenProvider {
                              OAuthClient pOAuthClient,
                              Long pTimeValue,
                              TemporalUnit pTemporalUnit,
-                             Map<String, String> pPayloads) throws Exception {
+                             Map<String, Object> pPayloads) throws Exception {
 
         //LocalDateTime expiredIn = LocalDateTime.now().plus(pTimeValue, pTemporalUnit);
         ZonedDateTime expiredIn = ZonedDateTime.now(ZoneOffset.UTC).plus(pTimeValue, pTemporalUnit);
@@ -151,7 +151,7 @@ public abstract class BaseRSAJwtTokenProvider implements TokenProvider {
         builder.issueTime(new Date());
 
         if (pPayloads != null && !pPayloads.isEmpty()) {
-            for (Map.Entry<String, String> en : pPayloads.entrySet()) {
+            for (Map.Entry<String, Object> en : pPayloads.entrySet()) {
                 builder.claim(en.getKey(), en.getValue());
             }
         }

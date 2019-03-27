@@ -24,6 +24,7 @@ package ca.n4dev.aegaeon.server.view;
 import java.util.Map;
 
 import ca.n4dev.aegaeon.api.token.payload.Claims;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -38,30 +39,32 @@ public class UserInfoResponseView {
    
     private String sub;
     
-    private String name;
-    
-    private String email;
-    
-    private String picture;
+//    private String name;
+//
+//    private String email;
+//
+//    private String picture;
+//
+//    @JsonProperty("zoneinfo")
+//    private String zoneInfo;
+//
+//    private String locale;
+//
+//    @JsonProperty("preferred_username")
+//    private String preferredUsername;
 
-    @JsonProperty("zoneinfo")
-    private String zoneInfo;
+    private Map<String, Object> payload;
     
-    private String locale;
-
-    @JsonProperty("preferred_username")
-    private String preferredUsername;
-    
-    
-    public UserInfoResponseView(String pSub, Map<String, String> pPayload) {
+    public UserInfoResponseView(String pSub, Map<String, Object> pPayload) {
         this.sub = pSub;
         
-        this.name = pPayload.get(Claims.NAME);
-        this.email = pPayload.get(Claims.EMAIL);
-        this.picture = pPayload.get(Claims.PICTURE);
-        this.zoneInfo = pPayload.get(Claims.ZONEINFO);
-        this.locale = pPayload.get(Claims.LOCALE);
-        this.preferredUsername = pPayload.get(Claims.USERNAME);
+//        this.name = (String) pPayload.get(Claims.NAME);
+//        this.email = (String) pPayload.get(Claims.EMAIL);
+//        this.picture = (String) pPayload.get(Claims.PICTURE);
+//        this.zoneInfo = (String) pPayload.get(Claims.ZONEINFO);
+//        this.locale = (String) pPayload.get(Claims.LOCALE);
+//        this.preferredUsername = (String) pPayload.get(Claims.USERNAME);
+        this.payload = pPayload;
     }
 
 
@@ -72,44 +75,50 @@ public class UserInfoResponseView {
         return sub;
     }
 
+    @JsonAnyGetter
+    public Map<String, Object> getPayload() {
 
-    /**
-     * @return the name
-     */
-    public String getName() {
-        return name;
+        return payload;
     }
 
+//    /**
+//     * @return the name
+//     */
+//    public String getName() {
+//        return name;
+//    }
+//
+//
+//    /**
+//     * @return the email
+//     */
+//    public String getEmail() {
+//        return email;
+//    }
+//
+//
+//    /**
+//     * @return the picture
+//     */
+//    public String getPicture() {
+//        return picture;
+//    }
+//
+//
+//    /**
+//     * @return the zoneInfo
+//     */
+//    public String getZoneInfo() {
+//        return zoneInfo;
+//    }
+//
+//
+//    /**
+//     * @return the locale
+//     */
+//    public String getLocale() {
+//        return locale;
+//    }
 
-    /**
-     * @return the email
-     */
-    public String getEmail() {
-        return email;
-    }
-
-
-    /**
-     * @return the picture
-     */
-    public String getPicture() {
-        return picture;
-    }
-
-
-    /**
-     * @return the zoneInfo
-     */
-    public String getZoneInfo() {
-        return zoneInfo;
-    }
-
-
-    /**
-     * @return the locale
-     */
-    public String getLocale() {
-        return locale;
-    }
 
 }

@@ -88,7 +88,7 @@ public class UUIDTokenProvider implements TokenProvider {
                              OAuthClient pOAuthClient, 
                              Long pTimeValue, 
                              TemporalUnit pTemporalUnit,
-                             Map<String, String> pPayloads) throws Exception {
+                             Map<String, Object> pPayloads) throws Exception {
         return new Token(UUID.randomUUID().toString(), pTimeValue, pTemporalUnit);
     }
 

@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import ca.n4dev.aegaeon.api.exception.OpenIdException;
@@ -45,10 +46,12 @@ import ca.n4dev.aegaeon.api.token.OAuthUser;
 import ca.n4dev.aegaeon.api.token.payload.Claims;
 import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
 import ca.n4dev.aegaeon.api.validation.PasswordEvaluator;
+import ca.n4dev.aegaeon.server.config.ServerInfo;
 import ca.n4dev.aegaeon.server.security.AccessTokenAuthentication;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Differentiation;
 import ca.n4dev.aegaeon.server.utils.Utils;
+import ca.n4dev.aegaeon.server.view.ScopeView;
 import ca.n4dev.aegaeon.server.view.UserInfoResponseView;
 import ca.n4dev.aegaeon.server.view.UserInfoView;
 import ca.n4dev.aegaeon.server.view.UserView;
@@ -70,6 +73,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class UserService extends BaseSecuredService<User, UserRepository> implements PayloadProvider {
 
+    private static final String SCOPE_PROFILE = "profile";
+    private static final String SCOPE_EMAIL = "email";
+    private static final String SCOPE_ADDRESS = "address";
+    private static final String SCOPE_PHONE = "phone";
+    private static final String SCOPE_SOCIALMEDIA = "socialmedia";
+
     private OpenIdEventLogger openIdEventLogger;
     private UserMapper userMapper;
     private UserInfoRepository userInfoRepository;
@@ -77,6 +86,9 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
     private UserInfoTypeService userInfoTypeService;
     private PasswordEncoder passwordEncoder;
     private PasswordEvaluator passwordEvaluator;
+
+    private ScopeService scopeService;
+    private ServerInfo serverInfo;
 
     /**
      * Default constructor.
@@ -91,7 +103,9 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
                        PasswordEncoder pPasswordEncoder,
                        OpenIdEventLogger pOpenIdEventLogger,
                        UserMapper pUserMapper,
-                       PasswordEvaluator pPasswordEvaluator) {
+                       PasswordEvaluator pPasswordEvaluator,
+                       ScopeService pScopeService,
+                       ServerInfo pServerInfo) {
         super(pRepository);
         this.authorityRepository = pAuthorityRepository;
         this.userInfoRepository = pUserInfoRepository;
@@ -100,6 +114,8 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
         this.userMapper = pUserMapper;
         this.userInfoTypeService = pUserInfoTypeService;
         this.passwordEvaluator = pPasswordEvaluator;
+        this.scopeService = pScopeService;
+        this.serverInfo = pServerInfo;
     }
 
     /**
@@ -110,7 +126,7 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
     @PreAuthorize("hasRole('CLIENT') or principal.id == #pUserId")
     public UserView findOne(Long pUserId) {
         User user = super.findById(pUserId);
-        List<UserInfo> ui = this.userInfoRepository.findByUserId(pUserId);
+        List<UserInfo> ui = this.userInfoRepository.findByUserIdOrderByTypeCode(pUserId);
 
         return this.userMapper.toView(user, ui);
     }
@@ -124,7 +140,7 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
         Assert.notNull(u, ServerExceptionCode.USER_EMPTY);
 
         final Set<String> scopeStrings = Utils.convert(pAccessTokenAuthentication.getScopes(), pScopeView -> pScopeView.getName());
-        Map<String, String> payload = createPayload(u, null, scopeStrings);
+        Map<String, Object> payload = createPayload(u, null, scopeStrings);
 
         UserInfoResponseView response = new UserInfoResponseView(pAccessTokenAuthentication.getUniqueIdentifier(), payload);
 
@@ -175,7 +191,7 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
         // Get the user and its infos
         final User u = this.findById(pUserId);
         Assert.notNull(u, ServerExceptionCode.USER_EMPTY);
-        List<UserInfo> uis = this.userInfoRepository.findByUserId(pUserId);
+        List<UserInfo> uis = this.userInfoRepository.findByUserIdOrderByTypeCode(pUserId);
         List<UserInfoType> allTypes = this.userInfoTypeService.findAllType();
 
         // Update basic info
@@ -226,7 +242,7 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
             this.userInfoRepository.deleteAll(differentiation.getRemovedObjs());
         }
 
-        userInfos = this.userInfoRepository.findByUserId(savedUser.getId());
+        userInfos = this.userInfoRepository.findByUserIdOrderByTypeCode(savedUser.getId());
         return this.userMapper.toView(savedUser, userInfos);
     }
 
@@ -325,23 +341,148 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
      */
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('CLIENT') or principal.id == #pOAuthUser.id")
-    public Map<String, String> createPayload(OAuthUser pOAuthUser, OAuthClient pOAuthClient, Set<String> pRequestedScopes) {
+    public Map<String, Object> createPayload(OAuthUser pOAuthUser, OAuthClient pOAuthClient, Set<String> pRequestedScopes) {
         final UserView userView = findOne(pOAuthUser.getId());
-        return createPayload(userView, pOAuthClient, pRequestedScopes);
-    }
+        final Map<String, Map<String, Object>> payloadByScope = createPayload(userView, pRequestedScopes);
+        Map<String, Object> payload = new LinkedHashMap<>();
 
-    private Map<String, String> createPayload(UserView pUserView, OAuthClient pOAuthClient, Set<String> pRequestedScopes) {
-        Map<String, String> payload = new LinkedHashMap<>();
-
-        final boolean hasProfile = Utils.safeSet(pRequestedScopes).contains("profile");
-
-        if (hasProfile) {
-            payload.put(Claims.NAME, pUserView.getName());
-            payload.put(Claims.USERNAME, pUserView.getUserName());
+        for (Map.Entry<String, Map<String, Object>> entry : payloadByScope.entrySet()) {
+            payload.putAll(entry.getValue());
         }
 
         return payload;
     }
+
+
+    /*
+    *
+    profile
+        OPTIONAL. This scope value requests access to the End-User's default profile Claims,
+            which are: name, family_name, given_name, middle_name, nickname, preferred_username,
+            profile, picture, website, gender, birthdate, zoneinfo, locale, and updated_at.
+    email
+        OPTIONAL. This scope value requests access to the email and email_verified Claims.
+    address
+        OPTIONAL. This scope value requests access to the address Claim.
+    phone
+        OPTIONAL. This scope value requests access to the phone_number and phone_number_verified Claims.
+    * */
+
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('CLIENT') or principal.id == #pUserView.id")
+    public Map<String, Map<String, Object>> createPayload(UserView pUserView,
+                                              Set<String> pRequestedScopes) {
+
+        final Set<ScopeView> validScopes = scopeService.getValidScopes(Utils.join(pRequestedScopes, pS -> pS));
+        Map<String, Map<String, Object>> payload = new LinkedHashMap<>();
+
+        final List<UserInfoView> userInfoViews = Utils.safeList(pUserView.getUserInfos());
+        final String NAMESPACE = this.serverInfo.getIssuer();
+
+        // Split in Map
+        Map<String, List<UserInfoView>> infoViewMap = new LinkedHashMap<>();
+        for (UserInfoView userInfoView : userInfoViews) {
+            final String code = userInfoView.getCode().toLowerCase();
+            if (!infoViewMap.containsKey(code)) {
+                infoViewMap.put(code, new ArrayList<>());
+            }
+
+            infoViewMap.get(code).add(userInfoView);
+        }
+
+        if (containsScope(validScopes, SCOPE_PROFILE)) {
+            Map<String, Object> profilePayload = new LinkedHashMap<>();
+            profilePayload.put(Claims.NAME, pUserView.getName());
+            profilePayload.put(Claims.USERNAME, pUserView.getUserName());
+            payload.put(SCOPE_PROFILE, profilePayload);
+        }
+
+
+        if (containsScope(validScopes, SCOPE_EMAIL)) {
+            final Map<String, Object> emails =
+                    addToPayload(Claims.EMAIL, NAMESPACE, infoViewMap.get(SCOPE_EMAIL), pUserInfoView -> pUserInfoView.getValue());
+
+            if (!emails.isEmpty()) {
+                emails.put(Claims.EMAIL_VERIFIED, false);
+                payload.put(SCOPE_EMAIL, emails);
+            }
+        }
+
+        if (containsScope(validScopes, SCOPE_ADDRESS)) {
+            final Map<String, Object> addresses =
+                    addToPayload(Claims.ADDRESS, NAMESPACE, infoViewMap.get(SCOPE_ADDRESS), pUserInfoView -> {
+                        return Utils.asMap("street_address", pUserInfoView.getValue());
+                    });
+
+            if (!addresses.isEmpty()) {
+                payload.put(SCOPE_ADDRESS, addresses);
+            }
+        }
+
+        if (containsScope(validScopes, SCOPE_PHONE)) {
+            final Map<String, Object> phones =
+                    addToPayload(Claims.PHONE_NUMBER, NAMESPACE, infoViewMap.get(SCOPE_PHONE), pUserInfoView -> pUserInfoView.getValue());
+
+            if (!phones.isEmpty()) {
+                phones.put(Claims.PHONE_NUMBER_VERIFIED, false);
+                payload.put(SCOPE_PHONE, phones);
+            }
+        }
+
+        if (containsScope(validScopes, SCOPE_SOCIALMEDIA)) {
+            final Map<String, Object> socialMedias =
+                    addToPayload(null, NAMESPACE, infoViewMap.get(SCOPE_SOCIALMEDIA), pUserInfoView -> pUserInfoView.getValue());
+            if (!socialMedias.isEmpty()) {
+                payload.put(SCOPE_SOCIALMEDIA, socialMedias);
+            }
+        }
+
+
+        return payload;
+    }
+
+    private Map<String, Object> addToPayload(String pClaimKey,
+                                             String pNameSpace,
+                                             List<UserInfoView> pValues,
+                                             Function<UserInfoView, Object> pValueProvider) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        boolean first = Utils.isNotEmpty(pClaimKey);
+
+        if (Utils.isNotEmpty(pValues)) {
+
+            for (UserInfoView userInfoView : pValues) {
+
+                String claimKey = Utils.coalesce(pClaimKey, userInfoView.getCode());
+
+                if (first) {
+                    payload.put(claimKey,
+                                 pValueProvider.apply(userInfoView));
+                } else {
+                    final String key = pNameSpace + "/" + claimKey + "/" + userInfoView.getName();
+                    payload.put(key.toLowerCase(),
+                                 pValueProvider.apply(userInfoView));
+                }
+
+                first = false;
+            }
+        }
+
+        return payload;
+    }
+
+    private boolean containsScope(Set<ScopeView> pRequestedScopes, String pName) {
+        if (Utils.isNotEmpty(pRequestedScopes)) {
+
+            for (ScopeView requestedScope : pRequestedScopes) {
+                if (Utils.equals(requestedScope.getName(), pName)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
 
     private Optional<UserInfoType> findType(List<UserInfoType> pAllType, UserInfoView pUserInfoView) {
 

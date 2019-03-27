@@ -45,7 +45,7 @@ public interface UserInfoRepository extends JpaRepository<UserInfo, Long> {
 	 * @param pUserId the user's id.
 	 * @return A list of user info.
 	 */
-	List<UserInfo> findByUserId(Long pUserId);
+	List<UserInfo> findByUserIdOrderByTypeCode(Long pUserId);
 	
 	/**
 	 * Delete all userInfo by ids

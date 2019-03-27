@@ -227,6 +227,15 @@ public class Utils {
         return pSet;
     }
 
+    public static <E> List<E> safeList(List<E> pList) {
+
+        if (pList == null) {
+            return Collections.emptyList();
+        }
+
+        return pList;
+    }
+
     public static <O> O coalesce(O... pEntities) {
         if (pEntities != null) {
             for (O e : pEntities) {
