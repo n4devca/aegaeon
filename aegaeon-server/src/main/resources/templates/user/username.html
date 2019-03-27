@@ -9,7 +9,7 @@
 </head>
 <body>
 <section layout:fragment="content">
-    <div class="normal-content page-user-username">
+    <div class="normal-content page-user-username page-user-username-c">
         <th:block th:unless="${completed}">
             <form th:action="@{/user/name}" th:object="${dto}" method="post">
                 <div class="box">

@@ -50,7 +50,7 @@ public class SimpleHomeController {
 	 * Default Constructor.
 	 * @param pHomeModuleEnable If home is enabled.
 	 */
-	public SimpleHomeController(@Value("aegaeon.modules.home:false") String pHomeModuleEnable) {
+	public SimpleHomeController(@Value("${aegaeon.modules.home:false}") String pHomeModuleEnable) {
 		this.homeModule = pHomeModuleEnable;
 	}
 	

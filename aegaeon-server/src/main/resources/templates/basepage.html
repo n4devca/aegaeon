@@ -10,12 +10,6 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link href="../static/css/aegaeon-default.css" th:href="@{/resources/css/aegaeon-default.css}" rel="stylesheet" />
-    <!--
-    <link href="../static/css/n4css.min.css" th:href="@{/resources/css/n4css.min.css}" rel="stylesheet" />
-    <link href="../../css/bootstrap/bootstrap.min.css" th:href="@{/resources/css/bootstrap.min.css}" rel="stylesheet" />
-    <link href="../../css/origin.css" th:href="@{/resources/css/origin.css}" rel="stylesheet" />
-    <script src="../../js/bootstrap.min.js" th:src="@{/resources/js/bootstrap.min.js}"></script>
-     -->
     <th:block th:if="${serverInfo}">
 	    <meta name="privacy policy" th:attr="content=${serverInfo.legalEntity}" />
     	<link th:if="${serverInfo.customStyleSheet}" th:href="@{${serverInfo.customStyleSheet}}" rel="stylesheet" />

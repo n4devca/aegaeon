@@ -84,6 +84,23 @@ footer {
     margin-top: 1em;
 }
 
+
+/* Page / mobile view */
+div.page-signinpage  div.login-form {
+    margin: 3em 0;
+}
+
+div.page-signinpage  div.login-form h1 {
+    text-transform: uppercase;
+    margin-bottom: 1em;
+}
+
+div.page-signinpage  div.login-form div.box div.body {
+    padding-top: 2em;
+    padding-bottom: 2em;
+}
+
+
 @media (min-width: 800px) {
     .main-content {
         margin: 0 auto;
@@ -111,12 +128,12 @@ footer {
         padding: 1em 1em 0 0;
     }
 
-    div.login-form {
-        margin:0 auto;
+    div.page-signinpage  div.login-form {
+        margin:3em auto;
         width: 600px;
     }
 
-    div.login-form .btn-full {
+    div.page-signinpage  div.login-form .btn-full {
         display: inline-block;
         width: auto;
     }
@@ -457,10 +474,4 @@ label.pill.pill-message {
 
 .full {
     width: 100%;
-}
-
-/* Specifics */
-.login-form {
-    margin: 2em 0;
-
 }

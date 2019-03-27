@@ -9,18 +9,19 @@
 </head>
 <body>
     <section layout:fragment="content">
-        <div class="normal-content page-signinpage">
+        <div class="normal-content page-signinpage page-signinpage-c">
             <div class="login-form">
                 <form th:action="@{/login}" method="POST" >
                     <div class="box">
                         <div class="body">
+                            <h1 th:text="#{page.signin.form.title}"></h1>
                             <div class="form-group">
-                                <label for="username" th:text="#{page.signin.form.label.username}"></label>
-                                <input type="text" class="form-input" id="username" name="username"
+                                <!--<label for="username" th:text="#{page.signin.form.label.username}"></label>-->
+                                <input type="text" class="form-input" id="username" name="username" autofocus="autofocus"
                                        th:placeholder="#{page.signin.form.input.placeholder.username}" />
                             </div>
                             <div class="form-group">
-                                <label for="password" th:text="#{page.signin.form.label.passwd}">Password</label>
+                                <!--<label for="password" th:text="#{page.signin.form.label.passwd}">Password</label>-->
                                 <input type="password" class="form-input" id="password" name="password"
                                        th:placeholder="#{page.signin.form.input.placeholder.passwd}" />
                             </div>

@@ -9,15 +9,12 @@
 </head>
 <body>
     <section layout:fragment="content">
-        <div class="normal-content page-homepage">
-
-
+        <div class="normal-content page-homepage page-homepage-c">
             <div class="box">
                 <div class="body">
                     <h1 th:text="#{page.home.welcome}"></h1>
                     <p th:text="#{page.home.welcome.about.1}"></p>
                     <p th:text="#{page.home.welcome.about.2}"></p>
-
 
                     <div class="center" sec:authorize="!hasRole('ROLE_USER')">
                         <a href="/login" class="btn" th:href="@{login}" th:text="#{action.login}">Login</a>
@@ -27,13 +24,8 @@
                             </button>
                         </form>
                     </div>
-
                 </div>
-
             </div>
-
-            <!--<img alt="aegaeon" src="/images/n4dev-aegaeon.png" th:src="@{/resources/images/n4dev-aegaeon.png}" />-->
-
         </div>
     </section>
 </body>
