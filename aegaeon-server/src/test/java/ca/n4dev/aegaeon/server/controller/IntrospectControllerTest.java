@@ -1,6 +1,7 @@
 package ca.n4dev.aegaeon.server.controller;
 
 import java.time.Instant;
+import java.util.Base64;
 
 import org.hamcrest.core.StringContains;
 import org.junit.Test;
@@ -42,7 +43,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class IntrospectControllerTest {
 
     private static final String CLIENT_PUBLIC_ID = "ca.n4dev.auth.client";
-    private static final String CLIENT_PASSWD = "ca.n4dev.auth.client";
+    private static final String CLIENT_PASSWD = "kjaskas8993jnskajksj";
+
+
+    private static final String CLIENT_PUBLIC_ID_2 = "ca.n4dev.auth.client2";
+    private static final String CLIENT_PASSWD_2 = "kjaskas8993jnskajksj";
 
     private static final String ACT_VALID =
             "eyJhbGciOiJSUzUxMiJ9.eyJzdWIiOiJjYS5uNGRldi5hdXRoLmNsaWVudCIsImF1ZCI6ImNhLm40ZGV2LmF1dGguY2xpZW50IiwiaXNzIjoibG9jYWxob3N0IiwiZXhwIjoxODQwNzM1ODQwfQ.oHQLca1tq8HNwD51-BEBHyBBdYsaDR3iwoROesf5zMnsS5u07FRim_eRlH0Cqz9cXIggrXcBnTUxgVEYEB3ejCkVp8_wIuyhAPw1fsMDL60hxj1BdMi6SN43CWZ0CKR8wntaZeL1LGowHZiXAuPH5OENM-8SUPWJ_LoDXGbjUFaxf3ZXrraIIYbD-WyhH-MzoBNzXzAHewBdHBD41dJqJE-EhPD091rAz40h6aNdSC4zE021bdmASyqExLuFNxHGKdEGqzuLAFDkZn3yfzXNode3dv1RuZblfBeDBNzPuSra4IRDXb2OgGJ8qjXxqNj0h2kDEq_YolWvH8Revgl4JA";
@@ -62,12 +67,12 @@ public class IntrospectControllerTest {
     @Test // ok
     public void authShouldGetOk() throws Exception {
 
+        String auth = "Basic " + authorizationHeader(CLIENT_PUBLIC_ID, CLIENT_PASSWD);
+
         this.mockMvc
-                .perform(post(IntrospectController.URL).params(introspectParams(true))
-                                                       .with(user(CLIENT_PUBLIC_ID)
-                                                                     .password(CLIENT_PASSWD)
-                                                                     .authorities(new SimpleGrantedAuthority(
-                                                                             "ROLE_CLIENT"))))
+                .perform(post(IntrospectController.URL)
+                                 .params(introspectParams(true))
+                                 .header("Authorization", auth))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -77,14 +82,13 @@ public class IntrospectControllerTest {
     @Test // ok
     public void shouldGetActiveIntrospectResponse() throws Exception {
 
+        String auth = "Basic " + authorizationHeader(CLIENT_PUBLIC_ID, CLIENT_PASSWD);
+
         int now = Long.valueOf(Instant.now().getEpochSecond()).intValue();
 
         this.mockMvc
                 .perform(post(IntrospectController.URL).params(introspectParams(true))
-                                                       .with(user(CLIENT_PUBLIC_ID)
-                                                                     .password(CLIENT_PASSWD)
-                                                                     .authorities(new SimpleGrantedAuthority(
-                                                                             "ROLE_CLIENT"))))
+                                                       .header("Authorization", auth))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -102,6 +106,7 @@ public class IntrospectControllerTest {
 
     @Test // ok
     public void noClientAuthorityShouldGetForbidden() throws Exception {
+
         this.mockMvc.perform(post(IntrospectController.URL).params(introspectParams(true))
                                                            .with(user(CLIENT_PUBLIC_ID)
                                                                          .password(CLIENT_PASSWD)
@@ -111,21 +116,31 @@ public class IntrospectControllerTest {
     }
 
     @Test // ok
-    public void invalidParamGetErrorResponse() throws Exception {
+    public void invalidParamGetActiveFalse() throws Exception {
 
+        String auth = "Basic " + authorizationHeader(CLIENT_PUBLIC_ID, CLIENT_PASSWD);
 
-        this.mockMvc.perform(post(IntrospectController.URL)
-                                     .with(user(CLIENT_PUBLIC_ID)
-                                                   .password(CLIENT_PASSWD)
-                                                   .authorities(new SimpleGrantedAuthority("ROLE_CLIENT"))))
+        this.mockMvc.perform(post(IntrospectController.URL).header("Authorization", auth))
                     .andDo(print())
-                    .andExpect(status().isBadRequest())
+                    .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                    .andExpect(content().string(new StringContains("\"error\"")))
-                    .andExpect(content().string(new StringContains("\"invalid_request\"")));
+                    .andExpect(jsonPath("$.active", is(false)));
 
     }
 
+    public void clientWithoutIntrospectGetActiveFalse() throws Exception {
+        String auth = "Basic " + authorizationHeader(CLIENT_PUBLIC_ID_2, CLIENT_PASSWD);
+
+        this.mockMvc.perform(post(IntrospectController.URL).header("Authorization", auth))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.active", is(false)));
+    }
+
+    private String authorizationHeader(String pĈlientId, String pClientSecret) {
+        return Base64.getEncoder().encodeToString((pĈlientId + ":" + pClientSecret).getBytes());
+    }
 
     private MultiValueMap<String, String> introspectParams(boolean pValid) {
         MultiValueMap<String, String> p = new LinkedMultiValueMap<>();

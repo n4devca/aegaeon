@@ -1,6 +1,5 @@
 package ca.n4dev.aegaeon.server.service;
 
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -29,6 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -69,6 +69,9 @@ public class TokenServicesFacadeUnitTest {
     AuthorizationCodeService authorizationCodeService;
 
     @Mock
+    ApplicationEventPublisher eventPublisher;
+
+    @Mock
     ClientService clientService;
 
     TokenServicesFacade facade;
@@ -80,7 +83,8 @@ public class TokenServicesFacadeUnitTest {
                                          refreshTokenService,
                                          scopeService,
                                          authorizationCodeService,
-                                         clientService);
+                                         clientService,
+                                         eventPublisher);
     }
 
     @Test

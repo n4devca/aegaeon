@@ -8,44 +8,60 @@ See here for more details: http://gordondickens.com/wordpress/2013/03/27/sawing-
             <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
-    
-    <appender name="authentication_appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/aegaeon-authentication.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
-        </rollingPolicy>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %msg%n</pattern>
-        </encoder>
-    </appender>
-    <logger name="ca.n4dev.aegaeon.api.logging.AuthenticationLogger" level="info">
-        <appender-ref ref="authentication_appender" />
-    </logger>
-    
-    <appender name="authorization_appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/aegaeon-authorization.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
-        </rollingPolicy>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %msg%n</pattern>
-        </encoder>
-    </appender>
-    <logger name="ca.n4dev.aegaeon.api.logging.AuthorizationLogger" level="info">
-        <appender-ref ref="authorization_appender" />
-    </logger>
-    
+
+    <!-- OK -->
     <appender name="tokengranting_appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/aegaeon-tokengranting.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <fileNamePattern>aegaeon-tokengranting.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %X{clientId} %X{grantType} %X{requestedScope} %X{allowedScope} %X{userId} %X{tokens}%n</pattern>
         </encoder>
     </appender>
-    <logger name="ca.n4dev.aegaeon.api.logging.TokenGrantingLogger" level="info">
-        <appender-ref ref="tokengranting_appender" />
+    <logger name="ca.n4dev.aegaeon.server.event.TokenGrantEvent" level="info">
+        <appender-ref ref="tokengranting_appender"/>
     </logger>
-    
-    
+
+    <!-- OK -->
+    <appender name="introspect_logger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>aegaeon-introspect.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %X{clientId} %X{clientAllowed} %X{userId} %X{result}%n</pattern>
+        </encoder>
+    </appender>
+    <logger name="ca.n4dev.aegaeon.server.event.IntrospectEvent" level="info">
+        <appender-ref ref="introspect_logger"/>
+    </logger>
+
+    <!-- OK -->
+    <appender name="userinfo_logger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>aegaeon-userinfo.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %X{clientId} %X{scopes} %X{userId}%n</pattern>
+        </encoder>
+    </appender>
+    <logger name="ca.n4dev.aegaeon.server.event.UserInfoEvent" level="info">
+        <appender-ref ref="userinfo_logger"/>
+    </logger>
+
+    <!-- OK -->
+    <appender name="authentication_appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>aegaeon-authentication.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %X{userName} %X{roles} %X{sessionId} %X{ip} %X{status}%n</pattern>
+        </encoder>
+    </appender>
+    <logger name="ca.n4dev.aegaeon.server.event.AuthenticationEvent" level="info">
+        <appender-ref ref="authentication_appender"/>
+    </logger>
+
+
     <!-- thymeleaf -->
     <logger name="org.thymeleaf" level="error"/>
     
@@ -63,8 +79,8 @@ See here for more details: http://gordondickens.com/wordpress/2013/03/27/sawing-
     <logger name="sun.net.www" level="info" />
     <logger name="org.apache" level="info" />
     <logger name="org.quartz" level="info" />
-         
-    <root level="debug">
+
+    <root level="info">
         <appender-ref ref="CONSOLE"/>
     </root>
 </configuration>

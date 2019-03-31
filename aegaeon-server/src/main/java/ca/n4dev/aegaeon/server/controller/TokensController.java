@@ -22,8 +22,6 @@ package ca.n4dev.aegaeon.server.controller;
 
 import ca.n4dev.aegaeon.api.exception.ErrorHandling;
 import ca.n4dev.aegaeon.api.exception.OpenIdExceptionBuilder;
-import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
-import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
 import ca.n4dev.aegaeon.api.protocol.GrantType;
 import ca.n4dev.aegaeon.api.protocol.TokenRequest;
 import ca.n4dev.aegaeon.server.controller.exception.BaseException;
@@ -34,7 +32,6 @@ import ca.n4dev.aegaeon.server.controller.exception.InvalidGrantTypeException;
 import ca.n4dev.aegaeon.server.controller.exception.InvalidRequestMethodException;
 import ca.n4dev.aegaeon.server.controller.exception.InvalidScopeException;
 import ca.n4dev.aegaeon.server.service.AuthorizationService;
-import ca.n4dev.aegaeon.server.service.ScopeService;
 import ca.n4dev.aegaeon.server.service.TokenServicesFacade;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
@@ -69,25 +66,18 @@ public class TokensController {
     private static final Logger LOGGER = LoggerFactory.getLogger(TokensController.class);
     private TokenServicesFacade tokenServicesFacade;
     private AuthorizationService authorizationService;
-    private ScopeService scopeService;
-    private OpenIdEventLogger openIdEventLogger;
 
     /**
      * Default Constructor.
      *
-     * @param pTokenServicesFacade The token service facade.
-     * @param pOpenIdEventLogger   The event logger.
+     * @param pTokenServicesFacade  The token service facade.
+     * @param pAuthorizationService The authorization service..
      */
     @Autowired
-    public TokensController(AuthorizationService pAuthorizationService,
-                            ScopeService pScopeService,
-                            TokenServicesFacade pTokenServicesFacade,
-                            OpenIdEventLogger pOpenIdEventLogger) {
-
+    public TokensController(TokenServicesFacade pTokenServicesFacade,
+                            AuthorizationService pAuthorizationService) {
         authorizationService = pAuthorizationService;
-        scopeService = pScopeService;
         tokenServicesFacade = pTokenServicesFacade;
-        openIdEventLogger = pOpenIdEventLogger;
     }
 
 
@@ -165,8 +155,6 @@ public class TokensController {
                 default:
                     throw new InvalidGrantTypeException(tokenRequest);
             }
-
-            this.openIdEventLogger.log(OpenIdEvent.TOKEN_GRANTING, getClass(), pAuthentication.getName(), response);
 
             return new ResponseEntity<>(response, HttpStatus.OK);
 

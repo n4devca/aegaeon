@@ -4,9 +4,10 @@
 # Translations - OK
 # Opt-In consent - OK
 # Styling
-# Theme keys
+# Theme keys - OK
 # SQL combine - OK
-## Logs
+# Introspect security - OK
+## Logs - OK
 ## Postgresql
 ## Perfo
 ### Resources

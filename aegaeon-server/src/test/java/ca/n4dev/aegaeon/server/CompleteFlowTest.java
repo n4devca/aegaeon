@@ -194,6 +194,15 @@ public class CompleteFlowTest {
         Assert.assertTrue("The response should have an expires_in.", refreshTokenResponse.containsKey("expires_in"));
         Assert.assertTrue("The response should have an token_type.", refreshTokenResponse.containsKey("token_type"));
 
+
+        final String accessToken = (String) refreshTokenResponse.get("access_token");
+        final OAuthUserAndClaim authUserAndClaim = validateToken(accessToken);
+        User user = userRepository.findByUserName(USER_NAME);
+
+        Assert.assertEquals("The user unique id should be " + user.getUniqueIdentifier(),
+                            user.getUniqueIdentifier(),
+                            authUserAndClaim.getOAuthUser().getUniqueIdentifier());
+
     }
 
 

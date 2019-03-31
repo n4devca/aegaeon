@@ -75,12 +75,14 @@ CREATE TABLE `client` (
   `description` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `logourl` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `provider_name` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id_token_seconds` int(11) NOT NULL DEFAULT 600,
   `access_token_seconds` int(11) NOT NULL DEFAULT 3600,
+  `refresh_token_seconds` int(11) NOT NULL DEFAULT 604800,
   `version` int(11) NOT NULL DEFAULT 0,
   `createdat` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updatedat` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  `refresh_token_seconds` int(11) NOT NULL DEFAULT 604800,
   `application_type` varchar(45) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL DEFAULT 'web',
+  `allow_introspect` tinyint(1) not null default 0,
   `client_uri` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `policy_uri` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `tos_uri` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -102,7 +104,6 @@ CREATE TABLE `client` (
   `default_max_age` int(11) DEFAULT NULL,
   `require_auth_time` tinyint(1) NOT NULL DEFAULT 0,
   `initiate_login_uri` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `id_token_seconds` int(11) NOT NULL DEFAULT 600,
   PRIMARY KEY (`id`),
   UNIQUE KEY `cl_publicid_uq` (`public_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci

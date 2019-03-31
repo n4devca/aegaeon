@@ -23,10 +23,9 @@ package ca.n4dev.aegaeon.server.security;
 
 import java.util.Collection;
 
+import ca.n4dev.aegaeon.api.model.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import ca.n4dev.aegaeon.api.model.User;
 
 /**
  * SimpleUserDetails.java
@@ -44,6 +43,7 @@ public class AegaeonUserDetails implements UserDetails {
     private String password;
     private boolean enable;
     private boolean nonlocked;
+    private boolean allowIntrospection = false;
     private Collection<? extends GrantedAuthority> authorities;
     /**
      * Default Constructor.
@@ -92,7 +92,7 @@ public class AegaeonUserDetails implements UserDetails {
     }
 
     /* (non-Javadoc)
-     * @see org.springframework.security.core.userdetails.UserDetails#getUserName()
+     * @see org.springframework.security.core.userdetails.UserDetails#getUserId()
      */
     @Override
     public String getUsername() {
@@ -137,7 +137,21 @@ public class AegaeonUserDetails implements UserDetails {
     public User asUser() {
         return new User(id);
     }
-    
+
+    /**
+     * @return the allowIntrospection
+     */
+    public boolean isAllowIntrospection() {
+        return allowIntrospection;
+    }
+
+    /**
+     * @param pAllowIntrospection the allowIntrospection to set
+     */
+    public void setAllowIntrospection(boolean pAllowIntrospection) {
+        allowIntrospection = pAllowIntrospection;
+    }
+
     public String toString() {
         return new StringBuilder()
                         .append(id)

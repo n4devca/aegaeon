@@ -29,6 +29,7 @@ package ca.n4dev.aegaeon.api.logging;
  * @author by rguillemette
  * @since Jun 16, 2017
  */
+@Deprecated
 public enum OpenIdEvent {
     AUTHENTICATION,
     AUTHORIZATION,

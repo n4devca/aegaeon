@@ -35,8 +35,8 @@ select id into @gt_auth from grant_type where code = 'authorization_code';
 select id into @gt_implicit from grant_type where code = 'implicit';
 
 -- 'AUTHORIZATION_CODE',
-insert into client( name, logourl, public_id, secret, provider_name)
-values('ca.n4dev.auth.client', 'https://n4dev.ca/aegaeon/logo1.jpg', 'ca.n4dev.auth.client', 'kjaskas8993jnskajksj', 'RSA_RS512');
+insert into client( name, logourl, public_id, secret, provider_name, allow_introspect)
+values('ca.n4dev.auth.client', 'https://n4dev.ca/aegaeon/logo1.jpg', 'ca.n4dev.auth.client', 'kjaskas8993jnskajksj', 'RSA_RS512', 1);
 select last_insert_id() into @client_auth;
 
 -- insert into client_grant_type(client_id, grant_type_id) values(@client_auth, @gt_auth);

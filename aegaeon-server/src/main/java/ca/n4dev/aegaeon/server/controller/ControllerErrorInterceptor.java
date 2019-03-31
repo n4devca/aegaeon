@@ -36,8 +36,6 @@ import ca.n4dev.aegaeon.api.exception.OpenIdException;
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.exception.Severity;
-import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
-import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
 import ca.n4dev.aegaeon.api.protocol.AuthRequest;
 import ca.n4dev.aegaeon.api.protocol.ClientRequest;
 import ca.n4dev.aegaeon.api.protocol.FlowUtils;
@@ -75,8 +73,8 @@ import org.springframework.web.servlet.view.RedirectView;
 @ControllerAdvice
 public class ControllerErrorInterceptor extends BaseUiController {
 
-    private static MediaType jsonMimeType = MediaType.APPLICATION_JSON;
-    private static MappingJackson2HttpMessageConverter jsonConverter = new MappingJackson2HttpMessageConverter();
+    private static final Logger LOGGER = LoggerFactory.getLogger(ControllerErrorInterceptor.class);
+    private static final String ERROR_VIEW = "error";
 
     /*
      * 1- Redirection (auth-endpoint with question mark or fragment)
@@ -89,29 +87,24 @@ public class ControllerErrorInterceptor extends BaseUiController {
      *   > error, error_description, client information
      *
      * */
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ControllerErrorInterceptor.class);
-
-    private static final String ERROR_VIEW = "error";
     private static final String REDIRECTION_ERROR_KEY = "error";
     private static final String REDIRECTION_DESC_KEY = "error_description";
     private static final String REDIRECTION_STATE_KEY = "state";
-
+    private static MediaType jsonMimeType = MediaType.APPLICATION_JSON;
+    private static MappingJackson2HttpMessageConverter jsonConverter = new MappingJackson2HttpMessageConverter();
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    private OpenIdEventLogger openIdEventLogger;
     private ServerInfo serverInfo;
 
     /**
      * Constructor.
      *
-     * @param pOpenIdEventLogger event Logger.
-     * @param pServerInfo        Aegaeon server info.
+     * @param pServerInfo    Aegaeon server info.
+     * @param pMessageSource Message source (language)
      */
     @Autowired
-    public ControllerErrorInterceptor(OpenIdEventLogger pOpenIdEventLogger, ServerInfo pServerInfo, MessageSource pMessageSource) {
+    public ControllerErrorInterceptor(ServerInfo pServerInfo, MessageSource pMessageSource) {
         super(pMessageSource);
-        this.openIdEventLogger = pOpenIdEventLogger;
         this.serverInfo = pServerInfo;
     }
 
@@ -122,7 +115,7 @@ public class ControllerErrorInterceptor extends BaseUiController {
                                   HttpServletRequest pHttpServletRequest,
                                   HttpServletResponse pHttpServletResponse) {
         // TODO: Log by type
-        this.openIdEventLogger.log(OpenIdEvent.OTHERS, pOpenIdException.getSource(), pOpenIdException.getError());
+        // LOGGER.error(pOpenIdException.getSource(), pOpenIdException.getError());
         ErrorHandling answerType = getErrorAnswerType(pOpenIdException);
 
         if (answerType == ErrorHandling.JSON) {
@@ -473,13 +466,13 @@ public class ControllerErrorInterceptor extends BaseUiController {
                                            HttpServletResponse pHttpServletResponse) {
 
         LOGGER.error("internalErrorPage: " +
-                     new StringBuilder()
-                             .append(pSeverity)
-                             .append(">")
-                             .append(pErrorType)
-                             .append("/")
-                             .append(pErrorMessage)
-                             .toString());
+                             new StringBuilder()
+                                     .append(pSeverity)
+                                     .append(">")
+                                     .append(pErrorType)
+                                     .append("/")
+                                     .append(pErrorMessage)
+                                     .toString());
 
         /*
          * date

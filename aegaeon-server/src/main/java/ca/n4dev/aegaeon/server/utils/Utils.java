@@ -23,7 +23,6 @@ package ca.n4dev.aegaeon.server.utils;
 import java.net.URI;
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -195,6 +194,10 @@ public class Utils {
         }
 
         return b.toString();
+    }
+
+    public static List<String> explode(String pElementsStr) {
+        return explode(SPACE, pElementsStr, pS -> pS);
     }
 
     public static <E> List<E> explode(String pElementsStr, Function<String, E> pFunc) {

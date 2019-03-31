@@ -21,21 +21,12 @@
  */
 package ca.n4dev.aegaeon.api.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import ca.n4dev.aegaeon.api.token.OAuthClient;
+import org.hibernate.annotations.Type;
 
 /**
  * Client.java
@@ -71,6 +62,10 @@ public class Client extends BaseEntity implements OAuthClient {
     
     @Column(name = "refresh_token_seconds")
     private Long refreshTokenSeconds;
+
+    @Column(name = "allow_introspect")
+    @Type(type = "boolean")
+    private boolean allowIntrospect;
 
     public Client() {}
     
@@ -215,105 +210,18 @@ public class Client extends BaseEntity implements OAuthClient {
         idTokenSeconds = pIdTokenSeconds;
     }
 
-//    /**
-//     * @return the redirections
-//     */
-//    public List<ClientRedirection> getRedirections() {
-//        return redirections;
-//    }
-//
-//    /**
-//     * @param pRedirections the redirections to set
-//     */
-//    public void setRedirections(List<ClientRedirection> pRedirections) {
-//        redirections = pRedirections;
-//    }
-//    
-//    /**
-//     * @return the redirections
-//     */
-//    public boolean hasRedirection(String pUrl) {
-//        
-//        if (this.redirections != null && pUrl != null && !pUrl.isEmpty()) {
-//            for (ClientRedirection cr : this.redirections) {
-//                if (pUrl.equals(cr.getUrl())) {
-//                    return true;
-//                }
-//            }
-//        }
-//        
-//        return false;
-//    }
-//
-//    /**
-//     * @return the scopes
-//     */
-//    public List<ClientScope> getScopes() {
-//        return scopes;
-//    }
-//
-//    /**
-//     * @param pScopes the scopes to set
-//     */
-//    public void setScopes(List<ClientScope> pScopes) {
-//        scopes = pScopes;
-//    }
-//
-//    /**
-//     * @return the scopes
-//     */
-//    public List<String> getScopesAsNameList() {
-//        if (scopes != null) {
-//            List<String> strs = new ArrayList<>();
-//            scopes.forEach(s -> strs.add(s.getScope().getName()));
-//            
-//            return strs;
-//        }
-//        
-//        return Collections.emptyList();
-//    }
-//    
-//    /**
-//     * @return the grantTypes
-//     */
-//    public List<GrantType> getGrantTypes() {
-//        return grantTypes;
-//    }
-//
-//    /**
-//     * @param pGrantTypes the grantTypes to set
-//     */
-//    public void setGrantTypes(List<GrantType> pGrantTypes) {
-//        grantTypes = pGrantTypes;
-//    }
-//
-//    /**
-//     * @return the contacts
-//     */
-//    public List<ClientContact> getContacts() {
-//        return contacts;
-//    }
-//
-//    /**
-//     * @param pContacts the contacts to set
-//     */
-//    public void setContacts(List<ClientContact> pContacts) {
-//        contacts = pContacts;
-//    }
-//
-//    /**
-//     * @return the requestedUris
-//     */
-//    public List<ClientRequestedUri> getRequestedUris() {
-//        return requestedUris;
-//    }
-//
-//    /**
-//     * @param pRequestedUris the requestedUris to set
-//     */
-//    public void setRequestedUris(List<ClientRequestedUri> pRequestedUris) {
-//        requestedUris = pRequestedUris;
-//    }
+    /**
+     * @return the allowIntrospect
+     */
+    public boolean isAllowIntrospect() {
+        return allowIntrospect;
+    }
 
-    
+    /**
+     * @param pAllowIntrospect the allowIntrospect to set
+     */
+    public void setAllowIntrospect(boolean pAllowIntrospect) {
+        allowIntrospect = pAllowIntrospect;
+    }
+
 }

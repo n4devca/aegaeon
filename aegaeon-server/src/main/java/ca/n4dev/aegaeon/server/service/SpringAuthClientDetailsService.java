@@ -65,7 +65,16 @@ public class SpringAuthClientDetailsService implements UserDetailsService {
         if (client != null) {
             List<SimpleGrantedAuthority> auths = new ArrayList<>();
             auths.add(new SimpleGrantedAuthority("ROLE_CLIENT"));
-            return new AegaeonUserDetails(client.getId(), pUsername, "{noop}" + client.getSecret(), true, true, auths);
+            final AegaeonUserDetails aegaeonUserDetails = new AegaeonUserDetails(client.getId(),
+                                                                                 pUsername,
+                                                                                 "{noop}" + client.getSecret(),
+                                                                                 true,
+                                                                                 true,
+                                                                                 auths);
+
+            aegaeonUserDetails.setAllowIntrospection(client.isAllowIntrospect());
+
+            return aegaeonUserDetails;
         }
         
         throw new UsernameNotFoundException(pUsername + " not found");

@@ -32,8 +32,7 @@ import java.util.stream.Collectors;
 
 import ca.n4dev.aegaeon.api.exception.OpenIdException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
-import ca.n4dev.aegaeon.api.logging.OpenIdEvent;
-import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
+import ca.n4dev.aegaeon.api.logging.UserInfoLogger;
 import ca.n4dev.aegaeon.api.model.Authority;
 import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.model.UserInfo;
@@ -47,6 +46,7 @@ import ca.n4dev.aegaeon.api.token.payload.Claims;
 import ca.n4dev.aegaeon.api.token.payload.PayloadProvider;
 import ca.n4dev.aegaeon.api.validation.PasswordEvaluator;
 import ca.n4dev.aegaeon.server.config.ServerInfo;
+import ca.n4dev.aegaeon.server.event.UserInfoEvent;
 import ca.n4dev.aegaeon.server.security.AccessTokenAuthentication;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Differentiation;
@@ -56,7 +56,10 @@ import ca.n4dev.aegaeon.server.view.UserInfoResponseView;
 import ca.n4dev.aegaeon.server.view.UserInfoView;
 import ca.n4dev.aegaeon.server.view.UserView;
 import ca.n4dev.aegaeon.server.view.mapper.UserMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -73,13 +76,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class UserService extends BaseSecuredService<User, UserRepository> implements PayloadProvider {
 
+    private static final Logger LOGGER_USER_INFO = LoggerFactory.getLogger(UserInfoLogger.class);
+
     private static final String SCOPE_PROFILE = "profile";
     private static final String SCOPE_EMAIL = "email";
     private static final String SCOPE_ADDRESS = "address";
     private static final String SCOPE_PHONE = "phone";
     private static final String SCOPE_SOCIALMEDIA = "socialmedia";
 
-    private OpenIdEventLogger openIdEventLogger;
     private UserMapper userMapper;
     private UserInfoRepository userInfoRepository;
     private AuthorityRepository authorityRepository;
@@ -89,6 +93,8 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
 
     private ScopeService scopeService;
     private ServerInfo serverInfo;
+
+    private ApplicationEventPublisher eventPublisher;
 
     /**
      * Default constructor.
@@ -101,21 +107,21 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
                        UserInfoRepository pUserInfoRepository,
                        UserInfoTypeService pUserInfoTypeService,
                        PasswordEncoder pPasswordEncoder,
-                       OpenIdEventLogger pOpenIdEventLogger,
                        UserMapper pUserMapper,
                        PasswordEvaluator pPasswordEvaluator,
                        ScopeService pScopeService,
-                       ServerInfo pServerInfo) {
+                       ServerInfo pServerInfo,
+                       ApplicationEventPublisher pEventPublisher) {
         super(pRepository);
         this.authorityRepository = pAuthorityRepository;
         this.userInfoRepository = pUserInfoRepository;
         this.passwordEncoder = pPasswordEncoder;
-        this.openIdEventLogger = pOpenIdEventLogger;
         this.userMapper = pUserMapper;
         this.userInfoTypeService = pUserInfoTypeService;
         this.passwordEvaluator = pPasswordEvaluator;
         this.scopeService = pScopeService;
         this.serverInfo = pServerInfo;
+        this.eventPublisher = pEventPublisher;
     }
 
     /**
@@ -144,10 +150,18 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
 
         UserInfoResponseView response = new UserInfoResponseView(pAccessTokenAuthentication.getUniqueIdentifier(), payload);
 
-        openIdEventLogger.log(OpenIdEvent.REQUEST_INFO, getClass(), u.getUserName(), null);
+        raiseEvent(pAccessTokenAuthentication, u.getUserName());
 
         return response;
     }
+
+    private void raiseEvent(AccessTokenAuthentication pAuthentication, String pUserId) {
+        eventPublisher.publishEvent(new UserInfoEvent(this,
+                                                      pAuthentication.getUniqueIdentifier(),
+                                                      pAuthentication.getScopes(),
+                                                      pUserId));
+    }
+
 
     /**
      * Create a user.

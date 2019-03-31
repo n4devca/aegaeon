@@ -1,9 +1,8 @@
 package ca.n4dev.aegaeon.server.service;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import java.util.ArrayList;
+import java.util.List;
 
-import ca.n4dev.aegaeon.api.logging.OpenIdEventLogger;
 import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.model.UserInfo;
 import ca.n4dev.aegaeon.api.repository.AuthorityRepository;
@@ -21,8 +20,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 /**
  * UserServiceUnitTest.java
@@ -34,18 +33,25 @@ import java.util.List;
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceUnitTest {
 
-    @Mock OpenIdEventLogger openIdEventLogger;
-    @Mock UserMapper userMapper;
-    @Mock PasswordEvaluator passwordEvaluator;
+    @Mock
+    UserMapper userMapper;
+    @Mock
+    PasswordEvaluator passwordEvaluator;
 
-    @Mock UserInfoRepository userInfoRepository;
-    @Mock AuthorityRepository authorityRepository;
-    @Mock UserInfoTypeService userInfoTypeService;
-    @Mock PasswordEncoder passwordEncoder;
-    @Mock UserRepository userRepository;
+    @Mock
+    UserInfoRepository userInfoRepository;
+    @Mock
+    AuthorityRepository authorityRepository;
+    @Mock
+    UserInfoTypeService userInfoTypeService;
+    @Mock
+    PasswordEncoder passwordEncoder;
+    @Mock
+    UserRepository userRepository;
 
 
-    @InjectMocks UserService userService;
+    @InjectMocks
+    UserService userService;
     //@Captor ArgumentCaptor<User> userCaptor;
 
     @Test

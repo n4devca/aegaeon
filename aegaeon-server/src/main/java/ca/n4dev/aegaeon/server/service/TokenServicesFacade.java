@@ -23,7 +23,6 @@ package ca.n4dev.aegaeon.server.service;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -49,6 +48,7 @@ import ca.n4dev.aegaeon.server.controller.exception.InvalidClientRedirectionExce
 import ca.n4dev.aegaeon.server.controller.exception.InvalidRefreshTokenException;
 import ca.n4dev.aegaeon.server.controller.exception.UnauthorizedClient;
 import ca.n4dev.aegaeon.server.controller.exception.UnauthorizedGrant;
+import ca.n4dev.aegaeon.server.event.TokenGrantEvent;
 import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
@@ -57,10 +57,9 @@ import ca.n4dev.aegaeon.server.view.TokenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -85,7 +84,7 @@ public class TokenServicesFacade {
     private RefreshTokenService refreshTokenService;
     private ScopeService scopeService;
     private AuthorizationCodeService authorizationCodeService;
-
+    private ApplicationEventPublisher eventPublisher;
     private ClientService clientService;
 
     @Autowired
@@ -94,15 +93,16 @@ public class TokenServicesFacade {
                                RefreshTokenService pRefreshTokenService,
                                ScopeService pScopeService,
                                AuthorizationCodeService pAuthorizationCodeService,
-                               ClientService pClientService) {
+                               ClientService pClientService,
+                               ApplicationEventPublisher pEventPublisher) {
 
         this.idTokenService = pIdTokenService;
         this.accessTokenService = pAccessTokenService;
         this.refreshTokenService = pRefreshTokenService;
         this.scopeService = pScopeService;
         this.authorizationCodeService = pAuthorizationCodeService;
-
         this.clientService = pClientService;
+        this.eventPublisher = pEventPublisher;
     }
 
 
@@ -188,9 +188,12 @@ public class TokenServicesFacade {
         // In any case, remove the openid scope because we can't meet the check requirements right now
         pTokenRequest.setScope(withoutOpenIdScope(pTokenRequest.getScope()));
 
+        // Create an authentication object for the original user
+        final Authentication userAuthentication = createAuthenticationFromRefreshToken(pTokenRequest, refreshToken);
+
         // Ok, the token is valid, so create a new access token
         return this.createTokenResponse(pTokenRequest,
-                                        pAuthentication);
+                                        userAuthentication);
 
 
     }
@@ -231,6 +234,22 @@ public class TokenServicesFacade {
         return createTokenResponse(new TokenRequest(pAuthRequest), pAuthentication);
     }
 
+    private void raiseEvent(TokenRequest pRequest, TokenResponse pResponse, String pUserId) {
+
+        TokenGrantEvent event = new TokenGrantEvent(this,
+                                                    pRequest.getClientId(),
+                                                    pRequest.getScope(),
+                                                    pResponse.getScope(),
+                                                    pRequest.getCode(),
+                                                    pUserId,
+                                                    pRequest.getGrantType(),
+                                                    Utils.isNotEmpty(pResponse.getIdToken()),
+                                                    Utils.isNotEmpty(pResponse.getAccessToken()),
+                                                    Utils.isNotEmpty(pResponse.getRefreshToken()));
+
+        eventPublisher.publishEvent(event);
+    }
+
     TokenResponse createTokenResponse(TokenRequest pTokenRequest,
                                       Authentication pAuthentication) {
 
@@ -260,6 +279,8 @@ public class TokenServicesFacade {
             // Time
             long expiresIn = ChronoUnit.SECONDS.between(LocalDateTime.now(), accessToken.getValidUntil());
             t.setExpiresIn(expiresIn);
+
+            raiseEvent(pTokenRequest, t, userDetails.getUsername());
 
             return t;
 
@@ -405,14 +426,26 @@ public class TokenServicesFacade {
                        () -> new InvalidAuthorizationCodeException(pTokenRequest, InvalidAuthorizationCodeException.EMPTY_USER));
 
 
-        final User user = pAuthorizationCode.getUser();
+        return createAddocUserAuthentication(pAuthorizationCode.getUser());
+    }
 
+    private Authentication createAuthenticationFromRefreshToken(TokenRequest pTokenRequest, RefreshToken pRefreshToken) {
+        Assert.notNull(pRefreshToken,
+                       () -> new InvalidRefreshTokenException(pTokenRequest, InvalidRefreshTokenException.EMPTY));
+
+        Assert.notNull(pRefreshToken.getUser(),
+                       () -> new InvalidAuthorizationCodeException(pTokenRequest, InvalidAuthorizationCodeException.EMPTY_USER));
+
+        return createAddocUserAuthentication(pRefreshToken.getUser());
+    }
+
+    private Authentication createAddocUserAuthentication(User pUser) {
         List<SimpleGrantedAuthority> auths = new ArrayList<>();
-        user.getAuthorities().forEach(a -> auths.add(new SimpleGrantedAuthority(a.getCode() /*a.getCode().replace("ROLE_", "")*/)));
+        pUser.getAuthorities().forEach(a -> auths.add(new SimpleGrantedAuthority(a.getCode())));
         final AegaeonUserDetails aegaeonUserDetails =
-                new AegaeonUserDetails(user.getId(), user.getUserName(), user.getPasswd(), user.isEnabled(), true, auths);
+                new AegaeonUserDetails(pUser.getId(), pUser.getUserName(), pUser.getPasswd(), pUser.isEnabled(), true, auths);
 
-        return new CodeAuthentication(aegaeonUserDetails);
+        return new AddocAuthentication(aegaeonUserDetails);
     }
 
     private String withoutOpenIdScope(String pScopes) {
@@ -425,11 +458,11 @@ public class TokenServicesFacade {
         return pScopes;
     }
 
-    private static final class CodeAuthentication extends AbstractAuthenticationToken {
+    private static final class AddocAuthentication extends AbstractAuthenticationToken {
 
         private UserDetails userDetails;
 
-        public CodeAuthentication(AegaeonUserDetails pUserDetails) {
+        public AddocAuthentication(AegaeonUserDetails pUserDetails) {
             super(null);
             userDetails = pUserDetails;
         }

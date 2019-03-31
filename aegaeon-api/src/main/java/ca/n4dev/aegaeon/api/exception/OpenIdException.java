@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author rguillemette
  * @since 2.0.0 - Apr 10 - 2018
  */
+@Deprecated
 public class OpenIdException extends ServerException {
 
     @JsonProperty("error")
