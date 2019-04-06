@@ -7,14 +7,14 @@
 	<parent>
 		<groupId>ca.n4dev.aegaeon</groupId>
         <artifactId>aegaeon</artifactId>
-		<version>1.0.0</version>
+		<version>1.0.0-alpha</version>
 	</parent>
 
 	<artifactId>aegaeon-api</artifactId>
 	<packaging>jar</packaging>
 	<name>aegaeon-api</name>
 	<url>http://n4dev.ca</url>
-    <version>1.0.0</version>
+    <version>1.0.0-alpha</version>
 
 
     <properties>
