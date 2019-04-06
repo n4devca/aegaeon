@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>ca.n4dev.aegaeon</groupId>
 		<artifactId>aegaeon</artifactId>
-		<version>1.0.0</version>
+		<version>1.0.0-alpha</version>
 	</parent>
 
 
@@ -14,7 +14,7 @@
 	<packaging>war</packaging>
 	<name>aegaeon-server</name>
 	<url>http://n4dev.ca</url>
-	<version>1.0.0</version>
+	<version>1.0.0-alpha</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -69,7 +69,7 @@
 		<dependency>
 			<groupId>ca.n4dev.aegaeon</groupId>
 			<artifactId>aegaeon-api</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.0-alpha</version>
 		</dependency>
 
 		<dependency>

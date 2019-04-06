@@ -1,0 +1,39 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+
+
+    <id>aegaeon-release</id>
+    <formats>
+        <format>tar.bz2</format>
+    </formats>
+
+    <fileSets>
+        <fileSet>
+            <directory>${project.parent.basedir}/aegaeon-server/target</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>aegaeon*.war</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>${project.parent.basedir}/aegaeon-api/src/main/resources/db/mysql</directory>
+            <outputDirectory>/model/mysql</outputDirectory>
+            <includes>
+                <include>**</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>${project.parent.basedir}/</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>LICENSE</include>
+            </includes>
+        </fileSet>
+
+
+    </fileSets>
+
+</assembly>
