@@ -8,6 +8,11 @@ spring:
         hibernate:
             naming:
                 physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        properties:
+            hibernate:
+                jdbc:
+                    lob:
+                        non_contextual_creation: true
     mvc:
         static-path-pattern: /resources/**
         throw-exception-if-no-handler-found: true
@@ -16,7 +21,7 @@ spring:
     jackson:
         default-property-inclusion: non_null
     flyway:
-        enabled: true
+        enabled: false
         baseline-version: 1
         check-location: false
         locations: classpath:db/mysql

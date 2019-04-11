@@ -63,7 +63,8 @@ CREATE TABLE `scope` (
   `createdat` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updatedat` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   `defaultvalue` tinyint(1) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `scope_name_uq` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 ;
 
@@ -120,7 +121,8 @@ CREATE TABLE `users` (
   `createdat` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updatedat` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   `picture_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `users_username_uq` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 ;
 
