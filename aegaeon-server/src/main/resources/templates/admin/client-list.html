@@ -1,65 +1,58 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:th="http://www.thymeleaf.org"
-    xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{basepage}">
+    layout:decorate="~{base-page}">
 <head>
 
 </head>
 <body>
     <section layout:fragment="content">
 
-        <div class="normal-content page-admin-client-list page-admin-client-list-c">
-            <div class="page">
-                <div class="page-header">
-                    <div class="page-title">
-                        <h1 th:text="#{page.adminclients.title}">Clients</h1>
-                    </div>
-                    <div class="page-title-menu">
-                        <form th:action="@{/admin/clients}" method="post">
-                            <button type="submit" class="btn btn-ok" name="action" value="create">
-                                [[#{action.create}]]
-                            </button>
-                        </form>
-                    </div>
+        <div class="t-client-list">
+            <div class="page-header">
+                <div class="page-header-title">
+                    <h1 th:text="#{page.adminclients.title}">Clients</h1>
                 </div>
-                <div class="page-content">
-
-                    <div class="box">
-                        <div class="body">
-                            <table class="table">
-                                <thead>
-                                <tr>
-                                    <th>Public ID</th>
-                                    <th>Name</th>
-                                    <th></th>
-                                </tr>
-
-                                </thead>
-                                <tbody>
-                                    <tr th:each="c : ${pageList.elements}">
-                                        <td><span th:text="${c.publicId}"></span></td>
-                                        <td><span th:text="${c.name}"></span></td>
-                                        <td class="right">
-                                            <a th:href="@{/admin/clients/} + ${c.id}" class="btn btn-sm">Edit</a>
-                                            <form action="@{/admin/clients/} + ${c.id}" method="post" class="frm">
-                                                <input type="hidden" name="action" value="delete" />
-                                                <button type="submit" class="btn btn-sm">Delete</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
+                <div class="page-header-action is-right">
+                    <form th:action="@{/admin/clients}" method="post">
+                        <button type="submit" class="btn btn-default" name="action" value="create">
+                            [[#{action.create}]]
+                        </button>
+                    </form>
                 </div>
-                <div class="footer right">
-                    
+            </div>
+
+            <div class="panel">
+                <div class="panel-body">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th class="is-secondary">Public ID</th>
+                            <th></th>
+                        </tr>
+
+                        </thead>
+                        <tbody>
+                            <tr th:each="c : ${pageList.elements}">
+                                <td><span th:text="${c.name}"></span></td>
+                                <td class="is-secondary"><span th:text="${c.publicId}"></span></td>
+                                <td class="is-right">
+                                    <form action="@{/admin/clients/{clientId}(clientId=${c.id})}" method="post">
+                                        <a th:href="@{/admin/clients/{clientId}(clientId=${c.id})}" class="btn">Edit</a>
+                                        <button type="submit" class="btn">Delete</button>
+                                        <input type="hidden" name="action" value="delete" />
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
+
+        <div th:replace="~{go-to-top :: go-to-top}"></div>
     </section>
 </body>
 </html>

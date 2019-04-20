@@ -2,236 +2,214 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{basepage}">
+      layout:decorate="~{base-page}">
 <head>
 
 </head>
 <body>
 <section layout:fragment="content">
 
-    <div class="normal-content page-admin-client-details page-admin-client-details-c">
+    <div class="t-client-details">
 
-        <form action="/admin/clients/1" class="frm"
+        <form action="/admin/clients/1"
               th:object="${client}"
-              th:action="@{/admin/clients/} + (${client.id != -1} ? ${client.id} : 'new')"
+              th:action="@{/admin/clients/{clientId}(clientId=${client.id != -1} ? ${client.id} : 'new')}"
               th:method="post">
 
-            <div class="page">
-                <div class="page-header">
-                    <div class="page-title">
-                        <h1 th:text="#{page.adminclients.title}">Clients</h1>
+            <div class="page-header">
+                <div class="page-header-title">
+                    <h1 th:text="#{page.adminclients.title}">Clients</h1>
+                </div>
+                <div class="page-header-action is-right">
+                    <button type="submit" th:href="@{/admin/clients/}" class="btn btn-default">
+                        [[#{action.save}]]
+                    </button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <span>General Information</span>
+                </div>
+                <div class="panel-body">
+
+                    <label for="client-publicid" class="form-caption"  th:text="#{page.adminclients.form.label.publicid}"></label>
+                    <input type="text" id="client-publicid" th:field="*{publicId}" class="form-input"
+                           th:errorclass="input-error"
+                           th:placeholder="#{page.adminclients.form.placeholder.publicid}" />
+                    <p class="error-text" id="client-publicid-error"
+                         th:classappend="${#fields.hasErrors('publicId')} ? 'show-error'"
+                         th:text="#{page.adminclients.error.publicid.empty}">Public ID cannot be empty.</p>
+
+                    <label for="client-secret" class="form-caption"  th:text="#{page.adminclients.form.label.secret}"></label>
+                    <input type="text" id="client-secret" class="form-input"
+                           th:field="*{secret}" th:placeholder="#{page.adminclients.form.placeholder.secret} "/>
+
+                    <label for="client-name" class="form-caption"  th:text="#{page.adminclients.form.label.name}"></label>
+                    <input type="text" id="client-name" th:field="*{name}" class="form-input" th:errorclass="input-error"
+                           th:placeholder="#{page.adminclients.form.placeholder.name}" />
+                    <p class="error-text" id="client-name-error"
+                       th:classappend="${#fields.hasErrors('name')} ? 'show-error'"
+                       th:text="#{page.adminclients.error.name.empty}">Name is mandatory.</p>
+
+                    <label for="client-description" class="form-caption" th:text="#{page.adminclients.form.label.description}"></label>
+                    <textarea id="client-description" rows="3" class="form-input" th:field="*{description}"></textarea>
+
+                    <label for="client-logourl" class="form-caption" th:text="#{page.adminclients.form.label.logourl}"></label>
+                    <input type="text" class="form-input" id="client-logourl" th:field="*{logoUrl}"/>
+                </div>
+            </div>
+            <br/>
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Token Type and Lifetime</span>
+                </div>
+                <div class="panel-body">
+                    <div class="group">
+                        <label for="client-provtype" class="form-caption" th:text="#{page.adminclients.form.label.provtype}"></label>
+                        <br />
+                        <select id="client-provtype" th:field="*{providerType}">
+                            <option th:each="p : ${T(ca.n4dev.aegaeon.api.token.TokenProviderType).values()}"
+                                    th:value="${p.toString()}" th:text="${p.toString()}"
+                                    th:selected="${client.providerType} == ${p.toString()}"/>
+                        </select>
+                        <p class="error-text" id="client-provtype-error"
+                           th:classappend="${#fields.hasErrors('providerType')} ? 'show-error'"
+                           th:text="#{page.adminclients.error.providertype.empty}">Please select a valid provider.</p>
+
                     </div>
-                    <div class="page-title-menu">
-                        <button type="submit" th:href="@{/admin/clients/}" class="btn btn-ok">
-                            [[#{action.save}]]
+
+                    <div class="group">
+                        <label for="client-idtok-sec" class="form-caption" th:text="#{page.adminclients.form.label.idtoksec}"></label>
+                        <input type="text" id="client-idtok-sec" class="form-input" th:field="*{idTokenSeconds}"
+                                   required="required"/>
+                    </div>
+
+                    <div class="group">
+                        <label for="client-actok-sec" class="form-caption" th:text="#{page.adminclients.form.label.accesstoksec}"></label>
+                        <input type="text" id="client-actok-sec" class="form-input" th:field="*{accessTokenSeconds}"
+                               required="required"/>
+                    </div>
+
+
+                    <label for="client-reftok-sec" class="form-caption" th:text="#{page.adminclients.form.label.refreshtoksec}"></label>
+                    <input type="text" id="client-reftok-sec" class="form-input" th:field="*{refreshTokenSeconds}"
+                           required="required"/>
+                </div>
+            </div>
+            <br/>
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Client URLs and Authorizations</span>
+                </div>
+                <div class="panel-body">
+
+                    <div class="group">
+
+                        <label class="form-caption" th:text="#{page.adminclients.form.label.flows}"></label>
+                        <div th:each="g,gidx : *{grants}" class="input-group">
+                            <div class="input-group-element input-group-element-check">
+                                <input type="checkbox"
+                                       th:id="${'client-grant-' + g.id}"
+                                       th:selected="${g.selected}"
+                                       th:field="*{grants[__${gidx.index}__].selected}"/>
+                                <label th:for="${'client-grant-' + g.id}" th:text="${g.name}"></label>
+                                <input type="hidden"
+                                       th:field="*{grants[__${gidx.index}__].id}"/>
+                                <input type="hidden"
+                                       th:field="*{grants[__${gidx.index}__].name}"/>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="group">
+                        <label class="form-caption" th:text="#{page.adminclients.form.label.scopes}"></label>
+                        <div th:each="s,sidx : *{scopes}" class="input-group">
+                            <div class="input-group-element input-group-element-check">
+                                <input type="checkbox"
+                                       th:id="${'client-scope-' + s.id}"
+                                       th:selected="${s.selected}"
+                                       th:field="*{scopes[__${sidx.index}__].selected}"/>
+                                <label th:for="${'client-scope-' + s.id}" th:text="${s.name}"></label>
+                                <input type="hidden"
+                                       th:field="*{scopes[__${sidx.index}__].id}"/>
+                                <input type="hidden"
+                                       th:field="*{scopes[__${sidx.index}__].name}"/>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="group">
+
+                        <label class="form-caption" th:text="#{page.adminclients.form.label.redirections}"></label>
+                        <button class="btn-link" name="action" type="submit"
+                                th:value="${T(ca.n4dev.aegaeon.server.view.ClientViewAction).action_add_redirect_url}">
+                            + [[#{action.add}]]
                         </button>
-                    </div>
-                </div>
 
-                <div class="page-content">
-                    <h2>General Information</h2>
-
-                    <div class="box">
-                        <div class="body">
-
-                            <div class="form-group">
-                                <label for="client-publicid" th:text="#{page.adminclients.form.label.publicid}"></label>
-                                <input type="text" id="client-publicid" th:field="*{publicId}" class="form-input"
-                                       th:errorclass="input-error"
-                                       th:placeholder="#{page.adminclients.form.placeholder.publicid}" />
-                                <p class="error-text" id="client-publicid-error"
-                                     th:classappend="${#fields.hasErrors('publicId')} ? 'show-error'"
-                                     th:text="#{page.adminclients.error.publicid.empty}">Public ID cannot be empty.</p>
+                        <div class="form-group">
+                            <div class="input-group" th:each="r,ridx : *{redirections}">
+                                <div class="input-group-item">
+                                    <input type="text" class="form-input"
+                                           th:field="*{redirections[__${ridx.index}__]}"
+                                           th:error/>
+                                    <p class="error-text" th:id="'client-redirections' + ${ridx.index} + '-error'"
+                                       th:classappend="${#fields.hasErrors('redirections[' + ridx.index + ']')} ? 'show-error'"
+                                       th:text="#{page.adminclients.error.redirection.invalid}">Name is mandatory.</p>
+                                </div>
+                                <div class="input-group-item">
+                                    <button class="btn-link" name="action" type="submit"
+                                            th:value="${T(ca.n4dev.aegaeon.server.view.ClientViewAction).action_remove_redirect_url} + '.' + ${ridx.index}">
+                                        [[#{action.remove}]]
+                                    </button>
+                                </div>
                             </div>
-
-                            <div class="form-group">
-                                <label for="client-secret" th:text="#{page.adminclients.form.label.secret}"></label>
-                                <input type="text" id="client-secret" class="form-input"
-                                       th:field="*{secret}" th:placeholder="#{page.adminclients.form.placeholder.secret} "/>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="client-name" th:text="#{page.adminclients.form.label.name}"></label>
-                                <input type="text" id="client-name" th:field="*{name}" class="form-input" th:errorclass="input-error"
-                                       th:placeholder="#{page.adminclients.form.placeholder.name}" />
-                                <p class="error-text" id="client-name-error"
-                                   th:classappend="${#fields.hasErrors('name')} ? 'show-error'"
-                                   th:text="#{page.adminclients.error.name.empty}">Name is mandatory.</p>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="client-description" th:text="#{page.adminclients.form.label.description}"></label>
-                                <textarea id="client-description" rows="3" class="form-input" th:field="*{description}"></textarea>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="client-logourl" th:text="#{page.adminclients.form.label.logourl}"></label>
-                                <input type="text" class="form-input" id="client-logourl" th:field="*{logoUrl}"/>
-                            </div>
+                            <p class="error-text" id="client-redirections-error"
+                               th:classappend="${#fields.hasErrors('redirections')} ? 'show-error'"
+                               th:text="#{page.adminclients.error.redirections.empty}">A redirection is needed.</p>
+                            <p th:if="${#lists.isEmpty(client.redirections)}">
+                                None
+                            </p>
                         </div>
                     </div>
-                    <br/>
-                    <h2>Token Type and Lifetime</h2>
-                    <div class="box">
-                        <div class="body">
-                            <div class="form-group">
-                                <label for="client-provtype" th:text="#{page.adminclients.form.label.provtype}"></label>
-                                <select id="client-provtype" class="form-input" th:field="*{providerType}">
-                                    <option th:each="p : ${T(ca.n4dev.aegaeon.api.token.TokenProviderType).values()}"
-                                            th:value="${p.toString()}" th:text="${p.toString()}"
-                                            th:selected="${client.providerType} == ${p.toString()}"/>
-                                </select>
-                                <p class="error-text" id="client-provtype-error"
-                                   th:classappend="${#fields.hasErrors('providerType')} ? 'show-error'"
-                                   th:text="#{page.adminclients.error.providertype.empty}">Please select a valid provider.</p>
+
+                    <div class="group">
+
+                        <label class="form-caption" th:text="#{page.adminclients.form.label.contacts}"></label>
+                        <button class="btn-link" name="action" type="submit"
+                                th:value="${T(ca.n4dev.aegaeon.server.view.ClientViewAction).action_add_contact}">
+                            + [[#{action.add}]]
+                        </button>
+                        <div class="form-group">
+                            <div class="input-group" th:each="c,cidx : *{contacts}">
+                                <div class="input-group-item">
+                                    <input type="text" class="form-input" th:field="*{contacts[__${cidx.index}__]}"/>
+                                </div>
+                                <div class="input-group-item">
+                                    <button class="btn-link" name="action" type="submit" th:value="'remove_' + ${cidx.index}">
+                                        [[#{action.remove}]]
+                                    </button>
+                                </div>
+
                             </div>
 
-                            <div class="form-group">
-                                <label for="client-idtok-sec" th:text="#{page.adminclients.form.label.idtoksec}"></label>
-                                <input type="text" id="client-idtok-sec" class="form-input" th:field="*{idTokenSeconds}"
-                                       required="required"/>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="client-actok-sec" th:text="#{page.adminclients.form.label.accesstoksec}"></label>
-                                <input type="text" id="client-actok-sec" class="form-input" th:field="*{accessTokenSeconds}"
-                                       required="required"/>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="client-reftok-sec" th:text="#{page.adminclients.form.label.refreshtoksec}"></label>
-                                <input type="text" id="client-reftok-sec" class="form-input" th:field="*{refreshTokenSeconds}"
-                                       required="required"/>
-                            </div>
+                            <p class="error-text" id="client-contacts-error"
+                               th:classappend="${#fields.hasErrors('contacts')} ? 'show-error'"
+                               th:text="#{page.adminclients.error.contacts.empty}">A contact is needed.</p>
+                            <p th:if="${#lists.isEmpty(client.contacts)}">
+                                None
+                            </p>
                         </div>
                     </div>
-                    <br/>
-                    <h2>Client URLs and Authorizations</h2>
-                    <div class="box">
-                        <div class="body">
 
-                            <div class="form-group">
-                                <label th:text="#{page.adminclients.form.label.flows}"></label>
-                                <div th:each="g,gidx : *{grants}" class="input-group">
-                                    <div class="input-group-element input-group-element-check">
-                                        <input type="hidden"
-                                               th:field="*{grants[__${gidx.index}__].id}"/>
-                                        <input type="hidden"
-                                               th:field="*{grants[__${gidx.index}__].name}"/>
-                                        <input type="checkbox"
-                                               th:id="${'client-grant-' + g.id}"
-                                               th:selected="${g.selected}"
-                                               th:field="*{grants[__${gidx.index}__].selected}"/>
-                                    </div>
-                                    <div class="input-group-element">
-                                        <label th:for="${'client-grant-' + g.id}" th:text="${g.name}"></label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label th:text="#{page.adminclients.form.label.scopes}"></label>
-                                <div th:each="s,sidx : *{scopes}" class="input-group">
-                                    <div class="input-group-element input-group-element-check">
-                                        <input type="hidden"
-                                               th:field="*{scopes[__${sidx.index}__].id}"/>
-                                        <input type="hidden"
-                                               th:field="*{scopes[__${sidx.index}__].name}"/>
-                                        <input type="checkbox"
-                                               th:id="${'client-scope-' + s.id}"
-                                               th:selected="${s.selected}"
-                                               th:field="*{scopes[__${sidx.index}__].selected}"/>
-                                    </div>
-                                    <div class="input-group-element">
-                                        <label th:for="${'client-scope-' + s.id}" th:text="${s.name}"></label>
-                                    </div>
-
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <div class="input-group">
-                                    <div class="input-group-element">
-                                        <label for="client-redirections" th:text="#{page.adminclients.form.label.redirections}"></label>
-                                    </div>
-                                    <div class="input-group-element btnop">
-                                        <button class="btn btn-sm btn-ok" name="action" type="submit"
-                                                th:value="${T(ca.n4dev.aegaeon.server.view.ClientViewAction).action_add_redirect_url}">
-                                            +
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <div class="input-group" th:each="r,ridx : *{redirections}">
-                                    <div class="input-group-element">
-                                        <input type="text" class="form-input"
-                                               th:field="*{redirections[__${ridx.index}__]}"
-                                               th:error/>
-                                        <p class="error-text" th:id="'client-redirections' + ${ridx.index} + '-error'"
-                                           th:classappend="${#fields.hasErrors('redirections[' + ridx.index + ']')} ? 'show-error'"
-                                           th:text="#{page.adminclients.error.redirection.invalid}">Name is mandatory.</p>
-                                    </div>
-                                    <div class="input-group-element btnop">
-                                        <button class="btn btn-sm" name="action" type="submit"
-                                                th:value="${T(ca.n4dev.aegaeon.server.view.ClientViewAction).action_remove_redirect_url} + '.' + ${ridx.index}">
-                                            X
-                                        </button>
-                                    </div>
-                                </div>
-                                <p class="error-text" id="client-redirections-error"
-                                   th:classappend="${#fields.hasErrors('redirections')} ? 'show-error'"
-                                   th:text="#{page.adminclients.error.redirections.empty}">A redirection is needed.</p>
-                                <p th:if="${#lists.isEmpty(client.redirections)}">
-                                    None
-                                </p>
-                            </div>
-
-                            <div class="form-group">
-                                <div class="input-group">
-                                    <div class="input-group-element">
-                                        <label for="client-contacts" th:text="#{page.adminclients.form.label.contacts}"></label>
-                                    </div>
-                                    <div class="input-group-element btnop">
-                                        <button class="btn btn-sm btn-ok" name="action" type="submit"
-                                                th:value="${T(ca.n4dev.aegaeon.server.view.ClientViewAction).action_add_contact}">
-                                            +
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="input-group" th:each="c,cidx : *{contacts}">
-                                    <div class="input-group-element">
-                                        <input type="text" class="form-input" th:field="*{contacts[__${cidx.index}__]}"/>
-                                    </div>
-                                    <div class="input-group-element btnop">
-                                        <button class="btn btn-sm" name="action" type="submit" th:value="'remove_' + ${cidx.index}">
-                                            X
-                                        </button>
-                                    </div>
-
-                                </div>
-
-                                <p class="error-text" id="client-contacts-error"
-                                   th:classappend="${#fields.hasErrors('contacts')} ? 'show-error'"
-                                   th:text="#{page.adminclients.error.contacts.empty}">A contact is needed.</p>
-                                <p th:if="${#lists.isEmpty(client.contacts)}">
-                                    None
-                                </p>
-                            </div>
-
-                            <input type="hidden" th:field="*{id}"/>
-
-                        </div>
-                    </div>
+                    <input type="hidden" th:field="*{id}"/>
 
                 </div>
-
             </div>
         </form>
-        <div class="right"><a href="#ag-site-header" th:text="#{action.gotop}" class="link">Top</a></div>
+        <div th:replace="~{go-to-top :: go-to-top}"></div>
     </div>
 </section>
 </body>

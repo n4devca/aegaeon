@@ -3,36 +3,32 @@
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{basepage}">
+      layout:decorate="~{base-page}">
 <head>
 
 </head>
 <body>
     <section layout:fragment="content">
-        <div class="normal-content page-signinpage page-signinpage-c">
-            <div class="login-form">
-                <form th:action="@{/login}" method="POST" >
-                    <div class="box">
-                        <div class="body">
-                            <h1 th:text="#{page.signin.form.title}"></h1>
-                            <div class="form-group">
-                                <!--<label for="username" th:text="#{page.signin.form.label.username}"></label>-->
-                                <input type="text" class="form-input" id="username" name="username" autofocus="autofocus"
-                                       th:placeholder="#{page.signin.form.input.placeholder.username}" />
-                            </div>
-                            <div class="form-group">
-                                <!--<label for="password" th:text="#{page.signin.form.label.passwd}">Password</label>-->
-                                <input type="password" class="form-input" id="password" name="password"
-                                       th:placeholder="#{page.signin.form.input.placeholder.passwd}" />
-                            </div>
-                        </div>
-                        <div class="footer right">
-                            <input type="submit" class="btn btn-ok btn-full" value="Login" th:value="#{action.login}" name="submit">
-                        </div>
+        <section class="t-signinpage">
+            <form th:action="@{/login}" method="POST">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h1 th:text="#{page.signin.form.title}"></h1>
                     </div>
-                </form>
-            </div>
-        </div>
+                    <div class="panel-body">
+                        <input type="text" class="form-input"
+                               id="username" name="username" autofocus="autofocus"
+                               th:placeholder="#{page.signin.form.input.placeholder.username}" />
+                        <input type="password" class="form-input"
+                               id="password" name="password"
+                               th:placeholder="#{page.signin.form.input.placeholder.passwd}" />
+                    </div>
+                    <div class="panel-footer is-right">
+                        <input type="submit" class="btn btn-default" value="Login" th:value="#{action.login}" name="submit">
+                    </div>
+                </div>
+            </form>
+        </section>
     </section>
 </body>
 </html>

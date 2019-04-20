@@ -1,30 +1,16 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{basepage}">
-<head>
-
-</head>
+      layout:decorate="~{base-page}">
 <body>
     <section layout:fragment="content">
-        <div class="normal-content page-error page-error-c">
-            <div class="box">
-                <div class="heading">
-                    <h1 th:text="#{page.error.panel.title}"></h1>
+        <div class="t-page-error">
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title" th:text="#{page.error.panel.title}"></span>
                 </div>
-                <div class="body">
-
-                    <!--
-                    date
-                    severity
-                    errorType
-                    errorMessage
-                    descriptionCode | description
-                    serverInfo
-                    -->
-
+                <div class="panel-body">
                     <div class="error-message">
                         <div class="error-logo">
 
@@ -41,23 +27,6 @@
 
                         </div>
                     </div>
-
-
-                    <!--
-                    <th:block th:if="${#strings.equalsIgnoreCase(type, 'OauthRestrictedException')}">
-                        <p th:text="#{${'page.error.list.oauth.errortype.' + error.error}}"></p>
-                    </th:block>
-
-                    <th:block th:if="${#strings.equalsIgnoreCase(type, 'ServerException')}">
-                        <p th:text="#{page.error.list.serverexception}"></p>
-                        <p th:text="${errorCode}"></p>
-                        <p th:text="${errorMessage}"></p>
-                    </th:block>
-
-                    <th:block th:if="${#strings.equalsIgnoreCase(type, 'Throwable')}">
-                        <p th:text="#{page.error.list.throwable}"></p>
-                    </th:block>
-                    -->
                 </div>
             </div>
         </div>
