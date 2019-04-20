@@ -2,137 +2,105 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{basepage}">
+      layout:decorate="~{base-page}">
 <head>
 
 </head>
 <body>
 <section layout:fragment="content">
-    <div class="normal-content page-edit-user page-edit-user-c">
+    <section class="t-profile">
+
         <form th:action="@{/user/profile}" th:object="${dto}" method="post">
 
-            <div class="page-edit-user-ctr">
-                <div class="page-edit-user-general">
-
-                    <div class="right">
-                        <button class="btn btn-sm btn-ok" name="submit" type="submit" value="save" th:text="#{action.save}">
-                            Save
-                        </button>
-                    </div>
-                    <div class="box">
-
-                        <div class="body">
-
-                            <div class="form-group">
-                                <label for="user-account-name" th:text="#{page.useraccount.form.label.name}"></label>
-                                <input type="text" id="user-account-name" class="form-input"
-                                       maxlength="100" required="required"
-                                       th:field="*{userView.name}"
-                                       th:errorclass="input-error"/>
-                                <p class="error-text" id="user-account-name-error"
-                                   th:classappend="${#fields.hasErrors('userView.name')} ? 'show-error'">Name cannot be empty.</p>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="user-account-name" th:text="#{page.useraccount.form.label.uniqueid}"></label>
-                                <input type="text" id="user-account-uniqueIdentifier" class="form-input read-only"
-                                       maxlength="100" readonly="readonly"
-                                       th:field="*{userView.uniqueIdentifier}"/>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="user-account-name" th:text="#{page.useraccount.form.label.username}"></label>
-                                <input type="text" id="user-account-username" class="form-input read-only read-only"
-                                       maxlength="100" readonly="readonly"
-                                       th:field="*{userView.userName}"/>
-                            </div>
-
-                        </div>
-                    </div>
+            <div class="page-header">
+                <div class="page-header-title">
+                    <h1 th:text="#{page.useraccount.title}">User Profile</h1>
                 </div>
-                <div class="page-edit-user-info">
+                <div class="page-header-action is-right">
+                    <button class="btn btn-default" name="submit" type="submit" value="save" th:text="#{action.save}">
+                        Save
+                    </button>
+                </div>
+            </div>
 
-                    <div class="box">
+            <section class="panel">
+                <div class="panel-header">
+                    <span th:text="#{page.useraccount.form.title}" class="panel-title">General Information</span>
+                </div>
+                <div class="panel-body">
 
-                        <div class="heading">
-                            <div class="right">
+                    <label for="user-account-name" class="form-caption" th:text="#{page.useraccount.form.label.name}"></label>
+                    <input type="text" id="user-account-name" class="form-input"
+                           maxlength="100" required="required"
+                           th:field="*{userView.name}"
+                           th:errorclass="input-error"/>
+                    <p class="error-text" id="user-account-name-error"
+                       th:classappend="${#fields.hasErrors('userView.name')} ? 'is-shown'">Name cannot be empty.</p>
 
-                                <select name="userInfoType">
-                                    <option th:each="uit : ${types}"
-                                            th:value="${uit.code}"
-                                            th:text="#{${'entity.userinfotype.' + #strings.toLowerCase(uit.code) + '.name'}}"></option>
-                                </select>
+                    <label for="user-account-name" class="form-caption" th:text="#{page.useraccount.form.label.uniqueid}"></label>
+                    <input type="text" id="user-account-uniqueIdentifier" class="form-input read-only"
+                           maxlength="100" readonly="readonly"
+                           th:field="*{userView.uniqueIdentifier}"/>
 
-                                <button class="btn btn-sm btn-ok" name="action" type="submit" value="add" th:text="#{action.add}">
-                                    Add
+                    <label for="user-account-name" class="form-caption" th:text="#{page.useraccount.form.label.username}"></label>
+                    <input type="text" id="user-account-username" class="form-input read-only read-only"
+                           maxlength="100" readonly="readonly"
+                           th:field="*{userView.userName}"/>
+
+                </div>
+            </section>
+
+            <section class="panel">
+
+                <div class="panel-header is-right">
+                    <select name="userInfoType">
+                        <option th:each="uit : ${types}"
+                                th:value="${uit.code}"
+                                th:text="#{${'entity.userinfotype.' + #strings.toLowerCase(uit.code) + '.name'}}"></option>
+                    </select>
+                    <button class="btn" name="action" type="submit" value="add" th:text="#{action.add}">
+                        Add
+                    </button>
+                </div>
+
+                <div class="panel-body">
+
+                    <th:block th:each="ui,stats : *{userView.userInfos}">
+                        <div class="userinfo">
+                            <div class="userinfo-label">
+                                <label class="pill pill-message"
+                                       th:text="#{${'entity.userinfotype.' + #strings.toLowerCase(ui.code) + '.name'}}"></label>
+                            </div>
+                            <div class="userinfo-input">
+                                    <input class="form-input" type="text"
+                                           th:field="*{userView.userInfos[__${stats.index}__].name}"
+                                           th:placeholder="#{${'page.useraccount.userinfotype.' + #strings.toLowerCase(ui.code) + '.placeholder'}}"/>
+                            </div>
+                            <div class="userinfo-input">
+                                    <input class="form-input" type="text"
+                                           th:field="*{userView.userInfos[__${stats.index}__].value}"
+                                           th:placeholder="#{${'page.useraccount.userinfotype.' + #strings.toLowerCase(ui.code) + '.value.placeholder'}}"/>
+                            </div>
+                            <div class="userinfo-btn">
+                                <button class="btn btn-sm btn-danger" name="action" type="submit"
+                                        value="remove" th:value="'remove_' + ${ui.refId}"
+                                        th:text="#{action.remove}">
+                                    Remove
                                 </button>
                             </div>
                         </div>
 
-                        <div class="body">
+                        <input type="hidden" th:field="*{userView.userInfos[__${stats.index}__].code}"/>
+                        <input type="hidden" th:field="*{userView.userInfos[__${stats.index}__].refId}"/>
+                        <input type="hidden" th:field="*{userView.userInfos[__${stats.index}__].refTypeId}"/>
+                    </th:block>
 
-                            <div class="input-group">
-
-                                <div class="input-group-element" style="width: 20%;">
-                                    <h3 th:text="#{page.useraccount.userinfotype.type}">Type</h3>
-                                </div>
-                                <div class="input-group-element" style="width: 35%;">
-                                    <h3 th:text="#{page.useraccount.userinfotype.desc}">Description</h3>
-                                </div>
-                                <div class="input-group-element" style="width: 35%;">
-                                    <h3 th:text="#{page.useraccount.userinfotype.value}">Value</h3>
-                                </div>
-                                <div class="input-group-element right" style="width: 10%;">
-
-                                </div>
-
-                            </div>
-
-                            <th:block th:each="ui,stats : *{userView.userInfos}">
-
-                                <div class="input-group">
-
-                                    <div class="input-group-element" style="width: 20%;">
-                                        <label class="pill pill-message"
-                                               th:text="#{${'entity.userinfotype.' + #strings.toLowerCase(ui.code) + '.name'}}"></label>
-
-                                    </div>
-                                    <div class="input-group-element" style="width: 35%;">
-                                        <div class="form-group">
-                                            <input class="form-input" type="text" style="margin-right: 3px;"
-                                                   th:field="*{userView.userInfos[__${stats.index}__].name}"
-                                                   th:placeholder="#{${'page.useraccount.userinfotype.' + #strings.toLowerCase(ui.code) + '.placeholder'}}"/>
-                                        </div>
-                                    </div>
-                                    <div class="input-group-element" style="width: 35%;">
-                                        <div class="form-group">
-                                            <input class="form-input" type="text" style="margin-right: 3px;"
-                                                   th:field="*{userView.userInfos[__${stats.index}__].value}"
-                                                   th:placeholder="#{${'page.useraccount.userinfotype.' + #strings.toLowerCase(ui.code) + '.value.placeholder'}}"/>
-
-                                        </div>
-
-                                    </div>
-                                    <div class="input-group-element right" style="width: 10%;">
-                                        <button class="btn btn-sm btn-danger" name="action" type="submit"
-                                                value="remove" th:value="'remove_' + ${ui.refId}"
-                                                th:text="#{action.remove}">
-                                            Remove
-                                        </button>
-                                    </div>
-
-                                </div>
-                                <input type="hidden" th:field="*{userView.userInfos[__${stats.index}__].code}"/>
-                                <input type="hidden" th:field="*{userView.userInfos[__${stats.index}__].refId}"/>
-                                <input type="hidden" th:field="*{userView.userInfos[__${stats.index}__].refTypeId}"/>
-                            </th:block>
-
-                        </div>
-                    </div>
                 </div>
-            </div>
+            </section>
         </form>
-    </div>
+
+    </section>
+    <div th:replace="~{go-to-top :: go-to-top}"></div>
 </section>
 </body>
 </html>

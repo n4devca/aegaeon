@@ -3,20 +3,20 @@
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{basepage}">
+      layout:decorate="~{base-page}">
 <head>
 
 </head>
 <body>
     <section layout:fragment="content">
-        <div class="normal-content page-homepage page-homepage-c">
-            <div class="box">
-                <div class="body">
+        <div class="t-page-homepage">
+            <div class="panel">
+                <div class="panel-body">
                     <h1 th:text="#{page.home.welcome}"></h1>
                     <p th:text="#{page.home.welcome.about.1}"></p>
                     <p th:text="#{page.home.welcome.about.2}"></p>
 
-                    <div class="center" sec:authorize="!hasRole('ROLE_USER')">
+                    <div class="is-center" sec:authorize="!hasRole('ROLE_USER')">
                         <a href="/login" class="btn" th:href="@{login}" th:text="#{action.login}">Login</a>
                         <form action="/create-account" th:action="@{/create-account}" method="post" class="frm">
                             <button type="submit" class="btn">
