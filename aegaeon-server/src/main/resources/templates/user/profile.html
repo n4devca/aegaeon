@@ -17,6 +17,9 @@
                     <h1 th:text="#{page.useraccount.title}">User Profile</h1>
                 </div>
                 <div class="page-header-action is-right">
+
+                    <span th:if="${status}" th:text="#{${'form.status.' + status}"></span>
+
                     <button class="btn btn-default" name="submit" type="submit" value="save" th:text="#{action.save}">
                         Save
                     </button>

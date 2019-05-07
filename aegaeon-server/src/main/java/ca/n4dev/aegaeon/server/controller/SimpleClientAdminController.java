@@ -135,17 +135,21 @@ public class SimpleClientAdminController extends BaseUiController {
                                 @ModelAttribute("client") ClientView pClientView,
                                 BindingResult pResult) {
 
+        boolean mustSave = true;
+
         this.clientViewValidator.validate(pClientView, pResult);
         ModelAndView mv = getEditViewAndDependencies(pResult);
 
         if (pAction.startsWith("action_")) {
-            doAction(pClientView, pAction);
+            mustSave = doAction(pClientView, pAction);
         } else if (pAction.equals("delete")) {
             return this.deleteOne(pId);
-        } else if (!pResult.hasErrors()) {
-            mv.addObject("client", pClientView);
+        }
+
+        if (!pResult.hasErrors() && mustSave) {
             // Save
             pClientView = this.clientService.update(pId, pClientView);
+            mv.addObject("client", pClientView);
         }
 
         return mv;
@@ -158,22 +162,23 @@ public class SimpleClientAdminController extends BaseUiController {
     }
 
 
-    private void doAction(ClientView pClientDto, String pAction) {
+    // action_remove_redirect_url.0
+    private boolean doAction(ClientView pClientDto, String pAction) {
+        boolean mustSave = false;
         String actionStr = pAction;
         Integer idx = null;
         if (pAction.contains(".")) {
             String[] actionData = pAction.split("\\.");
 
+            // TODO(RG) Manage exception properly
             if (actionData == null || actionData.length != 2) {
                 throw new ServerException(ServerExceptionCode.INVALID_PARAMETER);
             }
             actionStr = actionData[0];
-            // TODO(RG) Manage exception
             idx = Integer.parseInt(actionData[1]);
         }
 
         ClientViewAction action = ClientViewAction.from(actionStr);
-
 
         if (action != null) {
 
@@ -185,16 +190,20 @@ public class SimpleClientAdminController extends BaseUiController {
                     pClientDto.getRedirections().add("https://");
 
                 case action_remove_contact:
-                    pClientDto.getContacts().remove(idx);
+                    pClientDto.removeContactAt(idx);
+                    mustSave = true;
                     break;
                 case action_remove_redirect_url:
-                    pClientDto.getRedirections().remove(idx);
+                    pClientDto.removeRedirectionAt(idx);
+                    mustSave = true;
                     break;
                 default:
                     break;
             }
 
         }
+
+        return mustSave;
     }
 
     private ModelAndView getEditViewAndDependencies(BindingResult pResult) {

@@ -218,6 +218,15 @@ public class ClientView {
     }
 
     /**
+     * @param pIdx The index of the element to remove
+     */
+    public void removeContactAt(int pIdx) {
+        if (contacts != null && contacts.size() > pIdx) {
+            contacts.remove(pIdx);
+        }
+    }
+
+    /**
      * @return the redirections
      */
     public List<String> getRedirections() {
@@ -230,6 +239,16 @@ public class ClientView {
     public void setRedirections(List<String> pRedirections) {
         redirections = pRedirections;
     }
+
+    /**
+     * @param pIdx The index of the element to remove
+     */
+    public void removeRedirectionAt(int pIdx) {
+        if (redirections != null && redirections.size() > pIdx) {
+            redirections.remove(pIdx);
+        }
+    }
+
 
     /**
      * @return the grants
