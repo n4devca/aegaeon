@@ -149,7 +149,7 @@
                         <descriptors>
                             <descriptor>assembly.xml</descriptor>
                         </descriptors>
-                        <finalName>aegaeon-server-${project.parent.version}</finalName>
+                        <finalName>aegaeon-server-${project.version}</finalName>
                     </configuration>
                 </plugin>
             </plugins>

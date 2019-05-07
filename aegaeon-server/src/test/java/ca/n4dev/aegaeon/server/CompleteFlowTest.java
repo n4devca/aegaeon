@@ -250,7 +250,7 @@ public class CompleteFlowTest {
 
         String[] scopes = pWithRefresh ?
                 new String[] {"openid", "profile", "offline_access"} :
-                new String[] {"openid", "profile", "email", "phone", "address", "socialmedia"};
+                new String[] {"openid", "profile"};
 
         RequestBuilder builder = new RequestBuilder()
                 .responseType(pResponseType)

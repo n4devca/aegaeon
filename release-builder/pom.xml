@@ -41,7 +41,8 @@
                     <descriptors>
                         <descriptor>assembly.xml</descriptor>
                     </descriptors>
-                    <finalName>aegaeon-server-${project.parent.version}</finalName>
+                    <finalName>aegaeon-server-${project.version}</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
             </plugin>
         </plugins>
