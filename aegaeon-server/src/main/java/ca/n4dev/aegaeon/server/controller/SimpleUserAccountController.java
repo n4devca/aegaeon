@@ -123,6 +123,8 @@ public class SimpleUserAccountController extends BaseUiController {
 
         final ModelAndView modelAndView = getBasicProfilePage(pResult.getModel());
 
+        boolean toSave = true;
+
         // Adding new info
         if (hasAction(pUserFormDto)) {
 
@@ -130,15 +132,13 @@ public class SimpleUserAccountController extends BaseUiController {
 
             switch (action) {
                 case ACTION_ADD:
+                    toSave = false;
                     addNewTypeToDto(pUserFormDto);
                     break;
                 case ACTION_REMOVE:
                     removeTypeToDto(pUserFormDto);
                     break;
             }
-
-            modelAndView.addObject("dto", pUserFormDto);
-            return modelAndView;
         }
 
         // If we have some error, return
@@ -148,9 +148,12 @@ public class SimpleUserAccountController extends BaseUiController {
         }
 
         // Or Save
-        UserView userView = userService.update(pUser.getId(), pUserFormDto.getUserView());
-        modelAndView.addObject("dto", new UserFormDto(userView));
+        if (toSave) {
+            UserView userView = userService.update(pUser.getId(), pUserFormDto.getUserView());
+            pUserFormDto = new UserFormDto(userView);
+        }
 
+        modelAndView.addObject("dto", pUserFormDto);
         return modelAndView;
     }
 
@@ -248,6 +251,7 @@ public class SimpleUserAccountController extends BaseUiController {
     private void addNewTypeToDto(UserFormDto pUserFormDto) {
         final String userInfoTypeCode = pUserFormDto.getUserInfoType();
         final UserInfoView userInfoTypeView = this.userInfoTypeService.findByCode(userInfoTypeCode);
+        userInfoTypeView.setRefId(-Utils.nextPositiveId());
         pUserFormDto.getUserView().getUserInfos().add(userInfoTypeView);
     }
 

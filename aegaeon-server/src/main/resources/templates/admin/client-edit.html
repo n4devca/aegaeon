@@ -188,7 +188,7 @@
                                     <input type="text" class="form-input" th:field="*{contacts[__${cidx.index}__]}"/>
                                 </div>
                                 <div class="input-group-item">
-                                    <button class="btn-link" name="action" type="submit" th:value="'remove_' + ${cidx.index}">
+                                    <button class="btn-link" name="action" type="submit" th:value="${T(ca.n4dev.aegaeon.server.view.ClientViewAction).action_remove_contact} + '.'  + ${cidx.index}">
                                         [[#{action.remove}]]
                                     </button>
                                 </div>
