@@ -322,7 +322,7 @@ a {
     text-transform: uppercase;
 }
 
-.is-shown {
+.is-shown, .error-text.show-error {
     display: block;
 }
 

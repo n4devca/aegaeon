@@ -20,21 +20,18 @@
  */
 package ca.n4dev.aegaeon.server.service;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
 import ca.n4dev.aegaeon.api.model.Scope;
 import ca.n4dev.aegaeon.api.repository.ScopeRepository;
-import ca.n4dev.aegaeon.server.controller.exception.InvalidScopeException;
-import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import ca.n4dev.aegaeon.server.view.ScopeView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * ScopeService.java
@@ -45,7 +42,10 @@ import org.springframework.transaction.annotation.Transactional;
  * @since May 28, 2017
  */
 @Service
+@CacheConfig(cacheNames = ScopeService.CACHE_NAME)
 public class ScopeService extends BaseService<Scope, ScopeRepository> {
+
+    public static final String CACHE_NAME = "ScopeService";
 
     private static final String SPACE = " ";
 
@@ -59,27 +59,14 @@ public class ScopeService extends BaseService<Scope, ScopeRepository> {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(key = "'all'")
     public List<ScopeView> findAll() {
         final List<Scope> all = this.getRepository().findAll();
         return Utils.convert(all, pScope -> new ScopeView(pScope.getId(), pScope.getName()));
     }
 
-
     @Transactional(readOnly = true)
-    public ScopeView findByName(String pName) {
-        Assert.notEmpty(pName, () -> new InvalidScopeException(pName, null));
-
-        final Optional<Scope> scope = this.getRepository().findByName(pName.trim());
-
-        if (scope.isPresent()) {
-            final Scope scopeObj = scope.get();
-            return new ScopeView(scopeObj.getId(), scopeObj.getName());
-        } else {
-            return null;
-        }
-    }
-
-    @Transactional(readOnly = true)
+    @Cacheable(key = "{'validate', #pScopeParam, T(ca.n4dev.aegaeon.server.utils.Utils).hashCode(#pExclusions)}")
     public ScopeSet validate(String pScopeParam, Set<String> pExclusions) {
 
         if (Utils.isNotEmpty(pScopeParam)) {
@@ -118,11 +105,13 @@ public class ScopeService extends BaseService<Scope, ScopeRepository> {
 
 
     @Transactional(readOnly = true)
+    @Cacheable(key = "{'getValidScopes', #pScopeParam}")
     public Set<ScopeView> getValidScopes(String pScopeParam) {
         return getValidScopes(pScopeParam, null);
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(key = "{'getValidScopes', #pScopeParam, T(ca.n4dev.aegaeon.server.utils.Utils).hashCode(#pExclusions)}")
     public Set<ScopeView> getValidScopes(String pScopeParam, Set<String> pExclusions) {
 
         if (Utils.isNotEmpty(pScopeParam)) {
@@ -134,6 +123,7 @@ public class ScopeService extends BaseService<Scope, ScopeRepository> {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(key = "{'isPartOf', #pAuthorizedScopes, #pRequestedScopes}")
     public boolean isPartOf(String pAuthorizedScopes, String pRequestedScopes) {
 
         final ScopeSet authorizedScopeSet = validate(pAuthorizedScopes);
@@ -157,7 +147,7 @@ public class ScopeService extends BaseService<Scope, ScopeRepository> {
         return allOk;
     }
 
-    public static class ScopeSet {
+    public static class ScopeSet implements Serializable {
         private static ScopeSet empty = new ScopeSet(Collections.emptySet(), Collections.emptySet());
         private Set<ScopeView> validScopes;
         private Set<ScopeView> invalidScopes;

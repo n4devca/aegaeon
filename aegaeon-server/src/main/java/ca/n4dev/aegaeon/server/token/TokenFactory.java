@@ -21,24 +21,22 @@
  */
 package ca.n4dev.aegaeon.server.token;
 
-import java.time.temporal.TemporalUnit;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import ca.n4dev.aegaeon.api.token.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import com.nimbusds.jwt.SignedJWT;
-
+import ca.n4dev.aegaeon.api.token.OAuthClient;
+import ca.n4dev.aegaeon.api.token.OAuthUser;
+import ca.n4dev.aegaeon.api.token.Token;
+import ca.n4dev.aegaeon.api.token.TokenProviderType;
 import ca.n4dev.aegaeon.api.token.provider.TokenProvider;
 import ca.n4dev.aegaeon.api.token.verifier.TokenVerifier;
 import ca.n4dev.aegaeon.server.token.key.KeysProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Component;
+
+import java.time.temporal.TemporalUnit;
+import java.util.*;
 
 /**
  * TokenFactory.java
@@ -49,7 +47,10 @@ import ca.n4dev.aegaeon.server.token.key.KeysProvider;
  * @since May 11, 2017
  */
 @Component
+@CacheConfig(cacheNames = TokenFactory.CACHE_NAME)
 public class TokenFactory {
+
+    public static final String CACHE_NAME = "TokenFactory";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TokenFactory.class);
     
@@ -181,7 +182,8 @@ public class TokenFactory {
                 pTemporalUnit,
                 pPayloads);
     }
-    
+
+    @Cacheable(key = "'getSupportedAlgorithm'")
     public List<String> getSupportedAlgorithm() {
         List<String> algos = new ArrayList<>();
         
@@ -189,14 +191,11 @@ public class TokenFactory {
         
         return algos;
     }
-    
+
+    @Cacheable(key = "'publicJwks'")
     public String publicJwks() throws Exception {
         return this.keysProvider.toPublicJson();
     }
     
-    
-    public OAuthUserAndClaim extractAndValidate(OAuthClient pOAuthClient, String pTokenValue) throws Exception {
-        
-        return this.tokenVerifierHolder.get(pOAuthClient.getProviderName()).extractAndValidate(pTokenValue);
-    }
+
 }

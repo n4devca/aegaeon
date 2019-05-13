@@ -20,27 +20,11 @@
  */
 package ca.n4dev.aegaeon.server.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
-import ca.n4dev.aegaeon.api.model.Client;
-import ca.n4dev.aegaeon.api.model.ClientAuthFlow;
-import ca.n4dev.aegaeon.api.model.ClientContact;
-import ca.n4dev.aegaeon.api.model.ClientRedirection;
-import ca.n4dev.aegaeon.api.model.ClientScope;
+import ca.n4dev.aegaeon.api.model.*;
 import ca.n4dev.aegaeon.api.protocol.ClientConfig;
 import ca.n4dev.aegaeon.api.protocol.Flow;
-import ca.n4dev.aegaeon.api.repository.ClientAuthFlowRepository;
-import ca.n4dev.aegaeon.api.repository.ClientContactRepository;
-import ca.n4dev.aegaeon.api.repository.ClientRedirectionRepository;
-import ca.n4dev.aegaeon.api.repository.ClientRepository;
-import ca.n4dev.aegaeon.api.repository.ClientRequestUriRepository;
-import ca.n4dev.aegaeon.api.repository.ClientScopeRepository;
-import ca.n4dev.aegaeon.api.repository.ScopeRepository;
+import ca.n4dev.aegaeon.api.repository.*;
 import ca.n4dev.aegaeon.api.token.TokenProviderType;
 import ca.n4dev.aegaeon.server.controller.dto.PageDto;
 import ca.n4dev.aegaeon.server.utils.Assert;
@@ -51,14 +35,21 @@ import ca.n4dev.aegaeon.server.view.ClientView;
 import ca.n4dev.aegaeon.server.view.SelectableItemView;
 import ca.n4dev.aegaeon.server.view.Selection;
 import ca.n4dev.aegaeon.server.view.mapper.ClientMapper;
-import ca.n4dev.aegaeon.server.view.mapper.ScopeMapper;
 import ca.n4dev.aegaeon.server.view.mapper.SelectionMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -70,16 +61,17 @@ import org.springframework.transaction.annotation.Transactional;
  * @since May 9, 2017
  */
 @Service
+@CacheConfig(cacheNames = ClientService.CACHE_NAME)
 public class ClientService extends BaseSecuredService<Client, ClientRepository> {
 
+    public static final String CACHE_NAME = "ClientService";
+
     private ClientMapper clientMapper;
-    private ScopeMapper scopeMapper;
     private SelectionMapper selectionMapper;
 
     private ClientAuthFlowRepository clientAuthFlowRepository;
     private ClientScopeRepository clientScopeRepository;
     private ClientRedirectionRepository clientRedirectionRepository;
-    private ClientRequestUriRepository clientRequestUriRepository;
     private ClientContactRepository clientContactRepository;
 
     private ScopeRepository scopeRepository;
@@ -94,11 +86,9 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
                          ClientAuthFlowRepository pClientGrantTypeRepository,
                          ClientScopeRepository pClientScopeRepository,
                          ClientRedirectionRepository pClientRedirectionRepository,
-                         ClientRequestUriRepository pClientRequestUriRepository,
                          ClientContactRepository pClientContactRepository,
                          ScopeRepository pScopeRepository,
                          ClientMapper pClientMapper,
-                         ScopeMapper pScopeMapper,
                          SelectionMapper pSelectionMapper) {
 
         super(pRepository);
@@ -106,13 +96,11 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
         this.clientAuthFlowRepository = pClientGrantTypeRepository;
         this.clientScopeRepository = pClientScopeRepository;
         this.clientRedirectionRepository = pClientRedirectionRepository;
-        this.clientRequestUriRepository = pClientRequestUriRepository;
         this.clientContactRepository = pClientContactRepository;
 
         this.scopeRepository = pScopeRepository;
 
         this.clientMapper = pClientMapper;
-        this.scopeMapper = pScopeMapper;
         this.selectionMapper = pSelectionMapper;
     }
 
@@ -258,6 +246,7 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
      */
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
+    @CacheEvict(allEntries = true)
     public ClientView update(Long pClientId, ClientView pEntity) {
 
         // Mandatory info

@@ -21,10 +21,6 @@
 
 package ca.n4dev.aegaeon.server.service;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.model.UserInfoType;
 import ca.n4dev.aegaeon.api.repository.UserInfoTypeRepository;
@@ -34,6 +30,10 @@ import ca.n4dev.aegaeon.server.view.UserInfoView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * @author by rguillemette
@@ -80,6 +80,7 @@ public class UserInfoTypeService extends BaseSecuredService<UserInfoType, UserIn
         return uit;
     }
 
+    @Transactional(readOnly = true)
     public UserInfoView findByCode(String pCode) {
         Assert.notEmpty(pCode, ServerExceptionCode.ILLEGAL_ARGUMENT);
         final UserInfoType infoType = getRepository().findByCode(pCode);

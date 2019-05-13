@@ -5,6 +5,7 @@ spring:
         cache: false
         mode: HTML
     jpa:
+        open-in-view: false
         hibernate:
             naming:
                 physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
@@ -27,6 +28,11 @@ spring:
         locations: classpath:db/mysql
         out-of-order: true
 aegaeon:
+    config:
+        redis:
+            host: localhost
+            port: 6379
+            password:
     modules:
         oauth: true
         login: true

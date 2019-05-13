@@ -20,8 +20,6 @@
  */
 package ca.n4dev.aegaeon.server.service;
 
-import java.util.List;
-
 import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.ClientRedirection;
 import ca.n4dev.aegaeon.api.model.UserAuthorization;
@@ -31,9 +29,12 @@ import ca.n4dev.aegaeon.api.repository.UserAuthorizationRepository;
 import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * AuthorizationService.java
@@ -85,16 +86,7 @@ public class AuthorizationService {
                     return false;
                 }
 
-                UserAuthorization userAuthorization = null;
-
-                // Check if the user has allowed this client
-                if (userDetails.getId() != null) {
-                    userAuthorization = this.userAuthorizationRepository.findByUserIdAndClientId(userDetails.getId(),
-                                                                                                 client.getId());
-                } else if (Utils.isNotEmpty(userDetails.getUsername())) {
-                    userAuthorization = this.userAuthorizationRepository.findByUserUserNameAndClientId(userDetails.getUsername(),
-                                                                                                       client.getId());
-                }
+                UserAuthorization userAuthorization = getUserAuthorization(userDetails, client);
 
                 if (userAuthorization == null) {
                     return false;
@@ -102,13 +94,7 @@ public class AuthorizationService {
 
                 // finally, Validate scopes
                 return scopeService.isPartOf(userAuthorization.getScopes(), pRawScopeParam);
-
-//                final Set<ScopeView> requestedScope = scopeService.getValidScopes(pRawScopeParam);
-//                final Set<ScopeView> authorizedScopes = scopeService.getValidScopes(userAuthorization.getScopes());
-//
-//                return authorizedScopes != null && authorizedScopes.equals(requestedScope);
             }
-
         }
 
         return false;
@@ -116,6 +102,8 @@ public class AuthorizationService {
 
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = ClientService.CACHE_NAME,
+               key = "{'isClientInfoValid', #pClientPublicId, pRedirectionUrl}")
     public boolean isClientInfoValid(String pClientPublicId, String pRedirectionUrl) {
 
         if (!Utils.areOneEmpty(pClientPublicId, pRedirectionUrl)) {
@@ -138,5 +126,21 @@ public class AuthorizationService {
             return Utils.isOneTrue(clientRedirections, cr -> cr.getUrl().equals(pRedirectionUrl));
         }
         return false;
+    }
+
+    private UserAuthorization getUserAuthorization(AegaeonUserDetails pUserDetails,
+                                                   Client pClient) {
+        if (pUserDetails != null && pClient != null) {
+
+            if (pUserDetails.getId() != null) {
+                return this.userAuthorizationRepository.findByUserIdAndClientId(pUserDetails.getId(),
+                        pClient.getId());
+            } else if (Utils.isNotEmpty(pUserDetails.getUsername())) {
+                return this.userAuthorizationRepository.findByUserUserNameAndClientId(pUserDetails.getUsername(),
+                        pClient.getId());
+            }
+        }
+
+        return null;
     }
 }

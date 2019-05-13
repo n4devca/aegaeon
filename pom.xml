@@ -122,10 +122,24 @@
                 <version>${thymeleaf.securitydialect.version}</version>
             </dependency>
 
+            <!--
             <dependency>
                 <groupId>redis.clients</groupId>
                 <artifactId>jedis</artifactId>
                 <version>${jedis.version}</version>
+            </dependency>
+            -->
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-data-redis</artifactId>
+                <version>${spring-boot.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.session</groupId>
+                <artifactId>spring-session-data-redis</artifactId>
+                <version>${spring-boot.version}</version>
             </dependency>
 
             <dependency>

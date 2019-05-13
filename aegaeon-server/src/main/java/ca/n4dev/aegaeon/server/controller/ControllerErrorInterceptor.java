@@ -20,28 +20,10 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import ca.n4dev.aegaeon.api.exception.ErrorHandling;
-import ca.n4dev.aegaeon.api.exception.OpenIdErrorType;
-import ca.n4dev.aegaeon.api.exception.OpenIdException;
-import ca.n4dev.aegaeon.api.exception.ServerException;
-import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
-import ca.n4dev.aegaeon.api.exception.Severity;
-import ca.n4dev.aegaeon.api.protocol.AuthRequest;
-import ca.n4dev.aegaeon.api.protocol.ClientRequest;
-import ca.n4dev.aegaeon.api.protocol.FlowUtils;
-import ca.n4dev.aegaeon.api.protocol.GrantType;
-import ca.n4dev.aegaeon.api.protocol.TokenRequest;
+import ca.n4dev.aegaeon.api.exception.*;
+import ca.n4dev.aegaeon.api.protocol.*;
 import ca.n4dev.aegaeon.server.config.ServerInfo;
+import ca.n4dev.aegaeon.server.controller.exception.InvalidScopeException;
 import ca.n4dev.aegaeon.server.controller.exception.*;
 import ca.n4dev.aegaeon.server.utils.UriBuilder;
 import ca.n4dev.aegaeon.server.utils.Utils;
@@ -60,6 +42,16 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.view.RedirectView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * ControllerErrorInterceptor.java
@@ -170,6 +162,8 @@ public class ControllerErrorInterceptor extends BaseUiController {
                                   Locale pLocale,
                                   HttpServletRequest pHttpServletRequest,
                                   HttpServletResponse pHttpServletResponse) {
+
+        LOGGER.error("Unamed exception:", pThrowable);
 
         return internalErrorPage(Severity.DANGER,
                                  pLocale,

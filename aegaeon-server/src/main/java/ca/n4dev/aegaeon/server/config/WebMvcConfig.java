@@ -21,12 +21,12 @@
  */
 package ca.n4dev.aegaeon.server.config;
 
-import java.util.List;
-import java.util.Locale;
-
+import ca.n4dev.aegaeon.server.controller.interceptor.RequestMethodArgumentResolver;
+import ca.n4dev.aegaeon.server.controller.interceptor.ServerInfoInterceptor;
 import nz.net.ultraq.thymeleaf.LayoutDialect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -35,10 +35,10 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
-
-import ca.n4dev.aegaeon.server.controller.interceptor.RequestMethodArgumentResolver;
-import ca.n4dev.aegaeon.server.controller.interceptor.ServerInfoInterceptor;
 import org.thymeleaf.extras.springsecurity4.dialect.SpringSecurityDialect;
+
+import java.util.List;
+import java.util.Locale;
 
 /**
  * WebMvcConfig.java
@@ -50,7 +50,9 @@ import org.thymeleaf.extras.springsecurity4.dialect.SpringSecurityDialect;
  */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
-    
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebMvcConfig.class);
+
     @Value("${aegaeon.info.issuer}")
     private String issuer;
     
@@ -87,6 +89,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
     
     @Bean
     public ServerInfo serverInfo() {
+
+        if (!this.issuer.startsWith("https://")) {
+            LOGGER.warn("-----------------------------------------------");
+            LOGGER.warn("Warning: Issuer is not using https.");
+            LOGGER.warn("-----------------------------------------------");
+        }
+
         return new ServerInfo(this.issuer, 
         					  this.serverName,
         					  this.legalEntity, 

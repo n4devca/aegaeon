@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{base-page}">
 <head>
@@ -9,53 +8,51 @@
 </head>
 <body>
 <section layout:fragment="content">
-    <div class="normal-content page-signup page-signup-c">
-        <div class="signup-form">
-            <form th:action="@{/create-account/accept}" method="post" th:object="${user}">
-                <div class="box">
-                    <th:block th:unless="${completed}">
-                        <div class="body">
+    <section class="t-signup">
+        <form th:action="@{/create-account/accept}" method="post" th:object="${user}">
+            <div class="panel">
+                <th:block th:unless="${completed}">
+                    <div class="panel-body">
 
-                            <div class="form-group">
-                                <label for="ca-username" th:text="#{page.signin.form.label.username}"></label>
-                                <input type="text" class="form-input" id="ca-username" name="username"
-                                       th:field="*{username}" th:errorclass="input-error"
-                                       th:placeholder="#{page.signin.form.input.placeholder.username}" />
-                                <p th:each="err : ${#fields.errors('username')}" class="error-text show-error" th:text="${err}"></p>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="password" th:text="#{page.signin.form.label.passwd}">Password</label>
-                                <input type="password" class="form-input" id="password" name="password"
-                                       th:field="*{password}" th:errorclass="input-error"
-                                       th:placeholder="#{page.signin.form.input.placeholder.passwd}" />
-                                <p th:each="err : ${#fields.errors('password')}" class="error-text show-error" th:text="${err}"></p>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="password-confirm" th:text="#{page.signin.form.label.passwd.confirm}">Confirm Password</label>
-                                <input type="password" class="form-input" id="password-confirm" name="passwordConfirm"
-                                       th:field="*{passwordConfirm}" th:errorclass="input-error"
-                                       th:placeholder="#{page.signin.form.input.placeholder.passwd.confirm}" />
-                                <p th:each="err : ${#fields.errors('passwordConfirm')}" class="error-text show-error" th:text="${err}"></p>
-                            </div>
-
+                        <div class="form-group">
+                            <label for="ca-username" th:text="#{page.signin.form.label.username}"></label>
+                            <input type="text" class="form-input" id="ca-username" name="username"
+                                   th:field="*{username}" th:errorclass="input-error"
+                                   th:placeholder="#{page.signin.form.input.placeholder.username}" />
+                            <p th:each="err : ${#fields.errors('username')}" class="error-text show-error" th:text="${err}"></p>
                         </div>
-                        <div class="footer right">
-                            <input type="submit" class="btn btn-ok" name="submit" value="Create Account"
-                                   th:value="#{action.createaccount}" />
-                        </div>
-                    </th:block>
 
-                    <th:block th:if="${completed}">
-                        <div class="body">
-                            Account Created
+                        <div class="form-group">
+                            <label for="password" th:text="#{page.signin.form.label.passwd}">Password</label>
+                            <input type="password" class="form-input" id="password" name="password"
+                                   th:field="*{password}" th:errorclass="input-error"
+                                   th:placeholder="#{page.signin.form.input.placeholder.passwd}" />
+                            <p th:each="err : ${#fields.errors('password')}" class="error-text show-error" th:text="${err}"></p>
                         </div>
-                    </th:block>
-                </div>
-            </form>
-        </div>
-    </div>
+
+                        <div class="form-group">
+                            <label for="password-confirm" th:text="#{page.signin.form.label.passwd.confirm}">Confirm Password</label>
+                            <input type="password" class="form-input" id="password-confirm" name="passwordConfirm"
+                                   th:field="*{passwordConfirm}" th:errorclass="input-error"
+                                   th:placeholder="#{page.signin.form.input.placeholder.passwd.confirm}" />
+                            <p th:each="err : ${#fields.errors('passwordConfirm')}" class="error-text show-error" th:text="${err}"></p>
+                        </div>
+
+                    </div>
+                    <div class="panel-footer is-right">
+                        <input type="submit" class="btn btn-ok" name="submit" value="Create Account"
+                               th:value="#{action.createaccount}" />
+                    </div>
+                </th:block>
+
+                <th:block th:if="${completed}">
+                    <div class="panel-body">
+                        <h3>Account Created</h3>
+                    </div>
+                </th:block>
+            </div>
+        </form>
+    </section>
 </section>
 </body>
 </html>

@@ -1,5 +1,6 @@
 package ca.n4dev.aegaeon.server.view;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
@@ -11,7 +12,7 @@ import java.util.Objects;
  * @author rguillemette
  * @since 2.0.0 - Mar 12 - 2019
  */
-public class ScopeView {
+public class ScopeView implements Serializable {
 
     private Long id;
 
