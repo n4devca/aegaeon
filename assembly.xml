@@ -26,6 +26,14 @@
         </fileSet>
 
         <fileSet>
+            <directory>${project.parent.basedir}/aegaeon-api/src/main/resources/db/postgresql</directory>
+            <outputDirectory>/model/postgresql</outputDirectory>
+            <includes>
+                <include>**</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
             <directory>${project.parent.basedir}/</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
