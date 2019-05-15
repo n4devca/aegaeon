@@ -21,19 +21,18 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
+import ca.n4dev.aegaeon.server.utils.Utils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
-import ca.n4dev.aegaeon.server.utils.Utils;
-
 /**
  * SimpleHomeController.java
- * 
+ *
  * A simple controller managing the homepage or redirecting to user-account if the home is disabled.
- * 
+ *
  * @author by rguillemette
  * @since Jul 14, 2017
  */
@@ -42,29 +41,30 @@ import ca.n4dev.aegaeon.server.utils.Utils;
 //@ConditionalOnProperty(prefix = "aegaeon.modules", name = "home", havingValue = "true", matchIfMissing = false)
 public class SimpleHomeController {
 
-	public static final String URL = "/";
-	
-	private String homeModule;
-	
-	/**
-	 * Default Constructor.
-	 * @param pHomeModuleEnable If home is enabled.
-	 */
-	public SimpleHomeController(@Value("${aegaeon.modules.home:false}") String pHomeModuleEnable) {
-		this.homeModule = pHomeModuleEnable;
-	}
-	
+    public static final String URL = "/";
+
+    private String homeModule;
+
+    /**
+     * Default Constructor.
+     *
+     * @param pHomeModuleEnable If home is enabled.
+     */
+    public SimpleHomeController(@Value("${aegaeon.modules.home:false}") String pHomeModuleEnable) {
+        this.homeModule = pHomeModuleEnable;
+    }
+
     /**
      * @return Aegaeon home page.
      */
     @RequestMapping("")
     public ModelAndView home() {
-  
-    	if (Utils.FALSE.equalsIgnoreCase(homeModule)) {
-    		// home is disabled
-    		return new ModelAndView(new RedirectView(SimpleUserAccountController.URL, true));
-    	}
-    	
-    	return new ModelAndView("homepage");
+
+        if (Utils.FALSE.equalsIgnoreCase(homeModule)) {
+            // home is disabled
+            return new ModelAndView(new RedirectView(SimpleUserAccountController.URL, true));
+        }
+
+        return new ModelAndView("homepage");
     }
 }

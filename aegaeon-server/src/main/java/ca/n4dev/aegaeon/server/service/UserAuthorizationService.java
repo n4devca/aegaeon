@@ -20,11 +20,13 @@
  */
 package ca.n4dev.aegaeon.server.service;
 
+import java.util.List;
 import java.util.Set;
 
 import ca.n4dev.aegaeon.api.exception.ServerException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.model.Client;
+import ca.n4dev.aegaeon.api.model.ClientRedirection;
 import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.model.UserAuthorization;
 import ca.n4dev.aegaeon.api.repository.UserAuthorizationRepository;
@@ -35,7 +37,9 @@ import ca.n4dev.aegaeon.server.view.ScopeView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -85,6 +89,84 @@ public class UserAuthorizationService extends BaseSecuredService<UserAuthorizati
         LOGGER.info("Creating user authorization for {} / {}", pUserDetails.getId(), pClientPublicId);
     }
 
+    @Transactional(readOnly = true)
+    public boolean isAuthorized(Authentication pAuthentication,
+                                String pClientPublicId,
+                                String pClientRedirectionUrl,
+                                String pRawScopeParam) {
+
+        if (Utils.isNotEmpty(pClientPublicId)
+                && pAuthentication != null
+                && pAuthentication.getPrincipal() instanceof AegaeonUserDetails) {
+
+            AegaeonUserDetails userDetails = (AegaeonUserDetails) pAuthentication.getPrincipal();
+            Client client = this.clientService.findByPublicId(pClientPublicId);
+
+            if (client != null && userDetails != null) {
+
+                // Check Url first
+                if (Utils.isNotEmpty(pClientRedirectionUrl) && !checkRedirection(client.getId(), pClientRedirectionUrl)) {
+                    return false;
+                }
+
+                UserAuthorization userAuthorization = getUserAuthorization(userDetails, client);
+
+                if (userAuthorization == null) {
+                    return false;
+                }
+
+                // finally, Validate scopes
+                return scopeService.isPartOf(userAuthorization.getScopes(), pRawScopeParam);
+            }
+        }
+
+        return false;
+    }
+
+
+    @Transactional(readOnly = true)
+    @Cacheable(cacheNames = ClientService.CACHE_NAME,
+            key = "{'isClientInfoValid', #pClientPublicId, pRedirectionUrl}")
+    public boolean isClientInfoValid(String pClientPublicId, String pRedirectionUrl) {
+
+        if (!Utils.areOneEmpty(pClientPublicId, pRedirectionUrl)) {
+
+            // Get client by public id and check if exists
+            Client client = this.clientService.findByPublicId(pClientPublicId);
+
+            if (client != null) {
+                // And then, check if it is a valid redirection
+                return checkRedirection(client.getId(), pRedirectionUrl);
+            }
+        }
+
+        return false;
+    }
+
+    private boolean checkRedirection(Long pClientId, String pRedirectionUrl) {
+        if (pClientId != null && Utils.isNotEmpty(pRedirectionUrl)) {
+            List<ClientRedirection> clientRedirections = clientService.findRedirectionsByClientId(pClientId);
+            return Utils.isOneTrue(clientRedirections, cr -> cr.getUrl().equals(pRedirectionUrl));
+        }
+        return false;
+    }
+
+    private UserAuthorization getUserAuthorization(AegaeonUserDetails pUserDetails,
+                                                   Client pClient) {
+        if (pUserDetails != null && pClient != null) {
+
+            if (pUserDetails.getId() != null) {
+                return getRepository().findByUserIdAndClientId(pUserDetails.getId(),
+                                                               pClient.getId());
+            } else if (Utils.isNotEmpty(pUserDetails.getUsername())) {
+                return getRepository().findByUserUserNameAndClientId(pUserDetails.getUsername(),
+                                                                     pClient.getId());
+            }
+        }
+
+        return null;
+    }
+
     UserAuthorization createUserAuthorization(Long pUserId, String pClientPublicId, String pScopes) {
 
         Assert.notNull(pUserId, ServerExceptionCode.USER_EMPTY);
@@ -118,9 +200,5 @@ public class UserAuthorizationService extends BaseSecuredService<UserAuthorizati
         return this.getRepository().findByUserIdAndClientId(pUserId, pClientId);
     }
 
-    @Transactional(readOnly = true)
-    public boolean isAuthorized(Long pUserId, Long pClientId) {
-        return this.getRepository().findByUserIdAndClientId(pUserId, pClientId) != null;
-    }
 
 }

@@ -29,17 +29,17 @@
         <ul class="l-header-nav-grid">
             <li sec:authorize="!hasRole('ROLE_USER')" class="l-header-nav-grid-item">
                 <form th:action="@{/create-account}" method="post">
-                    <button type="submit" class="btn-link link-principal is-uppercase">
+                    <button type="submit" class="btn-link link-principal is-uppercase" th:text="#{action.gotocreateaccount}">
                         Create Account
                     </button>
                 </form>
             </li>
             <li sec:authorize="hasRole('ROLE_ADMIN')" class="l-header-nav-grid-item">
-                <a th:href="@{/admin/clients}" class="link link-principal is-uppercase">Clients</a>
+                <a th:href="@{/admin/clients}" class="link link-principal is-uppercase" th:text="#{action.gotoclients}">Clients</a>
             </li>
             <th:block sec:authorize="hasRole('ROLE_USER')">
                 <li class="l-header-nav-grid-item">
-                    <a th:href="@{/user}" class="link link-principal is-uppercase">My Account</a>
+                    <a th:href="@{/user}" class="link link-principal is-uppercase" th:text="#{action.gotomyaccount}">My Account</a>
                 </li>
                 <li class="l-header-nav-grid-item">
                     <form th:action="@{/logout}" method="post">

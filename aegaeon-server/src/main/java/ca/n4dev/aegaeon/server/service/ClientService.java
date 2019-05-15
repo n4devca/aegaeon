@@ -20,11 +20,26 @@
  */
 package ca.n4dev.aegaeon.server.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
-import ca.n4dev.aegaeon.api.model.*;
+import ca.n4dev.aegaeon.api.model.Client;
+import ca.n4dev.aegaeon.api.model.ClientAuthFlow;
+import ca.n4dev.aegaeon.api.model.ClientContact;
+import ca.n4dev.aegaeon.api.model.ClientRedirection;
+import ca.n4dev.aegaeon.api.model.ClientScope;
 import ca.n4dev.aegaeon.api.protocol.ClientConfig;
 import ca.n4dev.aegaeon.api.protocol.Flow;
-import ca.n4dev.aegaeon.api.repository.*;
+import ca.n4dev.aegaeon.api.repository.ClientAuthFlowRepository;
+import ca.n4dev.aegaeon.api.repository.ClientContactRepository;
+import ca.n4dev.aegaeon.api.repository.ClientRedirectionRepository;
+import ca.n4dev.aegaeon.api.repository.ClientRepository;
+import ca.n4dev.aegaeon.api.repository.ClientScopeRepository;
+import ca.n4dev.aegaeon.api.repository.ScopeRepository;
 import ca.n4dev.aegaeon.api.token.TokenProviderType;
 import ca.n4dev.aegaeon.server.controller.dto.PageDto;
 import ca.n4dev.aegaeon.server.utils.Assert;
@@ -44,12 +59,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 
 /**
@@ -119,31 +128,6 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
 
         return new PageDto<>(dtos, pPageable, page.getTotalElements());
     }
-
-    Client findByPublicId(String pPublicId) {
-        if (Utils.isNotEmpty(pPublicId)) {
-            return this.getRepository().findByPublicId(pPublicId);
-        }
-
-        return null;
-    }
-
-    List<ClientRedirection> findRedirectionsByClientId(Long pClientId) {
-        return this.clientRedirectionRepository.findByClientId(pClientId);
-    }
-
-    List<ClientAuthFlow> findAuthFlowByClientId(Long pClientId) {
-        return this.clientAuthFlowRepository.findByClientId(pClientId);
-    }
-
-    List<ClientScope> findScopeByClientId(Long pClientId) {
-        return this.clientScopeRepository.findByClientId(pClientId);
-    }
-
-    List<ClientContact> findContactByClientId(Long pClientId) {
-        return this.clientContactRepository.findByClientId(pClientId);
-    }
-
 
     @Transactional(readOnly = true)
     public boolean hasScope(Long pClientId, String pScope) {
@@ -282,6 +266,31 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
 
         return this.findOne(clientId);
     }
+
+    Client findByPublicId(String pPublicId) {
+        if (Utils.isNotEmpty(pPublicId)) {
+            return this.getRepository().findByPublicId(pPublicId);
+        }
+
+        return null;
+    }
+
+    List<ClientRedirection> findRedirectionsByClientId(Long pClientId) {
+        return this.clientRedirectionRepository.findByClientId(pClientId);
+    }
+
+    List<ClientAuthFlow> findAuthFlowByClientId(Long pClientId) {
+        return this.clientAuthFlowRepository.findByClientId(pClientId);
+    }
+
+    List<ClientScope> findScopeByClientId(Long pClientId) {
+        return this.clientScopeRepository.findByClientId(pClientId);
+    }
+
+    List<ClientContact> findContactByClientId(Long pClientId) {
+        return this.clientContactRepository.findByClientId(pClientId);
+    }
+
 
     private void updateRedirectionUrls(Long pClientId, List<String> pUrls) {
         List<ClientRedirection> redirections = this.findRedirectionsByClientId(pClientId);

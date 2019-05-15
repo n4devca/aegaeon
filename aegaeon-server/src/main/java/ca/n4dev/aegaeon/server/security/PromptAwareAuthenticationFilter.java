@@ -38,7 +38,7 @@ import ca.n4dev.aegaeon.api.protocol.GrantType;
 import ca.n4dev.aegaeon.api.protocol.Prompt;
 import ca.n4dev.aegaeon.server.controller.AuthorizationController;
 import ca.n4dev.aegaeon.server.controller.ControllerErrorInterceptor;
-import ca.n4dev.aegaeon.server.service.AuthorizationService;
+import ca.n4dev.aegaeon.server.service.UserAuthorizationService;
 import ca.n4dev.aegaeon.server.utils.UriBuilder;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import org.slf4j.Logger;
@@ -64,19 +64,19 @@ public class PromptAwareAuthenticationFilter extends GenericFilterBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PromptAwareAuthenticationFilter.class);
 
-    private AuthorizationService authorizationService;
+    private UserAuthorizationService userAuthorizationService;
     private ControllerErrorInterceptor controllerErrorInterceptor;
 
     /**
      * Constructor.
      *
-     * @param pAuthorizationService       The authorization service.
+     * @param pUserAuthorizationService       The authorization service.
      * @param pControllerErrorInterceptor The ControllerErrorInterceptor to handle error.
      */
     @Autowired
-    public PromptAwareAuthenticationFilter(AuthorizationService pAuthorizationService,
+    public PromptAwareAuthenticationFilter(UserAuthorizationService pUserAuthorizationService,
                                            ControllerErrorInterceptor pControllerErrorInterceptor) {
-        authorizationService = pAuthorizationService;
+        userAuthorizationService = pUserAuthorizationService;
         controllerErrorInterceptor = pControllerErrorInterceptor;
     }
 
@@ -183,7 +183,7 @@ public class PromptAwareAuthenticationFilter extends GenericFilterBean {
         Authentication existingAuth = SecurityContextHolder.getContext().getAuthentication();
 
         if (existingAuth == null) {
-            return authorizationService.isAuthorized(existingAuth, pClientId, pRedirectionUrl, pScopeParam);
+            return userAuthorizationService.isAuthorized(existingAuth, pClientId, pRedirectionUrl, pScopeParam);
         }
 
         return false;
@@ -199,7 +199,7 @@ public class PromptAwareAuthenticationFilter extends GenericFilterBean {
 
         if (hasProperParams) {
             // OK, then, check the client
-            return authorizationService.isClientInfoValid(pAuthRequest.getClientId(), pAuthRequest.getRedirectUri());
+            return userAuthorizationService.isClientInfoValid(pAuthRequest.getClientId(), pAuthRequest.getRedirectUri());
         }
 
         return false;

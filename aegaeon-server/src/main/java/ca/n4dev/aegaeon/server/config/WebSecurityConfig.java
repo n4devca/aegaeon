@@ -38,7 +38,7 @@ import ca.n4dev.aegaeon.server.security.AccessTokenAuthenticationFilter;
 import ca.n4dev.aegaeon.server.security.AccessTokenAuthenticationProvider;
 import ca.n4dev.aegaeon.server.security.PromptAwareAuthenticationFilter;
 import ca.n4dev.aegaeon.server.service.AuthenticationService;
-import ca.n4dev.aegaeon.server.service.AuthorizationService;
+import ca.n4dev.aegaeon.server.service.UserAuthorizationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -190,14 +190,14 @@ public class WebSecurityConfig {
         private ControllerErrorInterceptor controllerErrorInterceptor;
 
         @Autowired
-        private AuthorizationService authorizationService;
+        private UserAuthorizationService userAuthorizationService;
         
         @Autowired
         private PasswordEncoder passwordEncoder;
 
         
         public PromptAwareAuthenticationFilter promptAwareAuthenticationFilter() {
-            return new PromptAwareAuthenticationFilter(this.authorizationService, this.controllerErrorInterceptor);
+            return new PromptAwareAuthenticationFilter(this.userAuthorizationService, this.controllerErrorInterceptor);
         }
         
         @Override

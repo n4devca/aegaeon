@@ -31,8 +31,8 @@ import ca.n4dev.aegaeon.server.controller.exception.InvalidClientRedirectionExce
 import ca.n4dev.aegaeon.server.controller.exception.InvalidGrantTypeException;
 import ca.n4dev.aegaeon.server.controller.exception.InvalidRequestMethodException;
 import ca.n4dev.aegaeon.server.controller.exception.InvalidScopeException;
-import ca.n4dev.aegaeon.server.service.AuthorizationService;
 import ca.n4dev.aegaeon.server.service.TokenServicesFacade;
+import ca.n4dev.aegaeon.server.service.UserAuthorizationService;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import ca.n4dev.aegaeon.server.view.TokenResponse;
@@ -65,18 +65,18 @@ public class TokensController {
     public static final String URL = "/token";
     private static final Logger LOGGER = LoggerFactory.getLogger(TokensController.class);
     private TokenServicesFacade tokenServicesFacade;
-    private AuthorizationService authorizationService;
+    private UserAuthorizationService userAuthorizationService;
 
     /**
      * Default Constructor.
      *
      * @param pTokenServicesFacade  The token service facade.
-     * @param pAuthorizationService The authorization service..
+     * @param pUserAuthorizationService The authorization service.
      */
     @Autowired
     public TokensController(TokenServicesFacade pTokenServicesFacade,
-                            AuthorizationService pAuthorizationService) {
-        authorizationService = pAuthorizationService;
+                            UserAuthorizationService pUserAuthorizationService) {
+        userAuthorizationService = pUserAuthorizationService;
         tokenServicesFacade = pTokenServicesFacade;
     }
 
@@ -113,7 +113,7 @@ public class TokensController {
         Assert.notEmpty(pRedirectUri, () -> new InvalidClientRedirectionException(tokenRequest));
 
         // Make sure the client and redirection is valid
-        if (!authorizationService.isClientInfoValid(clientPublicId, pRedirectUri)) {
+        if (!userAuthorizationService.isClientInfoValid(clientPublicId, pRedirectUri)) {
             throw new InvalidClientRedirectionException(tokenRequest);
         }
 

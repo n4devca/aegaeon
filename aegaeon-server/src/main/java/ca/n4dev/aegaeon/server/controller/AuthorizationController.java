@@ -34,7 +34,6 @@ import ca.n4dev.aegaeon.api.protocol.Flow;
 import ca.n4dev.aegaeon.api.protocol.FlowUtils;
 import ca.n4dev.aegaeon.api.protocol.GrantType;
 import ca.n4dev.aegaeon.api.protocol.Prompt;
-import ca.n4dev.aegaeon.api.token.OAuthUser;
 import ca.n4dev.aegaeon.server.controller.exception.InternalAuthorizationException;
 import ca.n4dev.aegaeon.server.controller.exception.InvalidClientIdException;
 import ca.n4dev.aegaeon.server.controller.exception.InvalidClientRedirectionException;
@@ -43,7 +42,6 @@ import ca.n4dev.aegaeon.server.controller.exception.InvalidRequestMethodExceptio
 import ca.n4dev.aegaeon.server.controller.exception.InvalidScopeException;
 import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 import ca.n4dev.aegaeon.server.service.AuthorizationCodeService;
-import ca.n4dev.aegaeon.server.service.AuthorizationService;
 import ca.n4dev.aegaeon.server.service.BaseTokenService;
 import ca.n4dev.aegaeon.server.service.ScopeService;
 import ca.n4dev.aegaeon.server.service.TokenServicesFacade;
@@ -87,20 +85,17 @@ public class AuthorizationController {
 
     private UserAuthorizationService userAuthorizationService;
     private AuthorizationCodeService authorizationCodeService;
-    private AuthorizationService authorizationService;
     private TokenServicesFacade tokenServicesFacade;
     private ScopeService scopeService;
     private UserService userService;
 
     @Autowired
-    public AuthorizationController(AuthorizationService pAuthorizationService,
-                                   UserAuthorizationService pUserAuthorizationService,
+    public AuthorizationController(UserAuthorizationService pUserAuthorizationService,
                                    AuthorizationCodeService pAuthorizationCodeService,
                                    ScopeService pScopeService,
                                    TokenServicesFacade pTokenServicesFacade,
                                    UserService pUserService) {
 
-        authorizationService = pAuthorizationService;
         userAuthorizationService = pUserAuthorizationService;
         authorizationCodeService = pAuthorizationCodeService;
         scopeService = pScopeService;
@@ -136,7 +131,7 @@ public class AuthorizationController {
         Assert.notEmpty(pRedirectUri, () -> new InvalidClientRedirectionException(authRequest));
 
         // Make sure the client and redirection is valid
-        if (!authorizationService.isClientInfoValid(pClientPublicId, pRedirectUri)) {
+        if (!userAuthorizationService.isClientInfoValid(pClientPublicId, pRedirectUri)) {
             throw new InvalidClientRedirectionException(authRequest);
         }
 
@@ -157,10 +152,10 @@ public class AuthorizationController {
 
         Assert.notNull(grantType, () -> new InvalidFlowException(authRequest));
 
-        boolean isAlreadyAuthorized = this.authorizationService.isAuthorized(pAuthentication,
-                                                                             pClientPublicId,
-                                                                             pRedirectUri,
-                                                                             pScope);
+        boolean isAlreadyAuthorized = this.userAuthorizationService.isAuthorized(pAuthentication,
+                                                                                 pClientPublicId,
+                                                                                 pRedirectUri,
+                                                                                 pScope);
 
         try {
             if (authRequest.getPromptType() != null) {

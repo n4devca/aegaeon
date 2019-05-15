@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{base-page}">
 <head>
@@ -16,10 +15,16 @@
                         <h1 th:text="#{page.signin.form.title}"></h1>
                     </div>
                     <div class="panel-body">
+                        <div th:if="${param.error}" class="panel">
+                            <div class="panel-body panel-body-warning">
+                                <p th:text="#{page.signin.form.error}">Invalid username and password.</p>
+                            </div>
+                        </div>
+
                         <input type="text" class="form-input"
-                               id="username" name="username" autofocus="autofocus"
+                               id="username" name="username" autofocus="autofocus" required="required"
                                th:placeholder="#{page.signin.form.input.placeholder.username}" />
-                        <input type="password" class="form-input"
+                        <input type="password" class="form-input" required="required"
                                id="password" name="password"
                                th:placeholder="#{page.signin.form.input.placeholder.passwd}" />
                     </div>
