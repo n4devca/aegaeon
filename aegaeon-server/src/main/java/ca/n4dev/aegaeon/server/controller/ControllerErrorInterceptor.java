@@ -23,13 +23,13 @@ package ca.n4dev.aegaeon.server.controller;
 import ca.n4dev.aegaeon.api.exception.*;
 import ca.n4dev.aegaeon.api.protocol.*;
 import ca.n4dev.aegaeon.server.config.ServerInfo;
-import ca.n4dev.aegaeon.server.controller.exception.InvalidScopeException;
-import ca.n4dev.aegaeon.server.controller.exception.*;
+import ca.n4dev.aegaeon.api.exception.InvalidScopeException;
 import ca.n4dev.aegaeon.server.utils.UriBuilder;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -82,7 +82,7 @@ public class ControllerErrorInterceptor extends BaseUiController {
     private static final String REDIRECTION_ERROR_KEY = "error";
     private static final String REDIRECTION_DESC_KEY = "error_description";
     private static final String REDIRECTION_STATE_KEY = "state";
-    private static MediaType jsonMimeType = MediaType.APPLICATION_JSON;
+    private static MediaType JSON_MIME_TYPE = MediaType.APPLICATION_JSON;
     private static MappingJackson2HttpMessageConverter jsonConverter = new MappingJackson2HttpMessageConverter();
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -95,36 +95,11 @@ public class ControllerErrorInterceptor extends BaseUiController {
      * @param pMessageSource Message source (language)
      */
     @Autowired
-    public ControllerErrorInterceptor(ServerInfo pServerInfo, MessageSource pMessageSource) {
+    public ControllerErrorInterceptor(ServerInfo pServerInfo,
+                                      @Qualifier("messageSource") MessageSource pMessageSource) {
         super(pMessageSource);
         this.serverInfo = pServerInfo;
     }
-
-
-    @ExceptionHandler(OpenIdException.class)
-    public Object openIdException(OpenIdException pOpenIdException,
-                                  Locale pLocale,
-                                  HttpServletRequest pHttpServletRequest,
-                                  HttpServletResponse pHttpServletResponse) {
-        // TODO: Log by type
-        // LOGGER.error(pOpenIdException.getSource(), pOpenIdException.getError());
-        ErrorHandling answerType = getErrorAnswerType(pOpenIdException);
-
-        if (answerType == ErrorHandling.JSON) {
-            return toJsonView(pOpenIdException, pHttpServletResponse);
-        } else if (answerType == ErrorHandling.REDIRECT) {
-            return redirectErrorToClient(pOpenIdException.getClientUri(), pOpenIdException);
-        }
-
-        // Default to internal
-        return internalErrorPage(Severity.INFO,
-                                 pLocale,
-                                 OpenIdErrorType.fromServerCode(pOpenIdException.getCode()).toString(),
-                                 null,
-                                 pHttpServletRequest,
-                                 pHttpServletResponse);
-    }
-
 
     @ExceptionHandler(NoHandlerFoundException.class)
     public ModelAndView notFoundException(final NoHandlerFoundException pNoHandlerFoundException,
@@ -338,15 +313,13 @@ public class ControllerErrorInterceptor extends BaseUiController {
 
         final ClientRequest clientRequest = pInvalidScopeException.getClientRequest();
 
-        // Throw by the service, should not happend but make sure
+        // Throw by the service, should not happen but make sure
         if (clientRequest == null) {
             // Hum ?
             return toHtmlView(Utils.asMap("exception", "Invalid scope: " + pInvalidScopeException.getScope()));
         }
 
         // Can be throw from Authorize endpoint or token endpoint
-
-
         if (clientRequest instanceof TokenRequest) {
             TokenRequest tokenRequest = (TokenRequest) clientRequest;
             return toJsonView(OpenIdErrorType.invalid_request, pHttpServletResponse);
@@ -395,6 +368,62 @@ public class ControllerErrorInterceptor extends BaseUiController {
         return toJsonView(OpenIdErrorType.invalid_grant, pHttpServletResponse, pInvalidRefreshTokenException.getReason());
     }
 
+    @ExceptionHandler(UserUnauthorizedException.class)
+    public ModelAndView userUnauthorizedException(UserUnauthorizedException pUserUnauthorizedException,
+                                                  Locale pLocale,
+                                                  HttpServletRequest pHttpServletRequest,
+                                                  HttpServletResponse pHttpServletResponse) {
+
+        final ClientRequest clientRequest = pUserUnauthorizedException.getClientRequest();
+
+        // Throw by the service, should not happen but make sure
+        if (clientRequest == null) {
+            // Hum ?
+            return toHtmlView(Utils.asMap("exception", "Missing user authorization."));
+        }
+
+        // Can be throw from Authorize endpoint or token endpoint
+        if (clientRequest instanceof AuthRequest) {
+            // From Authorize
+            AuthRequest authRequest = (AuthRequest) clientRequest;
+            RedirectView view = getRedirectError(authRequest, OpenIdErrorType.interaction_required);
+            return new ModelAndView(view);
+
+        } else {
+            TokenRequest tokenRequest = (TokenRequest) clientRequest;
+            return toJsonView(OpenIdErrorType.interaction_required, pHttpServletResponse);
+        }
+    }
+
+    @ExceptionHandler(ExternalAuthorizationException.class)
+    public ModelAndView externalAuthorizationException(ExternalAuthorizationException pExternalAuthorizationException,
+                                                       Locale pLocale,
+                                                       HttpServletRequest pHttpServletRequest,
+                                                       HttpServletResponse pHttpServletResponse) {
+
+        try {
+
+            Map<String, String> models = new LinkedHashMap<>();
+
+            if (Utils.isNotEmpty(pExternalAuthorizationException.getMessage())) {
+                models.put(UriBuilder.REDIRECTION_DESC_KEY, pExternalAuthorizationException.getMessage());
+            }
+
+            if (Utils.isNotEmpty(pExternalAuthorizationException.getCode())) {
+                models.put(UriBuilder.REDIRECTION_ERROR_KEY, pExternalAuthorizationException.getCode());
+            }
+
+            final ServletServerHttpResponse outputMessage = new ServletServerHttpResponse(pHttpServletResponse);
+            outputMessage.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
+            jsonConverter.write(models, JSON_MIME_TYPE, outputMessage);
+            return null;
+
+        } catch (IOException pIOException) {
+            // Hum ?
+            return toHtmlView(Utils.asMap("exception", pIOException.getMessage()));
+        }
+    }
+
     private RedirectView getRedirectError(final AuthRequest pAuthRequest, OpenIdErrorType pOpenIdErrorType) {
         RedirectView view = new RedirectView();
         view.setContextRelative(false);
@@ -432,7 +461,7 @@ public class ControllerErrorInterceptor extends BaseUiController {
 
             final ServletServerHttpResponse outputMessage = new ServletServerHttpResponse(pHttpServletResponse);
             outputMessage.setStatusCode(HttpStatus.BAD_REQUEST);
-            jsonConverter.write(models, jsonMimeType, outputMessage);
+            jsonConverter.write(models, JSON_MIME_TYPE, outputMessage);
             return null;
 
         } catch (IOException pIOException) {
@@ -491,78 +520,10 @@ public class ControllerErrorInterceptor extends BaseUiController {
         return mv;
     }
 
-    @Deprecated
-    private RedirectView redirectErrorToClient(String pRedirectionUri, OpenIdException pOpenIdException) {
-        RedirectView view = new RedirectView();
-        view.setContextRelative(false);
-
-        // Build Url
-        String url = UriBuilder.build(pRedirectionUri,
-                                      pOpenIdException,
-                                      pOpenIdException.getRequestedGrantType() == GrantType.IMPLICIT);
-
-        view.setUrl(url);
-
-        return view;
-    }
-
-
     private ModelAndView toHtmlView(Map<String, ?> pModel) {
         ModelAndView view = new ModelAndView(ERROR_VIEW);
         view.addAllObjects(pModel);
         return view;
-    }
-
-    @Deprecated
-    private ModelAndView toJsonView(OpenIdException pOpenIdException, HttpServletResponse pHttpServletResponse) {
-        MappingJackson2HttpMessageConverter jsonConverter = new MappingJackson2HttpMessageConverter();
-        MediaType jsonMimeType = MediaType.APPLICATION_JSON;
-
-        try {
-
-            Map<String, String> models = UriBuilder.buildModel(pOpenIdException);
-            final ServletServerHttpResponse outputMessage = new ServletServerHttpResponse(pHttpServletResponse);
-            outputMessage.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
-            jsonConverter.write(models, jsonMimeType, outputMessage);
-            return null;
-
-        } catch (IOException pIOException) {
-            return toHtmlView(Utils.asMap("exception", pIOException.getMessage()));
-        }
-
-    }
-
-    private boolean isCode(ServerExceptionCode pServerExceptionCode, ServerExceptionCode pCode) {
-        return Utils.equals(pServerExceptionCode, pCode);
-    }
-
-    private ErrorHandling getErrorAnswerType(OpenIdException pOpenIdException) {
-
-        if (pOpenIdException != null) {
-
-            if (isCode(ServerExceptionCode.INTROSPECT_PARAM_INVALID, pOpenIdException.getCode())) {
-                return ErrorHandling.JSON;
-            } else if (isCode(ServerExceptionCode.CLIENT_REDIRECTIONURL_INVALID, pOpenIdException.getCode()) ||
-                    isCode(ServerExceptionCode.CLIENT_EMPTY, pOpenIdException.getCode()) ||
-                    isCode(ServerExceptionCode.AUTH_CODE_UNEXPECTED_CLIENT, pOpenIdException.getCode()) ||
-                    isCode(ServerExceptionCode.AUTH_CODE_UNEXPECTED_REDIRECTION, pOpenIdException.getCode()) ||
-                    Utils.isEmpty(pOpenIdException.getClientUri())) {
-
-                return ErrorHandling.INTERNAL;
-
-            } else if (Utils.isNotEmpty(pOpenIdException.getClientUri()) &&
-                    Utils.isNotEmpty(pOpenIdException.getClientPublicId())) {
-
-                if (pOpenIdException.getErrorHandling() == ErrorHandling.REDIRECT) {
-                    return ErrorHandling.REDIRECT;
-                } else {
-                    return ErrorHandling.JSON;
-                }
-            }
-        }
-
-        // Stricter in case we missed something
-        return ErrorHandling.INTERNAL;
     }
 
 }

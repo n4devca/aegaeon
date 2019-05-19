@@ -1,4 +1,4 @@
-package ca.n4dev.aegaeon.server.controller.exception;
+package ca.n4dev.aegaeon.api.exception;
 
 import ca.n4dev.aegaeon.api.protocol.AuthRequest;
 
@@ -15,6 +15,11 @@ public class InternalAuthorizationException extends BaseException {
 
     public InternalAuthorizationException(AuthRequest pAuthRequest, Throwable pCause) {
         super(pCause);
+        authRequest = pAuthRequest;
+    }
+
+    public InternalAuthorizationException(AuthRequest pAuthRequest, String pMessage) {
+        super(pMessage);
         authRequest = pAuthRequest;
     }
 

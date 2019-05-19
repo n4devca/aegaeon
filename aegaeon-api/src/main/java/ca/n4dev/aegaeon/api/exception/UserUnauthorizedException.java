@@ -1,19 +1,19 @@
-package ca.n4dev.aegaeon.server.controller.exception;
+package ca.n4dev.aegaeon.api.exception;
 
 import ca.n4dev.aegaeon.api.protocol.ClientRequest;
 
 /**
- * UnauthorizedGrant.java
+ * UserUnauthorizedException.java
  * TODO(rguillemette) Add description.
  *
  * @author rguillemette
- * @since 2.0.0 - Mar 13 - 2019
+ * @since 2.0.0 - May 16 - 2019
  */
-public class UnauthorizedGrant extends BaseException {
+public class UserUnauthorizedException extends BaseException {
 
-    private ClientRequest clientRequest;
+    private final ClientRequest clientRequest;
 
-    public UnauthorizedGrant(ClientRequest pClientRequest) {
+    public UserUnauthorizedException(ClientRequest pClientRequest) {
         clientRequest = pClientRequest;
     }
 

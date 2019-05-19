@@ -9,6 +9,7 @@ import ca.n4dev.aegaeon.api.protocol.GrantType;
  * @author rguillemette
  * @since 2.0.0 - Apr 17 - 2018
  */
+@Deprecated
 public class OpenIdExceptionBuilder {
 
     private OpenIdException exception;

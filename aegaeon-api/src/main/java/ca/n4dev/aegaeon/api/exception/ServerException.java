@@ -29,6 +29,7 @@ package ca.n4dev.aegaeon.api.exception;
  * @author by rguillemette
  * @since May 17, 2017
  */
+@Deprecated
 public class ServerException extends RuntimeException {
 
     private static final long serialVersionUID = 5417290794084341835L;

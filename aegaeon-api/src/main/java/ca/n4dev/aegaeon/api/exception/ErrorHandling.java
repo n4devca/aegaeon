@@ -7,6 +7,7 @@ package ca.n4dev.aegaeon.api.exception;
  * @author rguillemette
  * @since 2.0.0 - Apr 17 - 2018
  */
+@Deprecated
 public enum ErrorHandling {
     JSON, REDIRECT, INTERNAL;
 }

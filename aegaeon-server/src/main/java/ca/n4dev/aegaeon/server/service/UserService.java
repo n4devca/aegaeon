@@ -30,7 +30,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import ca.n4dev.aegaeon.api.exception.OpenIdException;
+import ca.n4dev.aegaeon.api.exception.DuplicateUsernameException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.logging.UserInfoLogger;
 import ca.n4dev.aegaeon.api.model.Authority;
@@ -282,7 +282,7 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
 
             // Check to make sure this username is not already used
             if (existsByUserName(pNewUsername)) {
-                throw new OpenIdException(ServerExceptionCode.USER_INVALID_USERNAME);
+                throw new DuplicateUsernameException(u.getUserName(), pNewUsername);
             }
 
             u.setUserName(pNewUsername);

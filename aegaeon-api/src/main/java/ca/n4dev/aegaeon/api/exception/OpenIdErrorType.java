@@ -100,6 +100,7 @@ public enum OpenIdErrorType {
     ;
 
 
+    @Deprecated
     public static OpenIdErrorType fromServerCode(ServerExceptionCode pServerExceptionCode) {
         if (pServerExceptionCode != null) {
             switch (pServerExceptionCode) {

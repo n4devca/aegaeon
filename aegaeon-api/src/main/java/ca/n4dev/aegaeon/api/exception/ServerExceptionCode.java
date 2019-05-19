@@ -29,6 +29,7 @@ package ca.n4dev.aegaeon.api.exception;
  * @author by rguillemette
  * @since Jun 4, 2017
  */
+@Deprecated
 public enum ServerExceptionCode {
 
 

@@ -1,6 +1,6 @@
 /**
  * Copyright 2017 Remi Guillemette - n4dev.ca
- *
+ * <p>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -8,24 +8,20 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 package ca.n4dev.aegaeon.server.utils;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
-import ca.n4dev.aegaeon.api.exception.OpenIdErrorType;
-import ca.n4dev.aegaeon.api.exception.OpenIdException;
 import ca.n4dev.aegaeon.server.view.TokenResponse;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -34,7 +30,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * UriBuilder.java
- * 
+ *
  * Useful static functions to deal with url building.
  *
  * @author by rguillemette
@@ -76,11 +72,6 @@ public class UriBuilder {
         return build(pUrl, params, pAsFragment);
     }
 
-    public static String build(String pUrl, OpenIdException pOpenIdException, boolean pAsFragment) {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.setAll(buildModel(pOpenIdException));
-        return build(pUrl, params, pAsFragment);
-    }
 
     public static String build(String pUrl, MultiValueMap<String, String> pParam, boolean pAsFragment) {
 
@@ -92,20 +83,10 @@ public class UriBuilder {
         } else {
             builder = builder.queryParams(pParam);
         }
-        UriComponents uriComponents =  builder.build();
+        UriComponents uriComponents = builder.build();
         return uriComponents.toUri().toString();
     }
 
-    public static Map<String, String> buildModel(OpenIdException pOpenIdException) {
-        LinkedHashMap<String, String> model = new LinkedHashMap<>();
-
-        put(model, REDIRECTION_ERROR_KEY, OpenIdErrorType.fromServerCode(pOpenIdException.getCode()).toString());
-        put(model, REDIRECTION_DESC_KEY, pOpenIdException.getMessage());
-        put(model, PARAM_STATE, pOpenIdException.getClientState());
-
-        return model;
-    }
-    
     private static void append(MultiValueMap<String, String> pParams, String pKey, String pValue) {
         if (Utils.isNotEmpty(pKey) && Utils.isNotEmpty(pValue)) {
             pParams.add(pKey, pValue);

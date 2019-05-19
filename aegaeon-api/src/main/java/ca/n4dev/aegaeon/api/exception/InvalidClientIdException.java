@@ -1,21 +1,19 @@
-package ca.n4dev.aegaeon.server.controller.exception;
+package ca.n4dev.aegaeon.api.exception;
 
 import ca.n4dev.aegaeon.api.protocol.ClientRequest;
 
 /**
- * InvalidScopeException.java
+ * InvalidClientIdException.java
  * TODO(rguillemette) Add description.
  *
  * @author rguillemette
  * @since 2.0.0 - Mar 10 - 2019
  */
-public class InvalidScopeException extends BaseException {
+public class InvalidClientIdException extends BaseException {
 
-    private String scope;
     private ClientRequest clientRequest;
 
-    public InvalidScopeException(String pScope, ClientRequest pClientRequest) {
-        scope = pScope;
+    public InvalidClientIdException(ClientRequest pClientRequest) {
         clientRequest = pClientRequest;
     }
 
@@ -24,12 +22,5 @@ public class InvalidScopeException extends BaseException {
      */
     public ClientRequest getClientRequest() {
         return clientRequest;
-    }
-
-    /**
-     * @return the scope
-     */
-    public String getScope() {
-        return scope;
     }
 }

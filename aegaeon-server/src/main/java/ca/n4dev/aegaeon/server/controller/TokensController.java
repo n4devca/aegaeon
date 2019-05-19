@@ -20,17 +20,9 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
-import ca.n4dev.aegaeon.api.exception.ErrorHandling;
-import ca.n4dev.aegaeon.api.exception.OpenIdExceptionBuilder;
+import ca.n4dev.aegaeon.api.exception.*;
 import ca.n4dev.aegaeon.api.protocol.GrantType;
 import ca.n4dev.aegaeon.api.protocol.TokenRequest;
-import ca.n4dev.aegaeon.server.controller.exception.BaseException;
-import ca.n4dev.aegaeon.server.controller.exception.InvalidAuthorizationCodeException;
-import ca.n4dev.aegaeon.server.controller.exception.InvalidClientIdException;
-import ca.n4dev.aegaeon.server.controller.exception.InvalidClientRedirectionException;
-import ca.n4dev.aegaeon.server.controller.exception.InvalidGrantTypeException;
-import ca.n4dev.aegaeon.server.controller.exception.InvalidRequestMethodException;
-import ca.n4dev.aegaeon.server.controller.exception.InvalidScopeException;
 import ca.n4dev.aegaeon.server.service.TokenServicesFacade;
 import ca.n4dev.aegaeon.server.service.UserAuthorizationService;
 import ca.n4dev.aegaeon.server.utils.Assert;
@@ -161,13 +153,8 @@ public class TokensController {
         } catch (BaseException pBaseException) {
             throw pBaseException;
         } catch (Exception pException) {
-            // TODO(RG): change that!
-            throw new OpenIdExceptionBuilder(pException)
-                    .clientId(clientPublicId)
-                    .redirection(pRedirectUri)
-                    .from(tokenRequest.getGrantTypeAsType())
-                    .handling(ErrorHandling.JSON)
-                    .build();
+            LOGGER.error("Token endpoint: " + pException.getMessage(), pException);
+            throw new InternalAuthorizationException(tokenRequest, "Token endpoint: " + pException.getMessage());
         }
 
 

@@ -1,19 +1,19 @@
-package ca.n4dev.aegaeon.server.controller.exception;
+package ca.n4dev.aegaeon.api.exception;
 
 import ca.n4dev.aegaeon.api.protocol.ClientRequest;
 
 /**
- * UnauthorizedClient.java
+ * MissingUserInformationException.java
  * TODO(rguillemette) Add description.
  *
  * @author rguillemette
  * @since 2.0.0 - Mar 11 - 2019
  */
-public class UnauthorizedClient extends BaseException {
+public class MissingUserInformationException extends BaseException {
 
     private ClientRequest clientRequest;
 
-    public UnauthorizedClient(ClientRequest pClientRequest) {
+    public MissingUserInformationException(ClientRequest pClientRequest) {
         clientRequest = pClientRequest;
     }
 

@@ -20,6 +20,7 @@
  */
 package ca.n4dev.aegaeon.server.controller;
 
+import ca.n4dev.aegaeon.api.exception.ExternalAuthorizationException;
 import ca.n4dev.aegaeon.api.exception.OpenIdExceptionBuilder;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
@@ -65,9 +66,7 @@ public class PublicJwkController {
         try {
             return this.tokenFactory.publicJwks();
         } catch (Exception pException) {
-            throw new OpenIdExceptionBuilder(pException)
-                    .code(ServerExceptionCode.UNEXPECTED_ERROR)
-                    .build();
+            throw new ExternalAuthorizationException(null, "Unable to return jwks.");
         }
     }
 }

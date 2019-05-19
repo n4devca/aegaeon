@@ -33,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author by rguillemette
  * @since May 24, 2017
  */
+@Deprecated
 public class BaseOAuthException extends ServerException {
 
     private static final long serialVersionUID = 3676269645498864982L;

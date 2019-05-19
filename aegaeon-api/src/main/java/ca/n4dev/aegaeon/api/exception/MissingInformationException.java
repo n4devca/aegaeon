@@ -1,4 +1,4 @@
-package ca.n4dev.aegaeon.server.controller.exception;
+package ca.n4dev.aegaeon.api.exception;
 
 /**
  * MissingInformationException.java

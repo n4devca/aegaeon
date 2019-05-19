@@ -26,9 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import ca.n4dev.aegaeon.api.exception.OpenIdException;
-import ca.n4dev.aegaeon.api.exception.ServerException;
-import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.api.exception.*;
 import ca.n4dev.aegaeon.api.model.AccessToken;
 import ca.n4dev.aegaeon.api.model.AuthorizationCode;
 import ca.n4dev.aegaeon.api.model.Client;
@@ -42,18 +40,13 @@ import ca.n4dev.aegaeon.api.protocol.AuthRequest;
 import ca.n4dev.aegaeon.api.protocol.ClientRequest;
 import ca.n4dev.aegaeon.api.protocol.Flow;
 import ca.n4dev.aegaeon.api.protocol.TokenRequest;
-import ca.n4dev.aegaeon.server.controller.exception.InvalidAuthorizationCodeException;
-import ca.n4dev.aegaeon.server.controller.exception.InvalidClientIdException;
-import ca.n4dev.aegaeon.server.controller.exception.InvalidClientRedirectionException;
-import ca.n4dev.aegaeon.server.controller.exception.InvalidRefreshTokenException;
-import ca.n4dev.aegaeon.server.controller.exception.UnauthorizedClient;
-import ca.n4dev.aegaeon.server.controller.exception.UnauthorizedGrant;
 import ca.n4dev.aegaeon.server.event.TokenGrantEvent;
 import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
 import ca.n4dev.aegaeon.server.view.ScopeView;
 import ca.n4dev.aegaeon.server.view.TokenResponse;
+import groovy.transform.Internal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,7 +104,7 @@ public class TokenServicesFacade {
                                                 Authentication pAuthentication) {
 
 
-        validateAuthentication(pAuthentication);
+        validateAuthentication(pTokenRequest, pAuthentication);
 
         Client client = validateClientAnReturn(pTokenRequest, Flow.authorization_code);
         AuthorizationCode authCode = this.authorizationCodeService.findByCode(pTokenRequest.getCode());
@@ -155,11 +148,11 @@ public class TokenServicesFacade {
     @Transactional
     public TokenResponse createTokenForRefreshToken(TokenRequest pTokenRequest, Authentication pAuthentication) {
 
-        validateAuthentication(pAuthentication);
+        validateAuthentication(pTokenRequest, pAuthentication);
         AegaeonUserDetails auth = (AegaeonUserDetails) pAuthentication.getPrincipal();
 
         if (Utils.isEmpty(pTokenRequest.getRefreshToken())) {
-            throw new OpenIdException(ServerExceptionCode.REFRESH_TOKEN_EMPTY, auth.getUsername(), getClass());
+            throw new InternalAuthorizationException(pTokenRequest, "The refresh token is empty.");
         }
 
         Client client = validateClientAnReturn(pTokenRequest, Flow.authorization_code);
@@ -169,7 +162,7 @@ public class TokenServicesFacade {
                       () -> new UnauthorizedClient(pTokenRequest));
 
         // Check if the client has the proper scope
-        validateClientScope(client, BaseTokenService.OFFLINE_SCOPE);
+        validateClientScope(pTokenRequest, client, BaseTokenService.OFFLINE_SCOPE);
 
         // Load the refresh_token
         RefreshToken refreshToken = this.refreshTokenService.findByTokenValueAndClientId(pTokenRequest.getRefreshToken(), client.getId());
@@ -204,13 +197,16 @@ public class TokenServicesFacade {
                                                   Authentication pAuthentication) {
 
         // Need auth
-        validateAuthentication(pAuthentication);
+        validateAuthentication(pTokenRequest, pAuthentication);
         AegaeonUserDetails auth = (AegaeonUserDetails) pAuthentication.getPrincipal();
         final Client client = validateClientAnReturn(pTokenRequest, Flow.client_credentials);
-        validateClient(client, auth.getUsername());
+
+        // The client is authenticated and its username is its public id.
+        pTokenRequest.setClientId(auth.getUsername());
+        validateClient(pTokenRequest, client);
 
         Set<ScopeView> scopes = this.scopeService.getValidScopes(pTokenRequest.getScope(), Utils.asSet(BaseTokenService.OFFLINE_SCOPE));
-        validateClientScopes(client, scopes);
+        validateClientScopes(pTokenRequest, client, scopes);
 
         return this.createTokenResponse(pTokenRequest,
                                         pAuthentication);
@@ -222,14 +218,14 @@ public class TokenServicesFacade {
     public TokenResponse createTokenForImplicit(AuthRequest pAuthRequest,
                                                 Authentication pAuthentication) {
 
-        validateAuthentication(pAuthentication);
+        validateAuthentication(pAuthRequest, pAuthentication);
         Client client = validateClientAnReturn(pAuthRequest, Flow.implicit);
         //validateClientFlow(client, GrantType.IMPLICIT);
         //validateRedirectionUri(client, pAuthRequest.getRedirectUri());
 
         // Make sure the offline scope is not request
         Set<ScopeView> scopes = this.scopeService.getValidScopes(pAuthRequest.getScope(), Utils.asSet(BaseTokenService.OFFLINE_SCOPE));
-        validateClientScopes(client, scopes);
+        validateClientScopes(pAuthRequest, client, scopes);
 
         return createTokenResponse(new TokenRequest(pAuthRequest), pAuthentication);
     }
@@ -253,7 +249,7 @@ public class TokenServicesFacade {
     TokenResponse createTokenResponse(TokenRequest pTokenRequest,
                                       Authentication pAuthentication) {
 
-        validateAuthentication(pAuthentication);
+        validateAuthentication(pTokenRequest, pAuthentication);
 
         try {
 
@@ -284,21 +280,20 @@ public class TokenServicesFacade {
 
             return t;
 
-        } catch (ServerException se) {
-            LOGGER.warn("ServerException in " + getClass().getSimpleName() + "#createTokenResponse.", se);
-            throw se;
+        } catch (InternalAuthorizationException pInternalAuthorizationException) {
+            throw pInternalAuthorizationException;
         } catch (Exception e) {
             LOGGER.error("Exception in " + getClass().getSimpleName() + "#createTokenResponse.", e);
-            throw new OpenIdException(ServerExceptionCode.UNEXPECTED_ERROR, pTokenRequest.getClientId(), getClass());
+            throw new InternalAuthorizationException(pTokenRequest, e);
         }
 
     }
 
-    private void validateAuthentication(Authentication pAuthentication) {
+    private void validateAuthentication(AuthRequest pAuthRequest, Authentication pAuthentication) {
 
         if (pAuthentication == null || pAuthentication.getPrincipal() == null
                 || !(pAuthentication.getPrincipal() instanceof AegaeonUserDetails)) {
-            throw new OpenIdException(ServerExceptionCode.USER_UNAUTHENTICATED);
+            throw new InternalAuthorizationException(pAuthRequest, "TokenCreation: The authentication is invalid or empty.");
         }
     }
 
@@ -333,29 +328,31 @@ public class TokenServicesFacade {
                       () -> new InvalidRefreshTokenException(pTokenRequest, InvalidRefreshTokenException.INVALID_CLIENT));
     }
 
-    private Client validateClientAnReturn(ClientRequest pClientRequest, Flow pFlow) {
+    private Client validateClientAnReturn(AuthRequest pAuthRequest, Flow pFlow) {
 
-        final String clientId = pClientRequest.getClientId();
-        final String redirectUri = pClientRequest.getRedirectUri();
+        final String clientId = pAuthRequest.getClientId();
+        final String redirectUri = pAuthRequest.getRedirectUri();
 
-        Assert.notEmpty(clientId, () -> new InvalidClientIdException(pClientRequest));
-        Assert.notEmpty(redirectUri, () -> new InvalidClientRedirectionException(pClientRequest));
+        Assert.notEmpty(clientId, () -> new InvalidClientIdException(pAuthRequest));
+        Assert.notEmpty(redirectUri, () -> new InvalidClientRedirectionException(pAuthRequest));
 
-        Client client = this.clientService.findByPublicId(pClientRequest.getClientId());
-        validateClient(client, pClientRequest.getClientId());
+        Client client = this.clientService.findByPublicId(pAuthRequest.getClientId());
+        validateClient(pAuthRequest, client);
 
-        validateRedirectionUri(pClientRequest, client, pClientRequest.getRedirectUri());
-        validateClientFlow(pClientRequest, client, pFlow);
+        validateRedirectionUri(pAuthRequest, client, pAuthRequest.getRedirectUri());
+        validateClientFlow(pAuthRequest, client, pFlow);
 
         return client;
     }
 
 
-    private void validateClient(Client pClient, String pClientPublicId) {
+    private void validateClient(ClientRequest pClientRequest, Client pClient) {
 
-        if (pClient == null || Utils.isEmpty(pClient.getPublicId()) || Utils.isEmpty(pClientPublicId)
-                || !Utils.equals(pClientPublicId, pClient.getPublicId())) {
-            throw new OpenIdException(ServerExceptionCode.CLIENT_EMPTY, pClientPublicId, getClass());
+        final String clientId = pClientRequest.getClientId();
+
+        if (pClient == null || Utils.isEmpty(pClient.getPublicId()) || Utils.isEmpty(clientId)
+                || !Utils.equals(clientId, pClient.getPublicId())) {
+            throw new InvalidClientIdException(pClientRequest);
         }
     }
 
@@ -397,13 +394,13 @@ public class TokenServicesFacade {
         }
     }
 
-    private void validateClientScopes(Client pClient, Set<ScopeView> pScopes) {
+    private void validateClientScopes(ClientRequest pClientRequest, Client pClient, Set<ScopeView> pScopes) {
         if (Utils.isNotEmpty(pScopes)) {
-            pScopes.forEach(pScope -> validateClientScope(pClient, pScope.getName()));
+            pScopes.forEach(pScope -> validateClientScope(pClientRequest, pClient, pScope.getName()));
         }
     }
 
-    private void validateClientScope(Client pClient, String pScope) {
+    private void validateClientScope(ClientRequest pClientRequest, Client pClient, String pScope) {
         Long id = pClient != null ? pClient.getId() : null;
         String publicId = pClient != null ? pClient.getPublicId() : null;
         boolean fail = true;
@@ -414,7 +411,7 @@ public class TokenServicesFacade {
         }
 
         if (fail) {
-            throw new OpenIdException(ServerExceptionCode.CLIENT_UNAUTHORIZED_SCOPE, publicId, getClass());
+            throw new InvalidClientScopeException(pClientRequest);
         }
     }
 

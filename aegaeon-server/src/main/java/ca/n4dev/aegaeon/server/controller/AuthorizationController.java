@@ -27,19 +27,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ca.n4dev.aegaeon.api.exception.OpenIdException;
-import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.api.exception.UserUnauthorizedException;
 import ca.n4dev.aegaeon.api.protocol.AuthRequest;
 import ca.n4dev.aegaeon.api.protocol.Flow;
 import ca.n4dev.aegaeon.api.protocol.FlowUtils;
 import ca.n4dev.aegaeon.api.protocol.GrantType;
 import ca.n4dev.aegaeon.api.protocol.Prompt;
-import ca.n4dev.aegaeon.server.controller.exception.InternalAuthorizationException;
-import ca.n4dev.aegaeon.server.controller.exception.InvalidClientIdException;
-import ca.n4dev.aegaeon.server.controller.exception.InvalidClientRedirectionException;
-import ca.n4dev.aegaeon.server.controller.exception.InvalidFlowException;
-import ca.n4dev.aegaeon.server.controller.exception.InvalidRequestMethodException;
-import ca.n4dev.aegaeon.server.controller.exception.InvalidScopeException;
+import ca.n4dev.aegaeon.api.exception.InternalAuthorizationException;
+import ca.n4dev.aegaeon.api.exception.InvalidClientIdException;
+import ca.n4dev.aegaeon.api.exception.InvalidClientRedirectionException;
+import ca.n4dev.aegaeon.api.exception.InvalidFlowException;
+import ca.n4dev.aegaeon.api.exception.InvalidRequestMethodException;
+import ca.n4dev.aegaeon.api.exception.InvalidScopeException;
 import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 import ca.n4dev.aegaeon.server.service.AuthorizationCodeService;
 import ca.n4dev.aegaeon.server.service.BaseTokenService;
@@ -163,7 +162,7 @@ public class AuthorizationController {
                 Prompt prompt = authRequest.getPromptType();
 
                 if (prompt == Prompt.none && !isAlreadyAuthorized) {
-                    throw new OpenIdException(ServerExceptionCode.USER_UNAUTHENTICATED);
+                    throw new UserUnauthorizedException(authRequest);
                 } else if (!isAlreadyAuthorized || prompt == Prompt.login || prompt == Prompt.consent) {
                     return consentPage(pAuthentication, authRequest);
                 }  // else OK
