@@ -21,8 +21,6 @@
 package ca.n4dev.aegaeon.server.controller;
 
 import ca.n4dev.aegaeon.api.exception.ExternalAuthorizationException;
-import ca.n4dev.aegaeon.api.exception.OpenIdExceptionBuilder;
-import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

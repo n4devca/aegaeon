@@ -8,17 +8,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import ca.n4dev.aegaeon.api.exception.OpenIdException;
+import ca.n4dev.aegaeon.api.exception.*;
 import ca.n4dev.aegaeon.api.model.*;
 import ca.n4dev.aegaeon.api.protocol.AuthRequest;
 import ca.n4dev.aegaeon.api.protocol.Flow;
 import ca.n4dev.aegaeon.api.protocol.FlowUtils;
 import ca.n4dev.aegaeon.api.protocol.GrantType;
 import ca.n4dev.aegaeon.api.protocol.TokenRequest;
-import ca.n4dev.aegaeon.api.exception.InvalidAuthorizationCodeException;
-import ca.n4dev.aegaeon.api.exception.InvalidClientIdException;
-import ca.n4dev.aegaeon.api.exception.InvalidClientRedirectionException;
-import ca.n4dev.aegaeon.api.exception.UnauthorizedGrant;
 import ca.n4dev.aegaeon.server.security.AegaeonUserDetails;
 import ca.n4dev.aegaeon.server.view.ScopeView;
 import ca.n4dev.aegaeon.server.view.TokenResponse;
@@ -157,7 +153,7 @@ public class TokenServicesFacadeUnitTest {
         }
     }
 
-    @Test(expected = OpenIdException.class)
+    @Test(expected = InternalAuthorizationException.class)
     public void failCreateTokenForAuthCodeBecauseNoAuth() {
 
         TokenRequest tokenRequest = new TokenRequest(GrantType.AUTHORIZATION_CODE.toString().toLowerCase(),
@@ -184,7 +180,7 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OpenIdException.class)
+    @Test(expected = InvalidAuthorizationCodeException.class)
     public void failCreateTokenForAuthCodeBecauseMissingAuthCode() {
         TokenRequest tokenRequest = new TokenRequest(GrantType.AUTHORIZATION_CODE.toString().toLowerCase(),
                                                      null,
@@ -210,7 +206,7 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OpenIdException.class)
+    @Test(expected = InvalidClientIdException.class)
     public void failCreateTokenForAuthCodeBecauseUnkownClient() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(null);
@@ -296,7 +292,7 @@ public class TokenServicesFacadeUnitTest {
                                       buildUser());
     }
 
-    @Test(expected = OpenIdException.class)
+    @Test(expected = InvalidAuthorizationCodeException.class)
     public void failCreateTokenForAuthCodeBecauseBadAuthCode() {
 
         when(clientService.findByPublicId(anyString())).thenReturn(buildClient("test.1"));

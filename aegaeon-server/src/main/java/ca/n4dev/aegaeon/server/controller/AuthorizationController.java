@@ -141,6 +141,7 @@ public class AuthorizationController {
 
         // Parse and validate early
         GrantType grantType = FlowUtils.getAuthorizationType(authRequest);
+        Assert.notNull(grantType, () -> new InvalidFlowException(authRequest));
 
         Set<String> exclusion = GrantType.IMPLICIT == grantType ? Utils.asSet(BaseTokenService.OFFLINE_SCOPE) : null;
         final ScopeService.ScopeSet scopeSet = scopeService.validate(pScope, exclusion);
@@ -149,7 +150,6 @@ public class AuthorizationController {
             return new InvalidScopeException(invalidScope, authRequest);
         });
 
-        Assert.notNull(grantType, () -> new InvalidFlowException(authRequest));
 
         boolean isAlreadyAuthorized = this.userAuthorizationService.isAuthorized(pAuthentication,
                                                                                  pClientPublicId,

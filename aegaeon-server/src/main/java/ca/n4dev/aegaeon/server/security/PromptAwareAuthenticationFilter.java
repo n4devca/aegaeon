@@ -21,7 +21,6 @@
 package ca.n4dev.aegaeon.server.security;
 
 import java.io.IOException;
-import java.util.Locale;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -30,8 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import ca.n4dev.aegaeon.api.exception.OpenIdExceptionBuilder;
-import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.api.exception.OpenIdErrorType;
 import ca.n4dev.aegaeon.api.protocol.AuthRequest;
 import ca.n4dev.aegaeon.api.protocol.FlowUtils;
 import ca.n4dev.aegaeon.api.protocol.GrantType;
@@ -49,8 +47,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.filter.GenericFilterBean;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.RedirectView;
 
 /**
  * PromptAwareAuthenticationFilter.java
@@ -119,7 +115,7 @@ public class PromptAwareAuthenticationFilter extends GenericFilterBean {
                 if (Utils.equals(prompt, Prompt.none.toString())) {
 
                     if (!isAuthorizedAlready(clientIdStr, redirectionUrl, scope)) {
-                        handleError(authRequest, request, response);
+                        handleError(authRequest, response);
                         return;
                     }
 
@@ -134,55 +130,36 @@ public class PromptAwareAuthenticationFilter extends GenericFilterBean {
     }
 
     private void handleError(AuthRequest pAuthRequest,
-                             HttpServletRequest pHttpServletRequest,
                              HttpServletResponse pHttpServletResponse) {
 
         try {
 
             GrantType grantType = FlowUtils.getAuthorizationType(pAuthRequest);
+            String redirectUri = pAuthRequest.getRedirectUri();
+            boolean asFragment = isFragmentResponse(grantType);
 
-            Object response =
-                    this.controllerErrorInterceptor
-                            .openIdException(new OpenIdExceptionBuilder()
-                                                     .code(ServerExceptionCode.USER_UNAUTHENTICATED)
-                                                     .redirection(pAuthRequest.getRedirectUri())
-                                                     .from(grantType)
-                                                     .state(pAuthRequest.getState())
-                                                     .build(),
-                                             Locale.ENGLISH,
-                                             pHttpServletRequest,
-                                             pHttpServletResponse);
+            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            UriBuilder.append(params, UriBuilder.REDIRECTION_ERROR_KEY, OpenIdErrorType.interaction_required.toString());
+            UriBuilder.append(params, UriBuilder.PARAM_STATE, pAuthRequest.getState());
 
-            // TODO(RG) : other response ?
-            if (response instanceof RedirectView) {
-                pHttpServletResponse.sendRedirect(((RedirectView) response).getUrl());
-            } else if (response instanceof ModelAndView) {
-                // Redirect to error
-                ModelAndView mv = (ModelAndView) response;
-                MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-                mv.getModel().forEach((pK, pV) -> {
-
-                    // Convert String params
-                    if (pV instanceof String) {
-                        params.add(pK.toLowerCase(), (String) pV);
-                    }
-                });
-
-                String url = UriBuilder.build("/" + mv.getViewName(), params, false);
-                pHttpServletResponse.sendRedirect(url);
-            }
+            String url = UriBuilder.build(redirectUri, params, asFragment);
+            pHttpServletResponse.sendRedirect(url);
 
         } catch (Exception pException) {
             LOGGER.error("PromptAwareAuthenticationFilter#handleError has failed", pException);
         }
+    }
 
+    private boolean isFragmentResponse(GrantType pGrantType) {
+        return pGrantType != null &&
+                (pGrantType == GrantType.IMPLICIT || pGrantType == GrantType.HYBRID);
     }
 
 
     private boolean isAuthorizedAlready(String pClientId, String pRedirectionUrl, String pScopeParam) {
         Authentication existingAuth = SecurityContextHolder.getContext().getAuthentication();
 
-        if (existingAuth == null) {
+        if (existingAuth != null) {
             return userAuthorizationService.isAuthorized(existingAuth, pClientId, pRedirectionUrl, pScopeParam);
         }
 

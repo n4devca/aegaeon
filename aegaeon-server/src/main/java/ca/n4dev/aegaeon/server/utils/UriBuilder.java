@@ -87,21 +87,15 @@ public class UriBuilder {
         return uriComponents.toUri().toString();
     }
 
-    private static void append(MultiValueMap<String, String> pParams, String pKey, String pValue) {
+    public static void append(MultiValueMap<String, String> pParams, String pKey, String pValue) {
         if (Utils.isNotEmpty(pKey) && Utils.isNotEmpty(pValue)) {
             pParams.add(pKey, pValue);
         }
     }
 
-    private static void append(MultiValueMap<String, String> pParams, String pKey, Long pValue) {
+    public static void append(MultiValueMap<String, String> pParams, String pKey, Long pValue) {
         if (Utils.isNotEmpty(pKey) && pValue != null) {
             pParams.add(pKey, String.valueOf(pValue));
-        }
-    }
-
-    private static void put(Map<String, String> pParams, String pKey, String pValue) {
-        if (Utils.isNotEmpty(pKey) && Utils.isNotEmpty(pValue)) {
-            pParams.put(pKey, pValue);
         }
     }
 
