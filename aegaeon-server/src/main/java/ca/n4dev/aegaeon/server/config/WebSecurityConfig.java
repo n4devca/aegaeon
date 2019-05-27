@@ -142,13 +142,13 @@ public class WebSecurityConfig {
         /**
          * Remember me config
          */
-        @Override 
-        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        @Override
+        protected void configure(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(accessTokenAuthenticationProvider());
         }
-        
-        
-        public AccessTokenAuthenticationFilter accessTokenAuthenticationFilter() throws Exception{
+
+
+        public AccessTokenAuthenticationFilter accessTokenAuthenticationFilter() throws Exception {
             return new AccessTokenAuthenticationFilter(authenticationManagerBean(), authenticationEntryPoint);
         }
         

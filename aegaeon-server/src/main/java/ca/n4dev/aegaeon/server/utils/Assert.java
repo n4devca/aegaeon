@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Assert.java
  *
- * Object used to check various condition and throw a ServerException 
+ * Object used to check various condition and throw an Exception
  * if the condition is not met.
  *
  * @author by rguillemette
@@ -39,20 +39,6 @@ import org.slf4j.LoggerFactory;
 public class Assert {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Assert.class);
-
-    @Deprecated
-    public static void notNull(Object pObj) {
-        if (pObj == null) {
-            Utils.raise(ServerExceptionCode.ILLEGAL_ARGUMENT);
-        }
-    }
-
-    @Deprecated
-    public static void notEmpty(String pObj) {
-        if (pObj == null || pObj.isEmpty()) {
-            Utils.raise(ServerExceptionCode.ILLEGAL_ARGUMENT);
-        }
-    }
 
     @Deprecated
     public static void notNull(Object pObj, ServerExceptionCode pCode) {
@@ -71,13 +57,6 @@ public class Assert {
     @Deprecated
     public static void notEmpty(String pObj, ServerExceptionCode pCode) {
         if (pObj == null || pObj.isEmpty()) {
-            Utils.raise(pCode);
-        }
-    }
-
-    @Deprecated
-    public static void isTrue(Boolean pValue, ServerExceptionCode pCode) {
-        if (pValue == null || !pValue) {
             Utils.raise(pCode);
         }
     }

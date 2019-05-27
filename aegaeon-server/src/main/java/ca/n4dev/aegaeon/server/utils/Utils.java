@@ -20,21 +20,30 @@
  */
 package ca.n4dev.aegaeon.server.utils;
 
-import ca.n4dev.aegaeon.api.exception.ServerException;
-import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.URI;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import ca.n4dev.aegaeon.api.exception.InternalAuthorizationException;
+import ca.n4dev.aegaeon.api.exception.ServerException;
+import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ObjectUtils.java
@@ -289,7 +298,7 @@ public class Utils {
         if (pKeyValues != null) {
 
             if (pKeyValues.length % 2 != 0) {
-                throw new ServerException(new ArrayIndexOutOfBoundsException());
+                throw new InternalAuthorizationException(null, new ArrayIndexOutOfBoundsException());
             }
 
             for (int i = 0, j = pKeyValues.length; i < j; i += 2) {

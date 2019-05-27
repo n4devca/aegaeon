@@ -16,6 +16,11 @@ public class MissingInformationException extends BaseException {
         missingField = pMissingField;
     }
 
+    public MissingInformationException(String pMissingField, String pMessage) {
+        super(pMessage);
+        missingField = pMissingField;
+    }
+
     /**
      * @return the missingField
      */

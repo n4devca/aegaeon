@@ -24,8 +24,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Set;
 
-import ca.n4dev.aegaeon.api.exception.ServerException;
-import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.api.exception.InvalidAuthorizationCodeException;
 import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.IdToken;
 import ca.n4dev.aegaeon.api.model.User;
@@ -116,8 +115,8 @@ public class IdTokenService extends BaseTokenService<IdToken, IdTokenRepository>
     void validate(TokenRequest pTokenRequest, User pUser, Client pClient, Set<ScopeView> pScopes) throws Exception {
         // Must have the right scope
         if (!containsOpenIdScope(pScopes)) {
-            // TODO(RG) : rework exception
-            throw new ServerException(ServerExceptionCode.SCOPE_INVALID);
+            throw new InvalidAuthorizationCodeException(pTokenRequest,
+                                                        "Cannot create an id_token without the openid scope");
         }
 
     }

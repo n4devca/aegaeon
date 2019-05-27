@@ -26,7 +26,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.Set;
 
-import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.api.exception.MissingInformationException;
 import ca.n4dev.aegaeon.api.model.AuthorizationCode;
 import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.User;
@@ -117,10 +117,10 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
 
     AuthorizationCode createCode(Long pUserId, String pClientPublicId,
                                  String pResponseType, Set<ScopeView> pScopes, String pRedirectUrl, String pNonce) {
-        
-        Assert.notNull(pUserId, ServerExceptionCode.USER_EMPTY);
-        Assert.notEmpty(pClientPublicId, ServerExceptionCode.CLIENT_EMPTY);
-        
+
+        Assert.notNull(pUserId, () -> new MissingInformationException("userId"));
+        Assert.notEmpty(pClientPublicId, () -> new MissingInformationException("clientPublicId"));
+
         //User user = this.userRepository.findOne(pUserId);
         Optional<User> u = this.userRepository.findById(pUserId);
         Client client = this.clientRepository.findByPublicId(pClientPublicId);
@@ -137,10 +137,11 @@ public class AuthorizationCodeService extends BaseSecuredService<AuthorizationCo
      */
     AuthorizationCode createCode(User pUser, Client pClient, String pResponseType,
                                  Set<ScopeView> pScopes, String pRedirectUrl, String pNonce) {
-        Assert.notNull(pUser, ServerExceptionCode.USER_EMPTY);
-        Assert.notNull(pClient, ServerExceptionCode.CLIENT_EMPTY);
-        Assert.notEmpty(pRedirectUrl, ServerExceptionCode.CLIENT_REDIRECTURL_EMPTY);
-        Assert.notEmpty(pResponseType, ServerExceptionCode.RESPONSETYPE_INVALID);
+
+        Assert.notNull(pUser, () -> new MissingInformationException("user"));
+        Assert.notNull(pClient, () -> new MissingInformationException("client"));
+        Assert.notEmpty(pRedirectUrl, () -> new MissingInformationException("redirectUrl"));
+        Assert.notEmpty(pResponseType, () -> new MissingInformationException("responseType"));
 
         AuthorizationCode c = new AuthorizationCode();
         c.setClient(pClient);

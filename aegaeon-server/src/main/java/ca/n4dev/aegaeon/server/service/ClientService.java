@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import ca.n4dev.aegaeon.api.exception.MissingInformationException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.ClientAuthFlow;
@@ -234,16 +235,17 @@ public class ClientService extends BaseSecuredService<Client, ClientRepository> 
     public ClientView update(Long pClientId, ClientView pEntity) {
 
         // Mandatory info
-        Assert.notNull(pClientId, ServerExceptionCode.ENTITY_ID_EMPTY);
-        Assert.notNull(pEntity, ServerExceptionCode.ENTITY_EMPTY);
-        if (Utils.areOneEmpty(pEntity.getName(), pEntity.getPublicId(), pEntity.getProviderType())) {
-            Utils.raise(ServerExceptionCode.CLIENT_ATTR_EMPTY);
-        }
+        Assert.notNull(pClientId, () -> new MissingInformationException("clientId"));
+        Assert.notNull(pEntity, () -> new MissingInformationException("clientView"));
+        Assert.notEmpty(pEntity.getName(), () -> new MissingInformationException("clientView.name"));
+        Assert.notEmpty(pEntity.getPublicId(), () -> new MissingInformationException("clientView.publicId"));
+        Assert.notEmpty(pEntity.getProviderType(), () -> new MissingInformationException("clientView.providerType"));
 
         // Get the client from db or create
         boolean isNew = pClientId <= 0;
         Client client = !isNew ? this.findById(pClientId) : new Client();
-        Assert.notNull(client, ServerExceptionCode.ENTITY_EMPTY);
+
+        Assert.notNull(client, () -> new MissingInformationException("client", "The client was not found."));
 
         // Validate view
         validateUpdatedView(client, pEntity, isNew);

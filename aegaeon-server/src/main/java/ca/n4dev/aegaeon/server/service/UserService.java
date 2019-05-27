@@ -31,6 +31,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import ca.n4dev.aegaeon.api.exception.DuplicateUsernameException;
+import ca.n4dev.aegaeon.api.exception.MissingInformationException;
 import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
 import ca.n4dev.aegaeon.api.logging.UserInfoLogger;
 import ca.n4dev.aegaeon.api.model.Authority;
@@ -177,11 +178,11 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
                            String pName,
                            String pRawPasswd) {
 
-        Assert.notEmpty(pUsername, ServerExceptionCode.INVALID_PARAMETER);
-        Assert.notEmpty(pRawPasswd, ServerExceptionCode.USER_INVALID_PASSWORD);
-        Assert.isTrue(this.passwordEvaluator.evaluate(pRawPasswd).isValid(), ServerExceptionCode.USER_INVALID_PASSWORD);
+        Assert.notEmpty(pUsername, () -> new MissingInformationException("username"));
+        Assert.notEmpty(pRawPasswd, () -> new MissingInformationException("password"));
+        Assert.isTrue(this.passwordEvaluator.evaluate(pRawPasswd).isValid(),
+                      () -> new MissingInformationException("password", "This password is not valid."));
 
-        //StringRandomizer.getInstance().getRandomString(128)
         User u = new User(UUID.randomUUID().toString());
         u.setUserName(pUsername);
         u.setName(pName);
@@ -263,7 +264,8 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
     @Transactional
     @PreAuthorize("hasRole('ADMIN') or principal.id == #pUserId")
     public void updatePassword(Long pUserId, String pRawPasswd) {
-        Assert.isTrue(this.passwordEvaluator.evaluate(pRawPasswd).isValid(), ServerExceptionCode.USER_INVALID_PASSWORD);
+        Assert.isTrue(this.passwordEvaluator.evaluate(pRawPasswd).isValid(),
+                      () -> new MissingInformationException("password", "This password is not valid."));
 
         User u = this.findById(pUserId);
 
@@ -500,14 +502,16 @@ public class UserService extends BaseSecuredService<User, UserRepository> implem
 
     private Optional<UserInfoType> findType(List<UserInfoType> pAllType, UserInfoView pUserInfoView) {
 
-        Assert.notNull(pAllType);
-        Assert.notNull(pUserInfoView);
+        if (pUserInfoView != null) {
 
-        final Optional<UserInfoType> userInfoTypeOptional = pAllType.stream()
-                                                                    .filter(pUt -> pUt.getId().equals(pUserInfoView.getRefTypeId()) ||
-                                                                            pUt.getCode().equals(pUserInfoView.getCode()))
-                                                                    .findFirst();
+            final Optional<UserInfoType> userInfoTypeOptional = pAllType.stream()
+                                                                        .filter(pUt -> pUt.getId().equals(pUserInfoView.getRefTypeId()) ||
+                                                                                pUt.getCode().equals(pUserInfoView.getCode()))
+                                                                        .findFirst();
 
-        return userInfoTypeOptional;
+            return userInfoTypeOptional;
+        }
+
+        return Optional.empty();
     }
 }

@@ -45,7 +45,6 @@ public class RequestBuilder {
     }
 
     public RequestBuilder responseType(String pResponseType) {
-        Assert.notEmpty(pResponseType);
         responseType = pResponseType;
         return this;
     }
@@ -57,25 +56,21 @@ public class RequestBuilder {
      * @return This builder.
      */
     public RequestBuilder state(String pState) {
-        Assert.notEmpty(pState);
         state = pState;
         return this;
     }
 
     public RequestBuilder nonce(String pNonce) {
-        Assert.notEmpty(pNonce);
         nonce = pNonce;
         return this;
     }
 
     public RequestBuilder clientId(String pClientId) {
-        Assert.notEmpty(pClientId);
         clientId = pClientId;
         return this;
     }
 
     public RequestBuilder redirection(String pRedirectionUrl) {
-        Assert.notEmpty(pRedirectionUrl);
         redirectionUrl = pRedirectionUrl;
         return this;
     }
@@ -86,19 +81,16 @@ public class RequestBuilder {
     }
 
     public RequestBuilder display(String pDisplay) {
-        Assert.notEmpty(pDisplay);
         display = pDisplay;
         return this;
     }
 
     public RequestBuilder prompt(String pPrompt) {
-        Assert.notEmpty(pPrompt);
         prompt = pPrompt;
         return this;
     }
 
     public RequestBuilder idTokenHint(String pIdTokenHint) {
-        Assert.notEmpty(pIdTokenHint);
         idTokenHint = pIdTokenHint;
         return this;
     }

@@ -23,8 +23,7 @@ package ca.n4dev.aegaeon.server.service;
 import java.util.List;
 import java.util.Set;
 
-import ca.n4dev.aegaeon.api.exception.ServerException;
-import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.api.exception.InternalAuthorizationException;
 import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.ClientRedirection;
 import ca.n4dev.aegaeon.api.model.User;
@@ -45,7 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * UserAuthorizationService.java
- *
+ * <p>
  * Manage {@link UserAuthorization} entity.
  *
  * @author by rguillemette
@@ -78,12 +77,13 @@ public class UserAuthorizationService extends BaseSecuredService<UserAuthorizati
     @PreAuthorize("#pUserDetails.id == principal.id")
     public void createOneUserAuthorization(AegaeonUserDetails pUserDetails, String pClientPublicId, String pScopes) {
 
-        Assert.notNull(pUserDetails, ServerExceptionCode.USER_EMPTY);
+        Assert.isTrue(pUserDetails != null && pUserDetails.getId() != null,
+                      () -> new InternalAuthorizationException(null, "An authorization cannot be created without user."));
 
         UserAuthorization ua = this.createUserAuthorization(pUserDetails.getId(), pClientPublicId, pScopes);
 
         if (ua == null) {
-            throw new ServerException(ServerExceptionCode.UNEXPECTED_ERROR, "Unable to create UserAuthorization.");
+            throw new InternalAuthorizationException(null, "Unable to create user's authorization");
         }
 
         LOGGER.info("Creating user authorization for {} / {}", pUserDetails.getId(), pClientPublicId);
@@ -169,30 +169,32 @@ public class UserAuthorizationService extends BaseSecuredService<UserAuthorizati
 
     UserAuthorization createUserAuthorization(Long pUserId, String pClientPublicId, String pScopes) {
 
-        Assert.notNull(pUserId, ServerExceptionCode.USER_EMPTY);
-        Assert.notEmpty(pClientPublicId, ServerExceptionCode.CLIENT_EMPTY);
+        Assert.notNull(pUserId,
+                       () -> new InternalAuthorizationException(null, "An authorization cannot be created without user."));
+        Assert.notEmpty(pClientPublicId,
+                        () -> new InternalAuthorizationException(null, "An authorization cannot be created without client."));
 
         Client client = this.clientService.findByPublicId(pClientPublicId);
         User user = this.userService.findById(pUserId);
 
-        return createUserAuthorization(user, client, pScopes);
-    }
-
-    UserAuthorization createUserAuthorization(User pUser, Client pClient, String pScopes) {
-        Assert.notNull(pUser, ServerExceptionCode.USER_EMPTY);
-        Assert.notNull(pClient, ServerExceptionCode.CLIENT_EMPTY);
+        Assert.notNull(user,
+                       () -> new InternalAuthorizationException(null, "An authorization cannot be created without user."));
+        Assert.notNull(client,
+                       () -> new InternalAuthorizationException(null, "An authorization cannot be created without client."));
 
         // Validate Scopes
         Set<ScopeView> scopes = this.scopeService.getValidScopes(pScopes);
 
-        UserAuthorization ua = new UserAuthorization(pUser, pClient, Utils.join(scopes, s -> s.getName()));
+        UserAuthorization ua = new UserAuthorization(user, client, Utils.join(scopes, s -> s.getName()));
 
         return this.save(ua);
     }
 
+
     /**
      * Find a UserAuthorization by user and client.
-     * @param pUserId The user's id.
+     *
+     * @param pUserId   The user's id.
      * @param pClientId The client's id.
      * @return A UserAuthorization or null.
      */

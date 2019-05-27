@@ -1,6 +1,6 @@
 /**
  * Copyright 2017 Remi Guillemette - n4dev.ca
- *
+ * <p>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -8,16 +8,15 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 package ca.n4dev.aegaeon.server.service;
 
@@ -25,8 +24,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Set;
 
-import ca.n4dev.aegaeon.api.exception.ServerException;
-import ca.n4dev.aegaeon.api.exception.ServerExceptionCode;
+import ca.n4dev.aegaeon.api.exception.InvalidAuthorizationCodeException;
 import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.RefreshToken;
 import ca.n4dev.aegaeon.api.model.User;
@@ -45,7 +43,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * RefreshTokenService.java
- * 
+ *
  * Service managing RefreshToken.
  *
  * @author by rguillemette
@@ -54,18 +52,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshTokenRepository> {
 
-    
+
     /**
      * Default Constructor.
      * @param pRepository RefreshToken repository.
      */
     @Autowired
     public RefreshTokenService(RefreshTokenRepository pRepository,
-                                TokenFactory pTokenFactory, 
-                                UserService pUserService,
-                                ClientService pClientService,
-                                UserAuthorizationService pUserAuthorizationService,
-                                TokenMapper pTokenMapper) {
+                               TokenFactory pTokenFactory,
+                               UserService pUserService,
+                               ClientService pClientService,
+                               UserAuthorizationService pUserAuthorizationService,
+                               TokenMapper pTokenMapper) {
         super(pRepository, pTokenFactory, pUserService, pClientService, pUserAuthorizationService, pTokenMapper);
     }
 
@@ -80,39 +78,42 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
     }
 
     /* (non-Javadoc)
-     * @see ca.n4dev.aegaeon.server.service.BaseTokenService#createManagedToken(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
+     * @see ca.n4dev.aegaeon.server.service.BaseTokenService#createManagedToken(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon
+     * .server.model.Client, java.util.List)
      */
     @Override
     RefreshToken createManagedToken(TokenRequest pTokenRequest, User pUser, Client pClient, Set<ScopeView> pScopes) throws Exception {
 
-        Token token = this.tokenFactory.createToken(pUser, pClient, 
-                                                    TokenProviderType.UUID, 
+        Token token = this.tokenFactory.createToken(pUser, pClient,
+                                                    TokenProviderType.UUID,
                                                     pClient.getRefreshTokenSeconds(), ChronoUnit.SECONDS,
                                                     Collections.emptyMap());
-        
+
         RefreshToken rf = new RefreshToken();
         rf.setClient(pClient);
         rf.setUser(pUser);
         rf.setToken(token.getValue());
         rf.setValidUntil(token.getValidUntil());
-        
+
         if (pScopes != null) {
             rf.setScopes(Utils.join(" ", pScopes, s -> s.getName()));
         }
-        
+
         return this.save(rf);
-        
+
     }
 
     /* (non-Javadoc)
-     * @see ca.n4dev.aegaeon.server.service.BaseTokenService#validate(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
+     * @see ca.n4dev.aegaeon.server.service.BaseTokenService#validate(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model
+     * .Client, java.util.List)
      */
     @Override
     void validate(TokenRequest pTokenRequest, User pUser, Client pClient, Set<ScopeView> pScopes) throws Exception {
 
         if (!this.clientService.hasScope(pClient.getId(), OFFLINE_SCOPE)
                 || !this.clientService.hasFlow(pClient.getId(), Flow.authorization_code)) {
-            throw new ServerException(ServerExceptionCode.SCOPE_UNAUTHORIZED_OFFLINE);            
+            throw new InvalidAuthorizationCodeException(pTokenRequest,
+                                                        "Cannot create a refresh token for this client or flow.");
         }
     }
 
@@ -125,7 +126,8 @@ public class RefreshTokenService extends BaseTokenService<RefreshToken, RefreshT
     }
 
     /* (non-Javadoc)
-     * @see ca.n4dev.aegaeon.server.service.BaseTokenService#isTokenToCreate(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server.model.Client, java.util.List)
+     * @see ca.n4dev.aegaeon.server.service.BaseTokenService#isTokenToCreate(ca.n4dev.aegaeon.server.model.User, ca.n4dev.aegaeon.server
+     * .model.Client, java.util.List)
      */
     @Override
     boolean isTokenToCreate(TokenRequest pTokenRequest, User pUser, Client pClient, Set<ScopeView> pScopes) {

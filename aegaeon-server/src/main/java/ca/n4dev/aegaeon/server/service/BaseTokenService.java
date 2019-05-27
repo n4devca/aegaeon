@@ -26,7 +26,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import ca.n4dev.aegaeon.api.exception.ServerException;
+import ca.n4dev.aegaeon.api.exception.BaseException;
+import ca.n4dev.aegaeon.api.exception.InternalAuthorizationException;
+import ca.n4dev.aegaeon.api.exception.InvalidClientIdException;
+import ca.n4dev.aegaeon.api.exception.MissingUserInformationException;
+import ca.n4dev.aegaeon.api.exception.UnauthorizedClient;
+import ca.n4dev.aegaeon.api.exception.UnauthorizedScope;
 import ca.n4dev.aegaeon.api.model.BaseEntity;
 import ca.n4dev.aegaeon.api.model.Client;
 import ca.n4dev.aegaeon.api.model.Scope;
@@ -34,10 +39,6 @@ import ca.n4dev.aegaeon.api.model.User;
 import ca.n4dev.aegaeon.api.model.UserAuthorization;
 import ca.n4dev.aegaeon.api.protocol.TokenRequest;
 import ca.n4dev.aegaeon.api.token.TokenType;
-import ca.n4dev.aegaeon.api.exception.InvalidClientIdException;
-import ca.n4dev.aegaeon.api.exception.MissingUserInformationException;
-import ca.n4dev.aegaeon.api.exception.UnauthorizedClient;
-import ca.n4dev.aegaeon.api.exception.UnauthorizedScope;
 import ca.n4dev.aegaeon.server.token.TokenFactory;
 import ca.n4dev.aegaeon.server.utils.Assert;
 import ca.n4dev.aegaeon.server.utils.Utils;
@@ -92,7 +93,7 @@ public abstract class BaseTokenService<T extends BaseEntity, J extends JpaReposi
     abstract TokenType getManagedTokenType();
 
     @Transactional
-    T createToken(TokenRequest pTokenRequest, Long pUserId, String pClientPublicId, Set<ScopeView> pScopes) throws ServerException {
+    T createToken(TokenRequest pTokenRequest, Long pUserId, String pClientPublicId, Set<ScopeView> pScopes) {
 
         Assert.notNull(pUserId, () -> new MissingUserInformationException(pTokenRequest));
         Assert.notEmpty(pClientPublicId, () -> new InvalidClientIdException(pTokenRequest));
@@ -110,7 +111,7 @@ public abstract class BaseTokenService<T extends BaseEntity, J extends JpaReposi
      * @param pScopes
      * @return
      */
-    T createToken(TokenRequest pTokenRequest, User pUser, Client pClient, Set<ScopeView> pScopes) throws ServerException {
+    T createToken(TokenRequest pTokenRequest, User pUser, Client pClient, Set<ScopeView> pScopes) {
 
         try {
             // Basic Validation (not null, authorize)
@@ -125,12 +126,12 @@ public abstract class BaseTokenService<T extends BaseEntity, J extends JpaReposi
             }
 
             return null;
-        } catch (ServerException se) {
+        } catch (BaseException pBaseException) {
             // rethrow
-            throw se;
+            throw pBaseException;
         } catch (Exception e) {
             // wrap
-            throw new ServerException(e);
+            throw new InternalAuthorizationException(pTokenRequest, e);
         }
 
     }
