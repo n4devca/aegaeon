@@ -33,7 +33,7 @@
         <java.version>11</java.version>
         <nimbus.version>7.9</nimbus.version>
         <spring-boot.version>2.1.4.RELEASE</spring-boot.version>
-        <mysql.version>8.0.16</mysql.version>
+        <mysql.version>8.0.28</mysql.version>
         <flyway.version>5.2.4</flyway.version>
         <jedis.version>2.10.2</jedis.version>
         <aegaeon.version>${project.version}</aegaeon.version>
